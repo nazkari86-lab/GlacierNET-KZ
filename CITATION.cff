@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+title: GlacierNET-KZ
+message: >-
+  If you use this software, please cite it using the metadata from this file.
+type: software
+authors:
+  - family-names: Nurlanuly
+    given-names: Dulat
+repository-code: 'https://github.com/nicklaua/GlacierNET-KZ'
+url: 'https://github.com/nicklaua/GlacierNET-KZ'
+license: MIT
+version: 0.2.0
+date-released: '2026-06-28'
+keywords:
+  - glacier
+  - remote-sensing
+  - deep-learning
+  - U-Net
+  - Sentinel-2
+  - Kazakhstan
+  - climate-change
+  - ISEF
+abstract: >-
+  Deep-learning platform for monitoring glacier retreat in Kazakhstan's
+  Zailiysky and Junggar Alatau using Sentinel-2/Landsat imagery, U-Net
+  segmentation, temporal trend analysis, and forecast to 2050. Includes
+  FastAPI backend, Next.js dashboard (EN/RU/KK), and HuggingFace Spaces demo.
+preferred-citation:
+  type: software
+  title: 'GlacierNET-KZ: Deep Learning Glacier Monitoring for Kazakhstan'
+  authors:
+    - family-names: Nurlanuly
+      given-names: Dulat
+  year: 2026
+  url: 'https://github.com/nicklaua/GlacierNET-KZ'

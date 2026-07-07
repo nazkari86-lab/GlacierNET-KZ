@@ -1,0 +1,276 @@
+@page "/"
+@using GlacierNET.Analysis.Models
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>GlacierNET-KZ Dashboard</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6">
+                <span class="badge bg-primary me-2">🏔️</span>
+                GlacierNET-KZ Monitoring Dashboard
+            </h1>
+            <p class="text-muted">Real-time glacier monitoring and analysis for Kazakhstan</p>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="row">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading dashboard data...</p>
+            </div>
+        </div>
+    }
+    else if (dashboardData != null)
+    {
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-primary">Glaciers</h5>
+                        <h2 class="display-6">@dashboardData.GlacierCount</h2>
+                        <small class="text-muted">Active monitoring</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-success">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-success">Analyses</h5>
+                        <h2 class="display-6">@dashboardData.AnalysisCount</h2>
+                        <small class="text-muted">Total completed</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-warning">Active Tasks</h5>
+                        <h2 class="display-6">@dashboardData.ActiveTaskCount</h2>
+                        <small class="text-muted">Processing now</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-danger">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-danger">Anomalies</h5>
+                        <h2 class="display-6">@dashboardData.AnomalyCount</h2>
+                        <small class="text-muted">Detected alerts</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>🏔️ Recent Glaciers</span>
+                        <button class="btn btn-sm btn-outline-primary" @onclick='() => Navigation.NavigateTo("/glaciers")'>View All</button>
+                    </div>
+                    <div class="card-body">
+                        @if (recentGlaciers.Any())
+                        {
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Region</th>
+                                        <th>Status</th>
+                                        <th>Area</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var glacier in recentGlaciers)
+                                    {
+                                        <tr @onclick="() => Navigation.NavigateTo($\"/glacier/{glacier.Id}\")" style="cursor:pointer">
+                                            <td>@glacier.Name</td>
+                                            <td>@glacier.Region</td>
+                                            <td><span class="badge @GetStatusBadgeClass(glacier.Status)">@glacier.Status</span></td>
+                                            <td>@glacier.AreaKm2.ToString("F2") km²</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p class="text-muted">No glaciers found.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>📊 Recent Analyses</span>
+                        <button class="btn btn-sm btn-outline-primary" @onclick='() => Navigation.NavigateTo("/analyses")'>View All</button>
+                    </div>
+                    <div class="card-body">
+                        @if (recentAnalyses.Any())
+                        {
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Value</th>
+                                        <th>Anomaly</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var analysis in recentAnalyses)
+                                    {
+                                        <tr>
+                                            <td>@analysis.AnalysisType</td>
+                                            <td>@analysis.Value.ToString("F2") @analysis.Unit</td>
+                                            <td>
+                                                @if (analysis.IsAnomaly)
+                                                {
+                                                    <span class="badge bg-danger">⚠️ Yes</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">No</span>
+                                                }
+                                            </td>
+                                            <td>@analysis.CreatedAt.ToString("MMM dd")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p class="text-muted">No analyses found.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>🔔 Live Alerts</span>
+                        <span class="badge bg-secondary">@alerts.Count</span>
+                    </div>
+                    <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                        @if (alerts.Any())
+                        {
+                            @foreach (var alert in alerts)
+                            {
+                                <div class="alert @GetAlertClass(alert.Severity) alert-dismissible fade show py-2" role="alert">
+                                    <strong>@alert.Title</strong> @alert.Message
+                                    <small class="text-muted ms-2">@alert.Timestamp.ToString("HH:mm:ss")</small>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">No active alerts</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool isLoading = true;
+    private DashboardSummary? dashboardData;
+    private List<Glacier> recentGlaciers = new();
+    private List<AnalysisResult> recentAnalyses = new();
+    private List<LiveAlert> alerts = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+    }
+
+    private async Task LoadDashboardData()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("GlacierApi");
+
+            var glacierResponse = await client.GetAsync("/api/glacier?pageSize=5");
+            if (glacierResponse.IsSuccessStatusCode)
+            {
+                var glacierResult = await glacierResponse.Content.ReadFromJsonAsync<PagedResult<Glacier>>();
+                if (glacierResult != null)
+                {
+                    recentGlaciers = glacierResult.Items.ToList();
+                }
+            }
+
+            var analysisResponse = await client.GetAsync("/api/analysis/recent?limit=5");
+            if (analysisResponse.IsSuccessStatusCode)
+            {
+                recentAnalyses = await analysisResponse.Content.ReadFromJsonAsync<List<AnalysisResult>>() ?? new();
+            }
+
+            dashboardData = new DashboardSummary
+            {
+                GlacierCount = recentGlaciers.Count,
+                AnalysisCount = recentAnalyses.Count,
+                ActiveTaskCount = 0,
+                AnomalyCount = recentAnalyses.Count(a => a.IsAnomaly)
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading dashboard: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetStatusBadgeClass(GlacierStatus status) => status switch
+    {
+        GlacierStatus.Stable => "bg-success",
+        GlacierStatus.Retreating => "bg-danger",
+        GlacierStatus.Advancing => "bg-primary",
+        GlacierStatus.Surging => "bg-warning",
+        GlacierStatus.Collapsed => "bg-dark",
+        _ => "bg-secondary"
+    };
+
+    private string GetAlertClass(string severity) => severity?.ToLower() switch
+    {
+        "critical" or "high" => "alert-danger",
+        "medium" => "alert-warning",
+        "low" => "alert-info",
+        _ => "alert-secondary"
+    };
+
+    public void Dispose() { }
+
+    private class DashboardSummary
+    {
+        public int GlacierCount { get; set; }
+        public int AnalysisCount { get; set; }
+        public int ActiveTaskCount { get; set; }
+        public int AnomalyCount { get; set; }
+    }
+
+    private class LiveAlert
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public string Severity { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+    }
+}

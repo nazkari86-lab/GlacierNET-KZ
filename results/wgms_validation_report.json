@@ -1,0 +1,17 @@
+{
+  "glacier": "Tuyuksu (WGMS ID 817)",
+  "rmse_km2": 0.3353,
+  "mae_km2": 0.2358,
+  "n_years": 7,
+  "years": [
+    2005,
+    2008,
+    2010,
+    2013,
+    2016,
+    2017,
+    2020
+  ],
+  "method": "scaled_bbox_proxy",
+  "note": "Crop to RGI RGI2000-v7.0-G-13-33843 for publication-grade RMSE"
+}

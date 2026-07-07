@@ -1,0 +1,27 @@
+{
+  "created_at": "2026-06-27T22:51:28+00:00",
+  "years_requested": [
+    2021
+  ],
+  "notes": [
+    "Sentinel-2 rasters are loaded through src.data_loader.load_image().",
+    "Compact 7-band rasters are expanded to 11 channels by deriving NDSI/NDWI/BSI/EVI locally."
+  ],
+  "years": [
+    {
+      "year": 2021,
+      "source_file": "data/raw/sentinel2/sentinel2_2021.tif",
+      "mask_file": "data/processed/masks/mask_2021.tif",
+      "output_dir": "data/processed/patches/sentinel2_multiyear_sample/2021",
+      "source_bands_loaded": 11,
+      "patch_size": 256,
+      "stride": 128,
+      "patches_total": 128,
+      "limited_by_max_patches": true,
+      "train_patches": 89,
+      "val_patches": 19,
+      "test_patches": 20,
+      "glacier_pixel_fraction": 0.25338292121887207
+    }
+  ]
+}

@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GlacierNET-KZ — Сегментация ледников</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0f17;
+  --surface: #131927;
+  --surface2: #1a2235;
+  --border: #242d45;
+  --text: #e2e8f0;
+  --text2: #8892b0;
+  --accent: #3b82f6;
+  --accent2: #2563eb;
+  --green: #22c55e;
+  --red: #ef4444;
+  --amber: #f59e0b;
+  --radius: 10px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+.layout { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar {
+  width: 240px; flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 24px 16px;
+  display: flex; flex-direction: column;
+  position: sticky; top: 0; height: 100vh;
+}
+.logo {
+  font-size: 20px; font-weight: 700;
+  padding-bottom: 24px; border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.logo svg { flex-shrink: 0; }
+.nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.nav a {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px;
+  color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 500;
+  transition: all .15s;
+}
+.nav a:hover, .nav a.active { background: var(--surface2); color: var(--text); }
+.nav a.active { background: var(--accent); color: #fff; }
+.sidebar-footer { font-size: 12px; color: var(--text2); padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* Main */
+.main { flex: 1; padding: 32px 40px; max-width: 1100px; }
+.page { display: none; }
+.page.active { display: block; }
+h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.subtitle { color: var(--text2); font-size: 14px; margin-bottom: 28px; line-height: 1.5; }
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+.card h2 .badge {
+  display: inline-block; font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 4px;
+  background: var(--surface2); color: var(--text2); margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* Form elements */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.form-group { margin-bottom: 16px; }
+label { display: block; font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
+input[type="file"] { display: none; }
+.file-label {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border: 2px dashed var(--border);
+  border-radius: 8px; cursor: pointer; font-size: 14px; color: var(--text2);
+  transition: all .15s;
+}
+.file-label:hover { border-color: var(--accent); color: var(--text); }
+.file-label.has-file { border-color: var(--green); color: var(--green); border-style: solid; }
+select, input[type="number"] {
+  width: 100%; padding: 10px 12px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font-size: 14px; font-family: inherit;
+}
+select:focus, input:focus { outline: none; border-color: var(--accent); }
+.toggle-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; }
+.toggle {
+  position: relative; width: 44px; height: 24px; flex-shrink: 0;
+  background: var(--surface2); border-radius: 12px; cursor: pointer;
+  transition: background .2s; border: 1px solid var(--border);
+}
+.toggle.active { background: var(--accent); border-color: var(--accent); }
+.toggle::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 18px; height: 18px; border-radius: 50%; background: var(--text);
+  transition: transform .2s;
+}
+.toggle.active::after { transform: translateX(20px); background: #fff; }
+
+button {
+  padding: 10px 20px; border: none; border-radius: 8px;
+  font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer;
+  transition: all .15s; display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--border); }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-danger:hover { opacity: .85; }
+button svg { width: 16px; height: 16px; }
+
+/* Results */
+.result-img {
+  max-width: 100%; border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-top: 12px;
+}
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.result-stat {
+  background: var(--surface2); border-radius: 8px; padding: 16px; text-align: center;
+}
+.result-stat .value { font-size: 24px; font-weight: 700; color: var(--accent); }
+.result-stat .label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+/* Spinner */
+.spinner {
+  width: 20px; height: 20px; border: 2px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin .6s linear infinite; display: none;
+}
+.spinner.show { display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 20px;
+  font-size: 14px; box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  transform: translateY(20px); opacity: 0; transition: all .3s;
+  z-index: 100; max-width: 400px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.error { border-color: var(--red); }
+.toast.success { border-color: var(--green); }
+
+/* History & compare */
+.model-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.model-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px; cursor: pointer;
+  transition: all .15s;
+}
+.model-card:hover { border-color: var(--accent); }
+.model-card.selected { border-color: var(--accent); background: rgba(59,130,246,.1); }
+.model-card h3 { font-size: 14px; font-weight: 600; }
+.model-card p { font-size: 12px; color: var(--text2); margin-top: 4px; line-height: 1.4; }
+.model-card .flags { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+.model-card .flags span {
+  font-size: 10px; padding: 2px 6px; border-radius: 4px;
+  background: var(--surface); color: var(--text2);
+}
+
+.history-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 16px; border: 1px solid var(--border);
+  border-radius: 8px; margin-bottom: 8px; transition: all .15s;
+}
+.history-item:hover { border-color: var(--accent); }
+.history-item img { width: 64px; height: 64px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border); }
+.history-item .info { flex: 1; }
+.history-item .info .title { font-weight: 600; font-size: 14px; }
+.history-item .info .meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.history-item .actions { display: flex; gap: 6px; }
+
+.empty-state {
+  text-align: center; padding: 60px 20px; color: var(--text2);
+}
+.empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: .4; }
+.empty-state p { font-size: 14px; }
+
+/* Compare grid */
+.compare-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+.compare-item { background: var(--surface2); border-radius: 8px; padding: 12px; text-align: center; }
+.compare-item img { width: 100%; border-radius: 6px; border: 1px solid var(--border); }
+.compare-item h4 { font-size: 13px; margin-top: 8px; }
+.compare-item .area { font-size: 12px; color: var(--accent); }
+
+.thumb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px,1fr)); gap: 6px; margin: 8px 0; }
+.thumb-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); cursor: pointer; }
+.thumb-grid img:hover { border-color: var(--accent); }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; color: var(--text2); font-weight: 500; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { padding: 20px 16px; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .result-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="11" stroke="#3b82f6" stroke-width="2"/>
+        <path d="M7 14c2-4 5-6 9-4" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>
+        <path d="M9 17c2-3 4-4 7-2" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      GlacierNET-KZ
+    </div>
+    <div class="nav">
+      <a href="#" data-page="predict" class="active">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 3a1 1 0 011-1h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3z" stroke="currentColor" stroke-width="1.5"/><path d="M6 2v12M2 8h12" stroke="currentColor" stroke-width="1.5"/></svg>
+        Сегментация
+      </a>
+      <a href="#" data-page="compare">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="6" height="12" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2" width="6" height="12" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+        Сравнение
+      </a>
+      <a href="#" data-page="uncertainty">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5M8 11v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Неопределённость
+      </a>
+      <a href="#" data-page="trend">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 14l4-6 3 2 7-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Тренд
+      </a>
+      <a href="#" data-page="history">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        История
+      </a>
+    </div>
+    <div class="sidebar-footer">v1.0.0 &middot; GlacierNET-KZ</div>
+  </nav>
+
+  <div class="main">
+
+    <!-- ========== PREDICT PAGE ========== -->
+    <div class="page active" id="page-predict">
+      <h1>Сегментация ледников</h1>
+      <p class="subtitle">Загрузите спутниковый снимок и выберите модель для автоматического выделения ледников</p>
+
+      <div class="card">
+        <h2>Загрузка снимка</h2>
+        <div class="form-group">
+          <label for="file-input">Файл (GeoTIFF, PNG, JPEG)</label>
+          <label for="file-input" class="file-label" id="file-label">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span id="file-name">Выберите файл...</span>
+          </label>
+          <input type="file" id="file-input" accept=".tif,.tiff,.png,.jpg,.jpeg">
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Модель и параметры</h2>
+        <div class="grid-3">
+          <div class="form-group">
+            <label>Модель</label>
+            <select id="model-select"></select>
+          </div>
+          <div class="form-group">
+            <label>NDSI порог (только для NDSI)</label>
+            <input type="number" id="ndsi-threshold" step="0.05" min="0" max="1" value="0.4">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="toggle-row">
+            <div class="toggle active" id="toggle-tta"></div>
+            <label>TTA (Test-Time Augmentation) — усреднение по 8 трансформациям</label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle" id="toggle-crf"></div>
+            <label>CRF пост-обработка — уточнение границ</label>
+          </div>
+        </div>
+        <button class="btn-primary" id="btn-predict" onclick="runPredict()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v6M5 8h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Запустить сегментацию
+          <span class="spinner" id="predict-spinner"></span>
+        </button>
+      </div>
+
+      <div id="predict-result" style="display:none">
+        <div class="card">
+          <h2>Результат</h2>
+          <div class="result-grid" id="predict-stats"></div>
+          <div class="result-grid">
+            <div>
+              <h3 style="font-size:13px;color:var(--text2);margin-bottom:6px">Маска</h3>
+              <img class="result-img" id="result-mask">
+            </div>
+            <div>
+              <h3 style="font-size:13px;color:var(--text2);margin-bottom:6px">Наложение</h3>
+              <img class="result-img" id="result-overlay">
+            </div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:8px" id="export-btns"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== COMPARE PAGE ========== -->
+    <div class="page" id="page-compare">
+      <h1>Сравнение моделей</h1>
+      <p class="subtitle">Запустите несколько моделей на одном снимке для сравнения</p>
+
+      <div class="card">
+        <h2>Снимок и модели</h2>
+        <div class="form-group">
+          <label for="compare-file-input">Файл</label>
+          <label for="compare-file-input" class="file-label" id="compare-file-label">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span id="compare-file-name">Выберите файл...</span>
+          </label>
+          <input type="file" id="compare-file-input" accept=".tif,.tiff,.png,.jpg,.jpeg">
+        </div>
+        <div class="model-cards" id="compare-models"></div>
+        <div class="grid-2" style="margin-top:12px">
+          <div class="toggle-row">
+            <div class="toggle active" id="compare-toggle-tta"></div>
+            <label>TTA</label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle" id="compare-toggle-crf"></div>
+            <label>CRF</label>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="runCompare()" style="margin-top:12px">
+          Сравнить
+          <span class="spinner" id="compare-spinner"></span>
+        </button>
+      </div>
+
+      <div id="compare-result" style="display:none">
+        <div class="card">
+          <h2>Результаты сравнения</h2>
+          <div class="compare-grid" id="compare-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== UNCERTAINTY PAGE ========== -->
+    <div class="page" id="page-uncertainty">
+      <h1>Оценка неопределённости</h1>
+      <p class="subtitle">MC Dropout — множественные проходы для оценки уверенности модели</p>
+
+      <div class="card">
+        <h2>Параметры</h2>
+        <div class="form-group">
+          <label for="unc-file-input">Файл</label>
+          <label for="unc-file-input" class="file-label" id="unc-file-label">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span id="unc-file-name">Выберите файл...</span>
+          </label>
+          <input type="file" id="unc-file-input" accept=".tif,.tiff,.png,.jpg,.jpeg">
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Модель</label>
+            <select id="unc-model-select"></select>
+          </div>
+          <div class="form-group">
+            <label>Количество проходов</label>
+            <input type="number" id="unc-samples" value="10" min="5" max="50">
+          </div>
+        </div>
+        <button class="btn-primary" onclick="runUncertainty()">
+          Оценить неопределённость
+          <span class="spinner" id="unc-spinner"></span>
+        </button>
+      </div>
+
+      <div id="unc-result" style="display:none">
+        <div class="card">
+          <h2>Карты неопределённости</h2>
+          <div class="result-grid">
+            <div>
+              <h3 style="font-size:13px;color:var(--text2);margin-bottom:6px">Средняя вероятность</h3>
+              <img class="result-img" id="unc-mean">
+            </div>
+            <div>
+              <h3 style="font-size:13px;color:var(--text2);margin-bottom:6px">Стандартное отклонение</h3>
+              <img class="result-img" id="unc-std">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== TREND PAGE ========== -->
+    <div class="page" id="page-trend">
+      <h1>Анализ тренда</h1>
+      <p class="subtitle">Постройте динамику изменения площади ледников по годам</p>
+
+      <div class="card">
+        <h2>Данные из истории</h2>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Выберите результаты из истории для построения тренда:</p>
+        <div id="trend-history-items"></div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn-secondary" onclick="loadTrendHistory()">Обновить список</button>
+          <button class="btn-primary" onclick="runTrend()">
+            Построить тренд
+            <span class="spinner" id="trend-spinner"></span>
+          </button>
+        </div>
+      </div>
+
+      <div id="trend-result" style="display:none">
+        <div class="card">
+          <h2>Результаты тренда</h2>
+          <canvas id="trend-chart" style="width:100%;height:300px;margin-bottom:16px"></canvas>
+          <div class="result-grid" id="trend-stats"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== HISTORY PAGE ========== -->
+    <div class="page" id="page-history">
+      <h1>История</h1>
+      <p class="subtitle">Все выполненные сегментации</p>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h2 style="margin-bottom:0">Сохранённые результаты</h2>
+          <button class="btn-secondary" onclick="loadHistory()">Обновить</button>
+        </div>
+        <div id="history-list"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '';
+
+// ---- Navigation ----
+document.querySelectorAll('.nav a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelectorAll('.nav a').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+    document.getElementById('page-' + a.dataset.page).classList.add('active');
+    if (a.dataset.page === 'history') loadHistory();
+    if (a.dataset.page === 'trend') loadTrendHistory();
+  });
+});
+
+// ---- Toggle helper ----
+document.querySelectorAll('.toggle').forEach(t => {
+  t.addEventListener('click', () => t.classList.toggle('active'));
+});
+function isToggleOn(id) {
+  return document.getElementById(id).classList.contains('active');
+}
+
+// ---- Toast ----
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast ' + type;
+  setTimeout(() => el.classList.add('show'), 10);
+  setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+// ---- API call helper ----
+async function apiPostForm(url, formData) {
+  const r = await fetch(url, { method: 'POST', body: formData });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.detail || JSON.stringify(data));
+  return data;
+}
+
+// ---- Load models ----
+let models = [];
+async function loadModels() {
+  const r = await fetch(API + '/api/models');
+  models = await r.json();
+  const selects = ['model-select', 'unc-model-select'];
+  const compareDiv = document.getElementById('compare-models');
+  selects.forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = models.map(m => `<option value="${m.name}">${m.display_name}</option>`).join('');
+  });
+  compareDiv.innerHTML = models.map(m => `
+    <div class="model-card ${m.name === 'unet' || m.name === 'ndsi' ? 'selected' : ''}" data-model="${m.name}" onclick="toggleCompareModel(this)">
+      <h3>${m.display_name}</h3>
+      <p>${m.description}</p>
+      <div class="flags">
+        ${m.supports_tta ? '<span>TTA</span>' : ''}
+        ${m.supports_crf ? '<span>CRF</span>' : ''}
+        ${m.supports_uncertainty ? '<span>MC Dropout</span>' : ''}
+      </div>
+    </div>
+  `).join('');
+}
+loadModels();
+
+// ---- File input handler ----
+['file-input', 'compare-file-input', 'unc-file-input'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('change', () => {
+    const label = document.getElementById(id.replace('-input', '-label'));
+    const name = document.getElementById(id.replace('-input', '-name'));
+    if (el.files[0]) {
+      name.textContent = el.files[0].name;
+      label.classList.add('has-file');
+    }
+  });
+});
+
+// ---- Predict ----
+async function runPredict() {
+  const file = document.getElementById('file-input').files[0];
+  if (!file) { toast('Выберите файл', 'error'); return; }
+
+  const btn = document.getElementById('btn-predict');
+  const spinner = document.getElementById('predict-spinner');
+  btn.disabled = true; spinner.classList.add('show');
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('model_name', document.getElementById('model-select').value);
+  fd.append('use_tta', isToggleOn('toggle-tta'));
+  fd.append('use_crf', isToggleOn('toggle-crf'));
+  fd.append('ndsi_threshold', document.getElementById('ndsi-threshold').value || '');
+
+  try {
+    const data = await apiPostForm('/api/predict', fd);
+    showPredictResult(data);
+    toast('Сегментация завершена');
+  } catch (e) {
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false; spinner.classList.remove('show');
+  }
+}
+
+function showPredictResult(data) {
+  const div = document.getElementById('predict-result');
+  div.style.display = 'block';
+
+  document.getElementById('predict-stats').innerHTML = `
+    <div class="result-stat">
+      <div class="value">${data.area_km2 ? data.area_km2.toFixed(2) : '—'}</div>
+      <div class="label">Площадь, км²</div>
+    </div>
+    <div class="result-stat">
+      <div class="value">${data.task_id ? data.task_id.slice(0,8)+'…' : '—'}</div>
+      <div class="label">Task ID</div>
+    </div>
+  `;
+
+  if (data.mask_path) {
+    document.getElementById('result-mask').src = data.mask_path + '?t=' + Date.now();
+  }
+  if (data.overlay_path) {
+    document.getElementById('result-overlay').src = data.overlay_path + '?t=' + Date.now();
+  }
+
+  const exportDiv = document.getElementById('export-btns');
+  exportDiv.innerHTML = `
+    <a href="/api/export/${data.task_id}?fmt=png" class="btn-secondary" style="text-decoration:none">PNG</a>
+    <a href="/api/export/${data.task_id}?fmt=geotiff" class="btn-secondary" style="text-decoration:none">GeoTIFF</a>
+    <a href="/api/export/${data.task_id}?fmt=csv" class="btn-secondary" style="text-decoration:none">CSV</a>
+  `;
+}
+
+// ---- Compare ----
+const compareSelected = new Set(['unet', 'ndsi']);
+function toggleCompareModel(el) {
+  const name = el.dataset.model;
+  el.classList.toggle('selected');
+  if (compareSelected.has(name)) compareSelected.delete(name);
+  else compareSelected.add(name);
+}
+
+async function runCompare() {
+  const file = document.getElementById('compare-file-input').files[0];
+  if (!file) { toast('Выберите файл', 'error'); return; }
+  if (compareSelected.size < 2) { toast('Выберите минимум 2 модели', 'error'); return; }
+
+  const spinner = document.getElementById('compare-spinner');
+  spinner.classList.add('show');
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('model_names', [...compareSelected].join(','));
+  fd.append('use_tta', isToggleOn('compare-toggle-tta'));
+  fd.append('use_crf', isToggleOn('compare-toggle-crf'));
+
+  try {
+    const data = await apiPostForm('/api/compare', fd);
+    const grid = document.getElementById('compare-grid');
+    grid.innerHTML = '';
+    (data.segments || []).forEach(s => {
+      const el = document.createElement('div');
+      el.className = 'compare-item';
+      el.innerHTML = `
+        <img src="${s.overlay_path}?t=${Date.now()}" alt="${s.model_name}">
+        <h4>${s.model_name}</h4>
+        <div class="area">${s.area_km2.toFixed(2)} км²</div>
+      `;
+      grid.appendChild(el);
+    });
+    document.getElementById('compare-result').style.display = 'block';
+    toast('Сравнение завершено');
+  } catch (e) {
+    toast(e.message, 'error');
+  } finally {
+    spinner.classList.remove('show');
+  }
+}
+
+// ---- Uncertainty ----
+async function runUncertainty() {
+  const file = document.getElementById('unc-file-input').files[0];
+  if (!file) { toast('Выберите файл', 'error'); return; }
+
+  const spinner = document.getElementById('unc-spinner');
+  spinner.classList.add('show');
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('model_name', document.getElementById('unc-model-select').value);
+  fd.append('n_samples', document.getElementById('unc-samples').value);
+
+  try {
+    const data = await apiPostForm('/api/uncertainty', fd);
+    document.getElementById('unc-mean').src = data.mean_path + '?t=' + Date.now();
+    document.getElementById('unc-std').src = data.std_path + '?t=' + Date.now();
+    document.getElementById('unc-result').style.display = 'block';
+    toast('Неопределённость оценена');
+  } catch (e) {
+    toast(e.message, 'error');
+  } finally {
+    spinner.classList.remove('show');
+  }
+}
+
+// ---- Trend ----
+async function loadTrendHistory() {
+  const r = await fetch(API + '/api/history?limit=100');
+  const items = await r.json();
+  const div = document.getElementById('trend-history-items');
+  if (!items.length) {
+    div.innerHTML = '<div class="empty-state"><p>Нет данных в истории</p></div>';
+    return;
+  }
+  div.innerHTML = items.map(item => `
+    <label class="history-item" style="cursor:pointer;display:flex;align-items:center;gap:12px">
+      <input type="checkbox" value="${item.task_id}" data-year="${item.year || ''}" data-area="${item.area_km2 || ''}">
+      ${item.thumbnail_path ? `<img src="${item.thumbnail_path}" style="width:48px;height:48px;border-radius:6px;object-fit:cover">` : ''}
+      <div class="info" style="flex:1">
+        <div class="meta">${item.model_name} · ${item.area_km2 ? item.area_km2.toFixed(2)+' км²' : '—'} · ${item.created_at ? new Date(item.created_at).toLocaleDateString('ru') : ''}</div>
+      </div>
+    </label>
+  `).join('');
+}
+
+async function runTrend() {
+  const checked = document.querySelectorAll('#trend-history-items input:checked');
+  if (checked.length < 2) { toast('Выберите минимум 2 результата', 'error'); return; }
+
+  const spinner = document.getElementById('trend-spinner');
+  spinner.classList.add('show');
+
+  const fileIds = [], years = [];
+  checked.forEach(cb => {
+    fileIds.push(cb.value);
+    const y = parseInt(cb.dataset.year);
+    if (!isNaN(y)) years.push(y);
+  });
+
+  if (years.length !== fileIds.length) {
+    toast('У выбранных результатов нет данных о годе', 'error');
+    spinner.classList.remove('show'); return;
+  }
+
+  try {
+    const r = await fetch(API + '/api/trend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file_ids: fileIds, years, forecast_until: 2050 })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || 'Error');
+    showTrendResult(data);
+    toast('Тренд построен');
+  } catch (e) {
+    toast(e.message, 'error');
+  } finally {
+    spinner.classList.remove('show');
+  }
+}
+
+function showTrendResult(data) {
+  document.getElementById('trend-result').style.display = 'block';
+  document.getElementById('trend-stats').innerHTML = `
+    <div class="result-stat">
+      <div class="value">${data.loss_rate_km2_per_year.toFixed(2)}</div>
+      <div class="label">Потеря км²/год</div>
+    </div>
+    <div class="result-stat">
+      <div class="value">${data.total_loss_percent.toFixed(1)}%</div>
+      <div class="label">Общая потеря</div>
+    </div>
+    <div class="result-stat">
+      <div class="value">${data.r_squared.toFixed(3)}</div>
+      <div class="label">R²</div>
+    </div>
+  `;
+
+  // Simple chart
+  const canvas = document.getElementById('trend-chart');
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width - 48 || 800;
+  canvas.height = 300;
+
+  const pad = { top: 30, bottom: 40, left: 60, right: 30 };
+  const w = canvas.width - pad.left - pad.right;
+  const h = canvas.height - pad.top - pad.bottom;
+
+  const allPts = [...data.data, ...data.forecast];
+  const minY = Math.min(...allPts.map(p => p.area_km2)) * 0.95;
+  const maxY = Math.max(...allPts.map(p => p.area_km2)) * 1.05;
+  const minX = Math.min(...allPts.map(p => p.year));
+  const maxX = Math.max(...allPts.map(p => p.year));
+
+  const sx = x => pad.left + (x - minX) / (maxX - minX) * w;
+  const sy = y => pad.top + h - (y - minY) / (maxY - minY) * h;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Grid
+  ctx.strokeStyle = '#242d45'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + h * i / 4;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + w, y); ctx.stroke();
+    const val = maxY - (maxY - minY) * i / 4;
+    ctx.fillStyle = '#8892b0'; ctx.font = '11px Inter';
+    ctx.textAlign = 'right'; ctx.fillText(val.toFixed(0), pad.left - 8, y + 4);
+  }
+
+  // Data line (blue)
+  ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  data.data.forEach((p, i) => {
+    const x = sx(p.year), y = sy(p.area_km2);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Dots
+  data.data.forEach(p => {
+    ctx.fillStyle = '#3b82f6';
+    ctx.beginPath(); ctx.arc(sx(p.year), sy(p.area_km2), 4, 0, Math.PI*2); ctx.fill();
+  });
+
+  // Forecast (dashed, amber)
+  if (data.forecast.length) {
+    ctx.setLineDash([5, 3]);
+    ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    data.forecast.forEach((p, i) => {
+      const x = sx(p.year), y = sy(p.area_km2);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+    data.forecast.forEach(p => {
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath(); ctx.arc(sx(p.year), sy(p.area_km2), 3, 0, Math.PI*2); ctx.fill();
+    });
+  }
+
+  // X labels
+  const yearStep = Math.max(1, Math.floor((maxX - minX) / 6));
+  ctx.fillStyle = '#8892b0'; ctx.font = '11px Inter'; ctx.textAlign = 'center';
+  for (let y = minX; y <= maxX; y += yearStep) {
+    ctx.fillText(y, sx(y), canvas.height - 10);
+  }
+
+  // Legend
+  ctx.fillStyle = '#3b82f6'; ctx.fillRect(pad.left, 10, 12, 3);
+  ctx.fillStyle = '#e2e8f0'; ctx.font = '11px Inter'; ctx.textAlign = 'left';
+  ctx.fillText('Факт', pad.left + 18, 14);
+  ctx.fillStyle = '#f59e0b'; ctx.fillRect(pad.left + 70, 10, 12, 3);
+  ctx.fillStyle = '#e2e8f0';
+  ctx.fillText('Прогноз', pad.left + 88, 14);
+}
+
+// ---- History ----
+async function loadHistory() {
+  const r = await fetch(API + '/api/history?limit=100');
+  const items = await r.json();
+  const div = document.getElementById('history-list');
+  if (!items.length) {
+    div.innerHTML = '<div class="empty-state"><p>История пуста</p></div>';
+    return;
+  }
+  div.innerHTML = items.map(item => `
+    <div class="history-item">
+      ${item.thumbnail_path || item.overlay_path ? `<img src="${item.thumbnail_path || item.overlay_path}">` : ''}
+      <div class="info">
+        <div class="title">${item.model_name} · ${item.area_km2 ? item.area_km2.toFixed(2)+' км²' : '—'}</div>
+        <div class="meta">${item.task_id} · ${item.created_at ? new Date(item.created_at).toLocaleString('ru') : ''}</div>
+      </div>
+      <div class="actions">
+        <a href="/api/export/${item.task_id}?fmt=png" class="btn-secondary" style="text-decoration:none;padding:6px 12px;font-size:12px">PNG</a>
+        <a href="/api/export/${item.task_id}?fmt=geotiff" class="btn-secondary" style="text-decoration:none;padding:6px 12px;font-size:12px">GeoTIFF</a>
+        <button class="btn-danger" style="padding:6px 12px;font-size:12px" onclick="deleteHistory('${item.task_id}')">Удалить</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function deleteHistory(taskId) {
+  if (!confirm('Удалить результат?')) return;
+  try {
+    const r = await fetch(API + '/api/history/' + taskId, { method: 'DELETE' });
+    if (!r.ok) throw new Error('Ошибка удаления');
+    toast('Удалено');
+    loadHistory();
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+// ---- Init ----
+loadHistory();
+</script>
+</body>
+</html>

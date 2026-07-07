@@ -1,0 +1,275 @@
+{
+  "ok": true,
+  "sentinel2_years": [
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "landsat_years": [
+    2000,
+    2003,
+    2005,
+    2008,
+    2010,
+    2013
+  ],
+  "expected_shape": [
+    5228,
+    8583
+  ],
+  "rasters": [
+    {
+      "path": "data/raw/sentinel2/sentinel2_2015.tif",
+      "bands": 7,
+      "dtype": [
+        "uint16"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 11,
+      "expected_loaded_channels": 11,
+      "size_mb": 252.749
+    },
+    {
+      "path": "data/raw/sentinel2/sentinel2_2016.tif",
+      "bands": 11,
+      "dtype": [
+        "float32"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 11,
+      "expected_loaded_channels": 11,
+      "size_mb": 1333.553
+    },
+    {
+      "path": "data/raw/sentinel2/sentinel2_2017.tif",
+      "bands": 11,
+      "dtype": [
+        "float32"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 11,
+      "expected_loaded_channels": 11,
+      "size_mb": 769.047
+    },
+    {
+      "path": "data/raw/sentinel2/sentinel2_2018.tif",
+      "bands": 11,
+      "dtype": [
+        "float32"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 11,
+      "expected_loaded_channels": 11,
+      "size_mb": 753.099
+    },
+    {
+      "path": "data/raw/sentinel2/sentinel2_2019.tif",
+      "bands": 11,
+      "dtype": [
+        "float32"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 11,
+      "expected_loaded_channels": 11,
+      "size_mb": 1340.186
+    },
+    {
+      "path": "data/raw/sentinel2/sentinel2_2020.tif",
+      "bands": 7,
+      "dtype": [
+        "uint16"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 11,
+      "expected_loaded_channels": 11,
+      "size_mb": 486.282
+    },
+    {
+      "path": "data/raw/sentinel2/sentinel2_2021.tif",
+      "bands": 11,
+      "dtype": [
+        "float32"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 11,
+      "expected_loaded_channels": 11,
+      "size_mb": 1338.712
+    },
+    {
+      "path": "data/raw/sentinel2/sentinel2_2022.tif",
+      "bands": 7,
+      "dtype": [
+        "float32"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 11,
+      "expected_loaded_channels": 11,
+      "size_mb": 579.811
+    },
+    {
+      "path": "data/raw/sentinel2/sentinel2_2023.tif",
+      "bands": 11,
+      "dtype": [
+        "float32"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 11,
+      "expected_loaded_channels": 11,
+      "size_mb": 1338.592
+    },
+    {
+      "path": "data/raw/sentinel2/sentinel2_2024.tif",
+      "bands": 11,
+      "dtype": [
+        "float32"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 11,
+      "expected_loaded_channels": 11,
+      "size_mb": 1344.266
+    },
+    {
+      "path": "data/raw/landsat/landsat_2000.tif",
+      "bands": 9,
+      "dtype": [
+        "float32"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 9,
+      "expected_loaded_channels": 9,
+      "size_mb": 994.123
+    },
+    {
+      "path": "data/raw/landsat/landsat_2003.tif",
+      "bands": 9,
+      "dtype": [
+        "float32"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 9,
+      "expected_loaded_channels": 9,
+      "size_mb": 1015.327
+    },
+    {
+      "path": "data/raw/landsat/landsat_2005.tif",
+      "bands": 9,
+      "dtype": [
+        "float32"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 9,
+      "expected_loaded_channels": 9,
+      "size_mb": 947.368
+    },
+    {
+      "path": "data/raw/landsat/landsat_2008.tif",
+      "bands": 9,
+      "dtype": [
+        "float32"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 9,
+      "expected_loaded_channels": 9,
+      "size_mb": 1022.16
+    },
+    {
+      "path": "data/raw/landsat/landsat_2010.tif",
+      "bands": 9,
+      "dtype": [
+        "float32"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 9,
+      "expected_loaded_channels": 9,
+      "size_mb": 1006.154
+    },
+    {
+      "path": "data/raw/landsat/landsat_2013.tif",
+      "bands": 9,
+      "dtype": [
+        "float32"
+      ],
+      "shape": [
+        5228,
+        8583
+      ],
+      "crs": "EPSG:32642",
+      "loaded_channels": 9,
+      "expected_loaded_channels": 9,
+      "size_mb": 1046.034
+    }
+  ],
+  "warnings": [
+    "sentinel2_2015.tif is an annual late-2015 TOA fallback; no summer L2A/SR scenes exist for AOI.",
+    "Compact Sentinel-2 rasters detected and supported by load_image(): ['data/raw/sentinel2/sentinel2_2015.tif', 'data/raw/sentinel2/sentinel2_2020.tif', 'data/raw/sentinel2/sentinel2_2022.tif']",
+    "Landsat rasters load as 9-channel historical inputs; 11-channel U-Net training uses Sentinel-2 patches."
+  ],
+  "errors": []
+}

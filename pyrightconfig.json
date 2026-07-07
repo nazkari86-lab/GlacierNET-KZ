@@ -1,0 +1,20 @@
+{
+  "include": ["glacierkz-api/app"],
+  "exclude": ["**/.venv/**", "**/node_modules/**"],
+  "pythonVersion": "3.10",
+  "typeCheckingMode": "basic",
+  "reportMissingImports": "warning",
+  "reportMissingModuleSource": "none",
+  "reportOptionalMemberAccess": "none",
+  "reportAttributeAccessIssue": "none",
+  "reportArgumentType": "none",
+  "reportAssignmentType": "none",
+  "reportGeneralTypeIssues": "none",
+  "reportFunctionMemberAccess": "none",
+  "reportPossiblyUnboundVariable": "none",
+  "reportOperatorIssue": "none",
+  "reportCallIssue": "none",
+  "reportUndefinedVariable": "none",
+  "reportOptionalSubscript": "none",
+  "reportReturnType": "none"
+}

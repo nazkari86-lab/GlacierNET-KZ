@@ -1,0 +1,37 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      python-ml:
+        patterns:
+          - tensorflow*
+          - numpy*
+          - scipy*
+          - scikit-learn*
+
+  - package-ecosystem: pip
+    directory: /glacierkz-api
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: npm
+    directory: /glacierkz-web
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      nextjs:
+        patterns:
+          - next*
+          - react*
+          - "@types/*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

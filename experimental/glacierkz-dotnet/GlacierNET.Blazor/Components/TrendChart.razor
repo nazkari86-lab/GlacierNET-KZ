@@ -1,0 +1,175 @@
+@using GlacierNET.Analysis.Models
+@inject IHttpClientFactory HttpClientFactory
+
+<div class="card h-100">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">📈 Trend Analysis</h5>
+        <div class="btn-group btn-group-sm">
+            <button class="btn @(selectedPeriod == "1y" ? "btn-primary" : "btn-outline-primary")" @onclick='() => SetPeriod("1y")'>1Y</button>
+            <button class="btn @(selectedPeriod == "5y" ? "btn-primary" : "btn-outline-primary")" @onclick='() => SetPeriod("5y")'>5Y</button>
+            <button class="btn @(selectedPeriod == "10y" ? "btn-primary" : "btn-outline-primary")" @onclick='() => SetPeriod("10y")'>10Y</button>
+            <button class="btn @(selectedPeriod == "all" ? "btn-primary" : "btn-outline-primary")" @onclick='() => SetPeriod("all")'>All</button>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (isLoading)
+        {
+            <div class="d-flex align-items-center justify-content-center h-100">
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+            </div>
+        }
+        else if (trendData != null && trendData.Any())
+        {
+            <div style="height: 300px; position: relative; border-left: 2px solid #dee2e6; border-bottom: 2px solid #dee2e6; padding: 10px;">
+                @{
+                    var maxVal = trendData.Max(t => t.MassBalance);
+                    var minVal = trendData.Min(t => t.MassBalance);
+                    var range = maxVal - minVal;
+                    if (range == 0) range = 1;
+                    var width = trendData.Count;
+                }
+
+                @foreach (var point in trendData.Select((t, i) => new { t, i }))
+                {
+                    var x = (point.i / (double)(width - 1)) * 100;
+                    var y = ((maxVal - point.t.MassBalance) / range) * 80 + 10;
+                    var color = point.t.MassBalance < 0 ? "#dc3545" : "#28a745";
+
+                    <div style="position: absolute; left: @(x)%; bottom: @(100 - y)%; width: 8px; height: 8px; background: @color; border-radius: 50%; transform: translate(-50%, 50%);"
+                         title="@point.t.Year: @point.t.MassBalance.ToString("F2") m w.e."></div>
+
+                    @if (point.i > 0)
+                    {
+                        var prevX = ((point.i - 1) / (double)(width - 1)) * 100;
+                        var prevY = ((maxVal - trendData[point.i - 1].MassBalance) / range) * 80 + 10;
+                        var dx = x - prevX;
+                        var dy = y - prevY;
+                        var length = Math.Sqrt(dx * dx + dy * dy);
+                        var angle = Math.Atan2(dy, dx) * 180 / Math.PI;
+
+                        <div style="position: absolute; left: @(prevX)%; bottom: @(100 - prevY)%; width: @(length)%; height: 2px; background: @color; transform-origin: 0 100%; transform: rotate(-@(angle)deg);"></div>
+                    }
+                }
+
+                <div style="position: absolute; left: 0; bottom: 0; width: 100%; height: 1px; background: #dee2e6;"></div>
+                <div style="position: absolute; left: 0; bottom: 50%; width: 100%; height: 1px; background: #6c757d; opacity: 0.3;"></div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <small class="text-muted d-block">Avg Mass Balance</small>
+                        <strong class="@(trendData.Average(t => t.MassBalance) < 0 ? "text-danger" : "text-success")">
+                            @trendData.Average(t => t.MassBalance).ToString("F2") m w.e.
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <small class="text-muted d-block">Trend Slope</small>
+                        <strong class="@(trendSlope < 0 ? "text-danger" : "text-success")">
+                            @trendSlope.ToString("F3") m/yr
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <small class="text-muted d-block">R² Value</small>
+                        <strong>@trendR2.ToString("F3")</strong>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <small class="text-muted d-block">Period</small>
+                        <strong>@(trendData.Min(t => t.Year)) - @(trendData.Max(t => t.Year))</strong>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-4">
+                <p class="text-muted">No trend data available</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<TrendData>? trendData;
+    private bool isLoading = true;
+    private string selectedPeriod = "10y";
+    private double trendSlope;
+    private double trendR2;
+
+    [Parameter] public Guid GlacierId { get; set; }
+    [Parameter] public int Years { get; set; } = 10;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (GlacierId != Guid.Empty)
+        {
+            await LoadTrendData();
+        }
+    }
+
+    private async Task LoadTrendData()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("GlacierApi");
+            var response = await client.GetAsync($"/api/trend/glacier/{GlacierId}");
+            if (response.IsSuccessStatusCode)
+            {
+                trendData = await response.Content.ReadFromJsonAsync<List<TrendData>>();
+                CalculateLinearRegression();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading trend data: {ex.Message}");
+            trendData = new();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CalculateLinearRegression()
+    {
+        if (trendData == null || trendData.Count < 2) return;
+
+        var n = trendData.Count;
+        var xValues = trendData.Select((t, i) => (double)i).ToArray();
+        var yValues = trendData.Select(t => t.MassBalance).ToArray();
+
+        var sumX = xValues.Sum();
+        var sumY = yValues.Sum();
+        var sumXY = xValues.Zip(yValues, (x, y) => x * y).Sum();
+        var sumX2 = xValues.Select(x => x * x).Sum();
+        var sumY2 = yValues.Select(y => y * y).Sum();
+
+        var denom = n * sumX2 - sumX * sumX;
+        if (Math.Abs(denom) < 1e-10) return;
+
+        trendSlope = (n * sumXY - sumX * sumY) / denom;
+        var intercept = (sumY - trendSlope * sumX) / n;
+
+        var yMean = sumY / n;
+        var ssTot = yValues.Select(y => (y - yMean) * (y - yMean)).Sum();
+        var ssRes = xValues.Zip(yValues, (x, y) => Math.Pow(y - (trendSlope * x + intercept), 2)).Sum();
+
+        trendR2 = ssTot > 0 ? 1 - (ssRes / ssTot) : 0;
+    }
+
+    private async Task SetPeriod(string period)
+    {
+        selectedPeriod = period;
+        await LoadTrendData();
+    }
+}
