@@ -1,0 +1,104 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1600" y2="900" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8FBFF"/>
+      <stop offset="0.42" stop-color="#DDEFFF"/>
+      <stop offset="1" stop-color="#F4FAF7"/>
+    </linearGradient>
+    <linearGradient id="mountainA" x1="320" y1="250" x2="1180" y2="820" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#25364A"/>
+      <stop offset="1" stop-color="#0F1B2B"/>
+    </linearGradient>
+    <linearGradient id="mountainB" x1="900" y1="300" x2="1480" y2="820" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3D5872"/>
+      <stop offset="1" stop-color="#182A3C"/>
+    </linearGradient>
+    <linearGradient id="ice" x1="540" y1="250" x2="1050" y2="690" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.58" stop-color="#D9F1FF"/>
+      <stop offset="1" stop-color="#9ED3EC"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="1110" y1="155" x2="1480" y2="475" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#F2F8FB" stop-opacity="0.86"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#1A3348" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#sky)"/>
+
+  <g opacity="0.36">
+    <path d="M0 682C147 615 255 646 385 596C523 542 632 446 804 469C973 492 1052 594 1203 560C1347 527 1442 426 1600 463V900H0V682Z" fill="#C8E1EA"/>
+    <path d="M0 742C142 696 275 715 420 671C560 629 669 569 813 593C983 621 1065 706 1226 676C1365 651 1470 591 1600 612V900H0V742Z" fill="#AFCFD9"/>
+  </g>
+
+  <g opacity="0.28" stroke="#7BA6B8" stroke-width="1">
+    <path d="M120 180H1480"/>
+    <path d="M120 260H1480"/>
+    <path d="M120 340H1480"/>
+    <path d="M120 420H1480"/>
+    <path d="M120 500H1480"/>
+    <path d="M120 580H1480"/>
+    <path d="M220 120V730"/>
+    <path d="M380 120V730"/>
+    <path d="M540 120V730"/>
+    <path d="M700 120V730"/>
+    <path d="M860 120V730"/>
+    <path d="M1020 120V730"/>
+    <path d="M1180 120V730"/>
+    <path d="M1340 120V730"/>
+  </g>
+
+  <g opacity="0.58">
+    <path d="M114 174C342 80 586 65 827 129C1055 190 1228 319 1486 241" stroke="#3A86A7" stroke-width="3" stroke-linecap="round" stroke-dasharray="12 16"/>
+    <circle cx="310" cy="115" r="6" fill="#1D6F93"/>
+    <circle cx="827" cy="129" r="7" fill="#1D6F93"/>
+    <circle cx="1305" cy="290" r="6" fill="#1D6F93"/>
+  </g>
+
+  <g transform="translate(296 186)" filter="url(#shadow)">
+    <path d="M0 574L262 160L398 383L512 72L790 574H0Z" fill="url(#mountainA)"/>
+    <path d="M580 574L785 210L1008 574H580Z" fill="url(#mountainB)"/>
+    <path d="M512 72L417 333L484 304L526 386L578 300L664 331L512 72Z" fill="url(#ice)"/>
+    <path d="M262 160L129 370L226 342L271 418L332 333L398 383L262 160Z" fill="url(#ice)"/>
+    <path d="M785 210L701 360L779 338L823 410L872 337L944 414L785 210Z" fill="#E8F8FF"/>
+    <path d="M336 574C415 508 502 506 585 536C667 565 746 629 850 574H336Z" fill="#78B7C9" opacity="0.92"/>
+    <path d="M391 574C454 536 529 538 598 559C669 581 727 609 785 574H391Z" fill="#D8F3F9"/>
+  </g>
+
+  <g transform="translate(1068 138)" filter="url(#shadow)">
+    <rect x="0" y="0" width="392" height="292" rx="28" fill="url(#panel)" stroke="#D7E7EF"/>
+    <text x="32" y="54" fill="#123047" font-family="Helvetica" font-size="24" font-weight="700">Decision dashboard</text>
+    <text x="32" y="86" fill="#587082" font-family="Helvetica" font-size="15">Satellite-to-report workflow</text>
+    <rect x="32" y="120" width="328" height="116" rx="16" fill="#EEF7FA"/>
+    <path d="M58 205L116 176L176 188L231 143L304 161L338 132" stroke="#0E7490" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="116" cy="176" r="6" fill="#0E7490"/>
+    <circle cx="231" cy="143" r="6" fill="#0E7490"/>
+    <circle cx="338" cy="132" r="6" fill="#0E7490"/>
+    <g transform="translate(32 252)">
+      <rect width="88" height="18" rx="9" fill="#D8F3E7"/>
+      <rect x="102" width="102" height="18" rx="9" fill="#D9EAFB"/>
+      <rect x="218" width="110" height="18" rx="9" fill="#F5E8C9"/>
+    </g>
+  </g>
+
+  <g transform="translate(130 124)">
+    <text x="0" y="0" fill="#0B1F33" font-family="Helvetica" font-size="82" font-weight="800" letter-spacing="0">GlacierNET-KZ</text>
+    <text x="4" y="52" fill="#24445B" font-family="Helvetica" font-size="30" font-weight="600">AI glacier monitoring for Kazakhstan</text>
+    <text x="4" y="98" fill="#4B6576" font-family="Helvetica" font-size="22">Sentinel-2 · Landsat · U-Net · Random Forest · Decision reports</text>
+  </g>
+
+  <g transform="translate(130 704)">
+    <rect x="0" y="0" width="1340" height="86" rx="24" fill="#FFFFFF" fill-opacity="0.78" stroke="#D7E7EF"/>
+    <g font-family="Helvetica">
+      <text x="34" y="38" fill="#123047" font-size="18" font-weight="700">2000-2024 real satellite record</text>
+      <text x="34" y="64" fill="#607586" font-size="15">Annual glacier maps, area trend, data quality and 2050 forecast</text>
+      <text x="534" y="38" fill="#123047" font-size="18" font-weight="700">Transparent confidence</text>
+      <text x="534" y="64" fill="#607586" font-size="15">Sensor flags, caveats, p-value and 95% CI</text>
+      <text x="944" y="38" fill="#123047" font-size="18" font-weight="700">Research to product</text>
+      <text x="944" y="64" fill="#607586" font-size="15">Python ML pipeline, FastAPI, Next.js, MCP</text>
+    </g>
+  </g>
+</svg>
