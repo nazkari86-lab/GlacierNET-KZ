@@ -1,0 +1,78 @@
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Environment
+.env
+.env.*
+.venv/
+**/.venv/
+.venv-*/
+venv/
+
+# Node
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+
+# Database
+history.db
+history.db*
+*.db
+
+# Results & predictions
+.coverage
+.pytest_cache/
+.ruff_cache/
+.run/
+logs/
+download.log
+results/*
+!results/tables/
+results/tables/*
+!results/tables/*.csv
+!results/data_quality_report.json
+!results/data_inventory.json
+!results/grant_readiness_summary.json
+!results/pipeline_status.json
+!results/wgms_validation_report.json
+predictions/
+glacierkz-api/results/
+**/build/
+**/dist/
+**/target/
+**/out/
+**/*.o
+**/*.d
+**/*.a
+**/*.so
+**/*.dylib
+**/CMakeFiles/
+**/CMakeCache.txt
+**/cmake_install.cmake
+**/Makefile
+
+# Data и модели (большие, скачиваются/генерируются локально)
+data/raw/sentinel2/*.tif
+data/raw/landsat/*.tif
+data/rgi/*.zip
+data/rgi/*.shp
+data/rgi/*.shx
+data/rgi/*.dbf
+data/rgi/*.prj
+data/rgi/*.cpg
+data/processed/patches/**/*.npy
+data/processed/masks/*.tif
+models/*.h5
+models/*.pkl
+
+# OS
+.DS_Store
+
+# Сохраняем .gitkeep и README в этих папках
+!data/raw/sentinel2/README.md
+!data/raw/landsat/README.md
+!data/rgi/README.md

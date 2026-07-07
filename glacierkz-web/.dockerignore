@@ -1,0 +1,50 @@
+# Version control
+.git
+.gitignore
+
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Next.js
+.next
+out
+
+# Build outputs
+build
+dist
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Documentation
+docs/
+paper/
+*.md
+LICENSE
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Testing
+tests/
+coverage/
+.nyc_output/
+
+# Temporary files
+*.log
+*.tmp
+*.bak
+*.cache
+
+# Environment
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

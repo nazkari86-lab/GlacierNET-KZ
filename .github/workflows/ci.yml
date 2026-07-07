@@ -1,0 +1,157 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.10"
+  NODE_VERSION: "20"
+
+jobs:
+  lint:
+    name: Lint (Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: pip install ruff
+      - run: ruff check src/ glacierkz-api/app/ --select E,F,W,I --ignore E501
+      - run: ruff format src/ glacierkz-api/app/ --check --diff
+
+  test:
+    name: Tests (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: pip install -r requirements.txt -r glacierkz-api/requirements-api.txt
+      - run: pip install pytest-cov
+      - name: Run tests with coverage
+        run: |
+          python -m pytest tests/ glacierkz-api/tests/ -v \
+            -m "not experimental" \
+            --cov=src --cov=glacierkz-api/app \
+            --cov-report=xml --cov-report=term-missing \
+            --cov-fail-under=25
+      - uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: coverage.xml
+          fail_ci_if_error: false
+
+  typecheck:
+    name: Type Check (Pyright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: pip install -r requirements.txt -r glacierkz-api/requirements-api.txt pyright
+      - run: pyright
+
+  frontend-test:
+    name: Frontend Tests (Vitest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: glacierkz-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: glacierkz-web/package-lock.json
+      - run: npm ci
+      - run: npm run lint -- --max-warnings 100
+      - run: npm test
+      - run: npm run build
+
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    needs: [frontend-test]
+    defaults:
+      run:
+        working-directory: glacierkz-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: glacierkz-web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - name: Install dependencies
+        run: |
+          npm ci
+          pip install -r ../requirements.txt -r ../glacierkz-api/requirements-api.txt
+      - name: Install Playwright browser
+        run: npx playwright install chromium --with-deps
+      - name: Build frontend
+        run: npm run build
+      - name: Start API server
+        working-directory: ${{ github.workspace }}
+        run: |
+          export PYTHONPATH="${{ github.workspace }}"
+          cd glacierkz-api
+          uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8000/health && break
+            sleep 2
+          done
+      - name: Run Playwright tests
+        env:
+          CI: true
+          PLAYWRIGHT_API_URL: http://127.0.0.1:8000
+          NEXT_PUBLIC_API_URL: http://127.0.0.1:8000
+        run: npm run test:e2e
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: pip install -r requirements.txt -r glacierkz-api/requirements-api.txt bandit safety
+      - name: Run Bandit (Python security)
+        run: bandit -r glacierkz-api/app/ -ll --skip B101
+      - name: Run Safety (dependency vulnerabilities)
+        run: safety check -r requirements.txt -r glacierkz-api/requirements-api.txt --full-report
+
+  validate:
+    name: Env Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: python scripts/validate-env.py
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build -f glacierkz-api/Dockerfile.full -t glacierkz-api-test .
+      - name: Build Web image
+        run: docker build -t glacierkz-web-test ./glacierkz-web

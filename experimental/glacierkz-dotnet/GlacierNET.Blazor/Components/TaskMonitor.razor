@@ -1,0 +1,260 @@
+@using GlacierNET.Analysis.Models
+@inject IHttpClientFactory HttpClientFactory
+
+<div class="card h-100">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">⚙️ Task Monitor</h5>
+        <div class="d-flex gap-2">
+            @if (tasks?.Any(t => t.Status == ProcessingStatus.Running) == true)
+            {
+                <span class="badge bg-success">@(tasks.Count(t => t.Status == ProcessingStatus.Running)) running</span>
+            }
+            @if (tasks?.Any(t => t.Status == ProcessingStatus.Pending) == true)
+            {
+                <span class="badge bg-warning text-dark">@(tasks.Count(t => t.Status == ProcessingStatus.Pending)) pending</span>
+            }
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (isLoading)
+        {
+            <div class="d-flex align-items-center justify-content-center py-4">
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+            </div>
+        }
+        else if (tasks != null && tasks.Any())
+        {
+            <div class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+                @foreach (var task in tasks)
+                {
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge @GetTaskStatusBadge(task.Status) me-2">@task.Status</span>
+                                <strong>@task.TaskType</strong>
+                            </div>
+                            <small class="text-muted">@task.CreatedAt.ToString("HH:mm")</small>
+                        </div>
+
+                        @if (task.Status == ProcessingStatus.Running || task.Status == ProcessingStatus.Paused)
+                        {
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar @GetTaskProgressColor(task.Status)"
+                                     role="progressbar"
+                                     style="width: @task.Progress%;"
+                                     aria-valuenow="@task.Progress"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">@task.Progress.ToString("F1")% complete</small>
+                                @if (task.StartedAt.HasValue)
+                                {
+                                    <small class="text-muted">ETA: @GetEstimatedTime(task)</small>
+                                }
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(task.ErrorMessage))
+                        {
+                            <div class="alert alert-danger py-1 mb-1 small">
+                                ⚠️ @task.ErrorMessage
+                            </div>
+                        }
+
+                        @if (task.Status == ProcessingStatus.Completed)
+                        {
+                            <div class="text-success small mb-1">✅ Completed in @GetDuration(task)</div>
+                        }
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                ID: @task.Id.ToString()[..8]
+                            </small>
+                            <div class="btn-group btn-group-sm">
+                                @if (task.Status == ProcessingStatus.Running)
+                                {
+                                    <button class="btn btn-outline-warning" @onclick="() => PauseTask(task.Id)">⏸ Pause</button>
+                                    <button class="btn btn-outline-danger" @onclick="() => CancelTask(task.Id)">⏹ Stop</button>
+                                }
+                                else if (task.Status == ProcessingStatus.Paused)
+                                {
+                                    <button class="btn btn-outline-success" @onclick="() => ResumeTask(task.Id)">▶ Resume</button>
+                                    <button class="btn btn-outline-danger" @onclick="() => CancelTask(task.Id)">⏹ Stop</button>
+                                }
+                                else if (task.Status == ProcessingStatus.Failed || task.Status == ProcessingStatus.Completed)
+                                {
+                                    <button class="btn btn-outline-secondary" @onclick="() => RerunTask(task.Id)">🔄 Rerun</button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-4">
+                <p class="text-muted mb-0">No active tasks</p>
+                <small class="text-muted">Start an analysis task to see progress here</small>
+            </div>
+        }
+    </div>
+    <div class="card-footer bg-transparent">
+        <button class="btn btn-sm btn-outline-primary w-100" @onclick="RefreshTasks">
+            🔄 Refresh Tasks
+        </button>
+    </div>
+</div>
+
+@code {
+    private List<ProcessingTask>? tasks;
+    private bool isLoading = true;
+
+    [Parameter] public int Limit { get; set; } = 20;
+    [Parameter] public EventCallback<Guid> OnTaskClick { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTasks();
+    }
+
+    private async Task LoadTasks()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("GlacierApi");
+            var response = await client.GetAsync($"/api/task?limit={Limit}");
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<PagedResult<ProcessingTask>>();
+                tasks = result?.Items.ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading tasks: {ex.Message}");
+            tasks = new();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RefreshTasks()
+    {
+        await LoadTasks();
+    }
+
+    private async Task PauseTask(Guid taskId)
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("GlacierApi");
+            await client.PostAsync($"/api/task/{taskId}/pause", null);
+            await LoadTasks();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error pausing task: {ex.Message}");
+        }
+    }
+
+    private async Task ResumeTask(Guid taskId)
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("GlacierApi");
+            await client.PostAsync($"/api/task/{taskId}/resume", null);
+            await LoadTasks();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error resuming task: {ex.Message}");
+        }
+    }
+
+    private async Task CancelTask(Guid taskId)
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to cancel this task?");
+        if (confirmed)
+        {
+            try
+            {
+                var client = HttpClientFactory.CreateClient("GlacierApi");
+                await client.PostAsync($"/api/task/{taskId}/cancel", null);
+                await LoadTasks();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error cancelling task: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task RerunTask(Guid taskId)
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("GlacierApi");
+            await client.PostAsync($"/api/task/{taskId}/rerun", null);
+            await LoadTasks();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error rerunning task: {ex.Message}");
+        }
+    }
+
+    private string GetTaskStatusBadge(ProcessingStatus status) => status switch
+    {
+        ProcessingStatus.Running => "bg-success",
+        ProcessingStatus.Pending => "bg-warning text-dark",
+        ProcessingStatus.Paused => "bg-info text-dark",
+        ProcessingStatus.Completed => "bg-primary",
+        ProcessingStatus.Failed => "bg-danger",
+        ProcessingStatus.Cancelled => "bg-secondary",
+        _ => "bg-secondary"
+    };
+
+    private string GetTaskProgressColor(ProcessingStatus status) => status switch
+    {
+        ProcessingStatus.Running => "bg-success",
+        ProcessingStatus.Paused => "bg-warning",
+        _ => "bg-secondary"
+    };
+
+    private string GetEstimatedTime(ProcessingTask task)
+    {
+        if (!task.StartedAt.HasValue || task.Progress <= 0) return "Calculating...";
+
+        var elapsed = DateTime.UtcNow - task.StartedAt.Value;
+        var remaining = TimeSpan.FromTicks((long)(elapsed.Ticks * ((100 - task.Progress) / task.Progress)));
+
+        if (remaining.TotalHours >= 1)
+            return $"{(int)remaining.TotalHours}h {remaining.Minutes}m";
+        if (remaining.TotalMinutes >= 1)
+            return $"{(int)remaining.TotalMinutes}m {remaining.Seconds}s";
+        return $"{(int)remaining.TotalSeconds}s";
+    }
+
+    private string GetDuration(ProcessingTask task)
+    {
+        if (!task.StartedAt.HasValue || !task.CompletedAt.HasValue) return "N/A";
+
+        var duration = task.CompletedAt.Value - task.StartedAt.Value;
+        if (duration.TotalHours >= 1)
+            return $"{(int)duration.TotalHours}h {duration.Minutes}m";
+        if (duration.TotalMinutes >= 1)
+            return $"{(int)duration.TotalMinutes}m {duration.Seconds}s";
+        return $"{(int)duration.TotalSeconds}s";
+    }
+
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+}

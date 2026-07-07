@@ -1,0 +1,134 @@
+@using GlacierNET.Analysis.Models
+@inject IHttpClientFactory HttpClientFactory
+
+<div class="card h-100">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">🗺️ Glacier Map</h5>
+        <div class="btn-group btn-group-sm">
+            <button class="btn @(showAll ? "btn-primary" : "btn-outline-primary")" @onclick="ShowAll">All</button>
+            <button class="btn @(showActive ? "btn-success" : "btn-outline-success")" @onclick="ShowActive">Active</button>
+            <button class="btn @(showAnomaly ? "btn-danger" : "btn-outline-danger")" @onclick="ShowAnomaly">Anomalies</button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div id="glacier-map" style="width: 100%; height: 500px; background: #e8f4f8; position: relative; overflow: hidden;">
+            @if (glaciers != null && glaciers.Any())
+            {
+                @foreach (var glacier in filteredGlaciers)
+                {
+                    var x = ((glacier.Longitude - mapBounds.MinLon) / (mapBounds.MaxLon - mapBounds.MinLon)) * 100;
+                    var y = ((mapBounds.MaxLat - glacier.Latitude) / (mapBounds.MaxLat - mapBounds.MinLat)) * 100;
+                    var color = GetGlacierColor(glacier);
+                    var size = glacier.AreaKm2 > 100 ? "large" : glacier.AreaKm2 > 20 ? "medium" : "small";
+                    var tooltip = $"{glacier.Name} ({glacier.Region}) - {glacier.AreaKm2:F1} km²";
+
+                    <div class="glacier-marker @size @color"
+                         style="left: @(x)%; top: @(y)%;"
+                         title="@tooltip"
+                         @onclick="() => OnGlacierClick.InvokeAsync(glacier.Id)">
+                        <span class="marker-label">@(glacier.Name.Length > 6 ? glacier.Name[..6] + ".." : glacier.Name)</span>
+                    </div>
+                }
+
+                <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                    @foreach (var glacier in filteredGlaciers.Where(g => g.Latitude != 0 && g.Longitude != 0))
+                    {
+                        var x = ((glacier.Longitude - mapBounds.MinLon) / (mapBounds.MaxLon - mapBounds.MinLon)) * 100;
+                        var y = ((mapBounds.MaxLat - glacier.Latitude) / (mapBounds.MaxLat - mapBounds.MinLat)) * 100;
+                        <circle cx="@(x)%" cy="@(y)%" r="3" fill="rgba(255,255,255,0.5)" />
+                    }
+                </svg>
+            }
+            else
+            {
+                <div class="d-flex align-items-center justify-content-center h-100">
+                    <p class="text-muted">Loading map data...</p>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="card-footer bg-transparent">
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+                Showing @(filteredGlaciers?.Count ?? 0) of @(glaciers?.Count ?? 0) glaciers
+            </small>
+            <div class="d-flex gap-2">
+                <span class="badge bg-danger">● Anomaly</span>
+                <span class="badge bg-success">● Active</span>
+                <span class="badge bg-secondary">● Inactive</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Glacier>? glaciers;
+    private List<Glacier>? filteredGlaciers;
+    private bool showAll = true;
+    private bool showActive = false;
+    private bool showAnomaly = false;
+
+    private (double MinLat, double MaxLat, double MinLon, double MaxLon) mapBounds = (
+        MinLat: 38.0, MaxLat: 46.0,
+        MinLon: 68.0, MaxLon: 82.0
+    );
+
+    [Parameter] public EventCallback<Guid> OnGlacierClick { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGlaciers();
+    }
+
+    private async Task LoadGlaciers()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("GlacierApi");
+            var response = await client.GetAsync("/api/glacier");
+            if (response.IsSuccessStatusCode)
+            {
+                glaciers = await response.Content.ReadFromJsonAsync<List<Glacier>>();
+                filteredGlaciers = glaciers;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading glaciers for map: {ex.Message}");
+            glaciers = new();
+            filteredGlaciers = new();
+        }
+    }
+
+    private void ShowAll()
+    {
+        showAll = true;
+        showActive = false;
+        showAnomaly = false;
+        filteredGlaciers = glaciers;
+    }
+
+    private void ShowActive()
+    {
+        showAll = false;
+        showActive = true;
+        showAnomaly = false;
+        filteredGlaciers = glaciers?.Where(g => g.IsActive).ToList();
+    }
+
+    private void ShowAnomaly()
+    {
+        showAll = false;
+        showActive = false;
+        showAnomaly = true;
+        filteredGlaciers = glaciers?.Where(g => g.MassBalance < -2.0).ToList();
+    }
+
+    private string GetGlacierColor(Glacier glacier)
+    {
+        if (!glacier.IsActive) return "inactive";
+        if (glacier.MassBalance < -2.0) return "anomaly";
+        if (glacier.MassBalance < 0) return "retreating";
+        return "stable";
+    }
+}

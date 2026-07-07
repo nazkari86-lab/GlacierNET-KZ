@@ -1,0 +1,61 @@
+# Version control
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info
+dist
+build
+.eggs
+*.egg
+
+# Virtual environments
+.venv
+venv
+ENV
+env
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Data and results (large files, not needed in image)
+data/
+uploads/
+results/
+*.h5
+*.pkl
+*.npy
+*.tif
+*.tiff
+
+# Documentation
+docs/
+paper/
+notebooks/
+*.md
+LICENSE
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Testing
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary files
+*.log
+*.tmp
+*.bak
+*.cache

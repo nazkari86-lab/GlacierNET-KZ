@@ -1,0 +1,19 @@
+[
+  {"size": "1042413037", "id": "1qLMdH99Zea0dMKsLAvRaaX7vHHlOGspu", "name": "landsat_2000.tif"},
+  {"size": "1064647912", "id": "16rmPLbsTQnv7MPLuADAE6nxtq9daAuaC", "name": "landsat_2003.tif"},
+  {"size": "993386856", "id": "1AWo3R33BwM2DBHJhvEnMP3URCjnZEbVf", "name": "landsat_2005.tif"},
+  {"size": "1071812571", "id": "1WCwtbmhIpm7HS48rfQCYJTyon_xZDT9R", "name": "landsat_2008.tif"},
+  {"size": "1055028834", "id": "1ZB94ag6jLtPo6Azec8a5TmAaSP__vIVm", "name": "landsat_2010.tif"},
+  {"size": "1096845649", "id": "1WM-43U3EzFjZ_PBZsVERKu91MG7RVQWp", "name": "landsat_2013.tif"},
+  {"size": "1398332001", "id": "1rSxY9aNe0VFB0hCxvnFvHLzPbQbUvMNC", "name": "sentinel2_2016.tif"},
+  {"size": "806404252", "id": "12PWYIwgagkUS373dCt1e9G4lOEOvWAQz", "name": "sentinel2_2017.tif"},
+  {"size": "789681568", "id": "1T0OklEThRx45b2pQTkXZ8NJKMEtpaf_c", "name": "sentinel2_2018.tif"},
+  {"size": "1405287280", "id": "1ZR83Gc9TtRWkwy23M6-h8YYaLsGlOIb5", "name": "sentinel2_2019.tif"},
+  {"size": "1402321823", "id": "1c1f12qhYdw_4nqdAR-r214iqP07MOqVp", "name": "sentinel2_2020.tif"},
+  {"size": "509903342", "id": "1n2jHOqXhcBFpJgo5bTLZYAA9hdZhZDro", "name": "sentinel2_2020_subset.tif"},
+  {"size": "1403741678", "id": "1byO15H2tK2fmyIqXi9cYG9iYr55X0ViJ", "name": "sentinel2_2021.tif"},
+  {"size": "1400111101", "id": "1dHs4leGJx2xmt9PcvwX8sso-gwIlaKnR", "name": "sentinel2_2022.tif"},
+  {"size": "607976305", "id": "1qjTKBJPSQp9sJqmK60f0O2gxkvJpRBvI", "name": "sentinel2_2022_subset.tif"},
+  {"size": "1403615415", "id": "1ezZu4rFNzzOp98e4MyNDw5KvQiGZmsub", "name": "sentinel2_2023.tif"},
+  {"size": "1409564779", "id": "1VxKPHm_7WZ0EXpEPYRsz6YWHjvpL__vi", "name": "sentinel2_2024.tif"}
+]

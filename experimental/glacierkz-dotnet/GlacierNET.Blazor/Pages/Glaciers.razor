@@ -1,0 +1,221 @@
+@page "/glaciers"
+@using GlacierNET.Analysis.Models
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+
+<PageTitle>Glaciers - GlacierNET-KZ</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h2>🏔️ Glaciers</h2>
+            <div>
+                <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/glaciers/new")'>
+                    <span class="me-1">➕</span> Add Glacier
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text">🔍</span>
+                <input type="text" class="form-control" placeholder="Search glaciers..." @bind="searchTerm" @bind:event="oninput" @onkeyup="SearchGlaciers" />
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" @bind="filterRegion" @bind:after="LoadGlaciers">
+                <option value="">All Regions</option>
+                <option value="Tian Shan">Tian Shan</option>
+                <option value="Altai">Altai</option>
+                <option value="Pamir">Pamir</option>
+                <option value="Karakoram">Karakoram</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" @bind="filterStatus" @bind:after="LoadGlaciers">
+                <option value="">All Statuses</option>
+                @foreach (var status in Enum.GetValues<GlacierStatus>())
+                {
+                    <option value="@status">@status</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <span class="text-muted">@(glaciers?.Count ?? 0) glaciers</span>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (glaciers != null && glaciers.Any())
+    {
+        <div class="row">
+            @foreach (var glacier in glaciers)
+            {
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100" @onclick="() => Navigation.NavigateTo($\"/glacier/{glacier.Id}\")" style="cursor:pointer">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">@glacier.Name</h5>
+                                <span class="badge @GetStatusBadge(glacier.Status)">@glacier.Status</span>
+                            </div>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    📍 @glacier.Region<br />
+                                    📐 @glacier.AreaKm2.ToString("F2") km²<br />
+                                    🌡️ @glacier.AverageTemperature.ToString("F1")°C<br />
+                                    📅 @glacier.LastUpdated?.ToString("MMM dd, yyyy") ?? "N/A"
+                                </small>
+                            </p>
+                            @if (!string.IsNullOrEmpty(glacier.Description))
+                            {
+                                <p class="card-text small text-muted">
+                                    @(glacier.Description.Length > 100 ? glacier.Description[..100] + "..." : glacier.Description)
+                                </p>
+                            }
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">
+                                Coordinates: @glacier.Latitude?.ToString("F4"), @glacier.Longitude?.ToString("F4")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <nav>
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                        <button class="page-link" @onclick="PreviousPage">Previous</button>
+                    </li>
+                    @for (int i = 1; i <= Math.Min(totalPages, 5); i++)
+                    {
+                        var pageNum = i;
+                        <li class="page-item @(currentPage == pageNum ? "active" : "")">
+                            <button class="page-link" @onclick="() => GoToPage(pageNum)">@pageNum</button>
+                        </li>
+                    }
+                    <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                        <button class="page-link" @onclick="NextPage">Next</button>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <h5>No glaciers found</h5>
+            <p>Try adjusting your search filters or add a new glacier.</p>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Glacier>? glaciers;
+    private bool isLoading = true;
+    private string searchTerm = string.Empty;
+    private string filterRegion = string.Empty;
+    private string filterStatus = string.Empty;
+    private int currentPage = 1;
+    private int pageSize = 12;
+    private int totalPages = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGlaciers();
+    }
+
+    private async Task LoadGlaciers()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("GlacierApi");
+            var url = $"/api/glacier?page={currentPage}&pageSize={pageSize}";
+
+            if (!string.IsNullOrEmpty(filterRegion))
+                url += $"&region={Uri.EscapeDataString(filterRegion)}";
+
+            if (!string.IsNullOrEmpty(filterStatus) && Enum.TryParse<GlacierStatus>(filterStatus, out var status))
+                url += $"&status={status}";
+
+            if (!string.IsNullOrEmpty(searchTerm))
+                url += $"&name={Uri.EscapeDataString(searchTerm)}";
+
+            var response = await client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<PagedResult<Glacier>>();
+                if (result != null)
+                {
+                    glaciers = result.Items.ToList();
+                    totalPages = (int)Math.Ceiling(result.TotalCount / (double)pageSize);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading glaciers: {ex.Message}");
+            glaciers = new();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SearchGlaciers()
+    {
+        currentPage = 1;
+        await LoadGlaciers();
+    }
+
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadGlaciers();
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadGlaciers();
+        }
+    }
+
+    private async Task GoToPage(int page)
+    {
+        currentPage = page;
+        await LoadGlaciers();
+    }
+
+    private string GetStatusBadge(GlacierStatus status) => status switch
+    {
+        GlacierStatus.Stable => "bg-success",
+        GlacierStatus.Retreating => "bg-danger",
+        GlacierStatus.Advancing => "bg-primary",
+        GlacierStatus.Surging => "bg-warning",
+        GlacierStatus.Collapsed => "bg-dark",
+        _ => "bg-secondary"
+    };
+}

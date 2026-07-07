@@ -1,0 +1,36 @@
+# Native dev gateway — proxies to host.docker.internal
+# Used by: ./scripts/start.sh --native
+
+:8080 {
+	encode gzip
+
+	@api path /api/* /docs* /redoc* /openapi.json /health* /metrics /info /status /mcp/*
+	handle @api {
+		reverse_proxy host.docker.internal:8000
+	}
+
+	@static path /static/*
+	handle @static {
+		reverse_proxy host.docker.internal:8000
+	}
+
+	@ws path /ws /ws/*
+	handle @ws {
+		reverse_proxy host.docker.internal:8000
+	}
+
+	@demo path /demo /demo/*
+	handle @demo {
+		reverse_proxy host.docker.internal:7860
+	}
+
+	@legacy path /legacy /legacy/*
+	handle @legacy {
+		uri strip_prefix /legacy
+		reverse_proxy host.docker.internal:8000
+	}
+
+	handle {
+		reverse_proxy host.docker.internal:3000
+	}
+}

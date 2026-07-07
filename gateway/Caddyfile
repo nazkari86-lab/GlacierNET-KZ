@@ -1,0 +1,45 @@
+# GlacierNET-KZ — unified local gateway
+# Single entry: http://localhost:8080
+#
+# Routes:
+#   /          → Next.js dashboard
+#   /api/*     → FastAPI REST
+#   /docs      → OpenAPI Swagger
+#   /demo/*    → Gradio upload demo
+#   /mcp/*     → MCP bridge (API)
+#   /ws*       → WebSocket events
+#   /health*   → Health checks
+
+:8080 {
+	encode gzip zstd
+
+	@api path /api/* /docs* /redoc* /openapi.json /health* /metrics /info /status /mcp/*
+	handle @api {
+		reverse_proxy api:8000
+	}
+
+	@static path /static/*
+	handle @static {
+		reverse_proxy api:8000
+	}
+
+	@ws path /ws /ws/*
+	handle @ws {
+		reverse_proxy api:8000
+	}
+
+	@demo path /demo /demo/*
+	handle @demo {
+		reverse_proxy demo:7860
+	}
+
+	@legacy path /legacy /legacy/*
+	handle @legacy {
+		uri strip_prefix /legacy
+		reverse_proxy api:8000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}

@@ -1,0 +1,138 @@
+@using GlacierNET.Analysis.Models
+@inject IHttpClientFactory HttpClientFactory
+
+<div class="card h-100">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <span class="@(hasNewAnomaly ? "text-danger" : "text-warning")">⚠️</span> Anomaly Alerts
+        </h5>
+        @if (anomalies?.Any() == true)
+        {
+            <span class="badge bg-danger">@(anomalies.Count) anomalies</span>
+        }
+    </div>
+    <div class="card-body p-0">
+        @if (isLoading)
+        {
+            <div class="d-flex align-items-center justify-content-center py-4">
+                <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
+            </div>
+        }
+        else if (anomalies != null && anomalies.Any())
+        {
+            <div class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+                @foreach (var anomaly in anomalies)
+                {
+                    var severity = GetSeverity(anomaly);
+                    <div class="list-group-item list-group-item-action @(anomaly.IsAnomaly ? "list-group-item-warning" : "")"
+                         @onclick="() => OnAnomalyClick.InvokeAsync(anomaly.Id)">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="badge @GetSeverityBadge(severity) me-2">@severity</span>
+                                    <strong class="mb-0">@anomaly.AnalysisType</strong>
+                                </div>
+                                <p class="mb-1 small text-muted">
+                                    @anomaly.Result?.ToString("F4")
+                                    @if (anomaly.AnomalyScore.HasValue)
+                                    {
+                                        <span class="ms-2">Score: @anomaly.AnomalyScore.Value.ToString("F3")</span>
+                                    }
+                                </p>
+                                <small class="text-muted">
+                                    📅 @anomaly.AnalysisDate.ToString("MMM dd, yyyy HH:mm")
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted d-block">Glacier ID</small>
+                                <code class="small">@anomaly.GlacierId.ToString()[..8]</code>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-4">
+                <div class="mb-2" style="font-size: 2rem;">✅</div>
+                <p class="text-muted mb-0">No anomalies detected</p>
+                <small class="text-muted">All systems operating within normal parameters</small>
+            </div>
+        }
+    </div>
+    @if (anomalies?.Any() == true)
+    {
+        <div class="card-footer bg-transparent">
+            <button class="btn btn-sm btn-outline-danger w-100" @onclick="RefreshAnomalies">
+                🔄 Refresh Anomalies
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private List<AnalysisResult>? anomalies;
+    private bool isLoading = true;
+    private bool hasNewAnomaly = false;
+
+    [Parameter] public int Limit { get; set; } = 50;
+    [Parameter] public EventCallback<Guid> OnAnomalyClick { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAnomalies();
+    }
+
+    private async Task LoadAnomalies()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("GlacierApi");
+            var response = await client.GetAsync($"/api/analysis/anomalies?limit={Limit}");
+            if (response.IsSuccessStatusCode)
+            {
+                var previousCount = anomalies?.Count ?? 0;
+                anomalies = await response.Content.ReadFromJsonAsync<List<AnalysisResult>>();
+                hasNewAnomaly = (anomalies?.Count ?? 0) > previousCount;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading anomalies: {ex.Message}");
+            anomalies = new();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RefreshAnomalies()
+    {
+        hasNewAnomaly = false;
+        await LoadAnomalies();
+    }
+
+    private string GetSeverity(AnalysisResult anomaly)
+    {
+        if (!anomaly.IsAnomaly) return "Normal";
+        if (anomaly.AnomalyScore.HasValue && anomaly.AnomalyScore.Value > 3.0) return "Critical";
+        if (anomaly.AnomalyScore.HasValue && anomaly.AnomalyScore.Value > 2.5) return "High";
+        if (anomaly.AnomalyScore.HasValue && anomaly.AnomalyScore.Value > 2.0) return "Medium";
+        return "Low";
+    }
+
+    private string GetSeverityBadge(string severity) => severity switch
+    {
+        "Critical" => "bg-danger",
+        "High" => "bg-warning text-dark",
+        "Medium" => "bg-info text-dark",
+        "Low" => "bg-secondary",
+        _ => "bg-success"
+    };
+}

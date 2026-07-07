@@ -1,0 +1,323 @@
+@page "/analyses"
+@using GlacierNET.Analysis.Models
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+
+<PageTitle>Analyses - GlacierNET-KZ</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h2>📊 Analysis Results</h2>
+            <div>
+                <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/analyses/new")'>
+                    <span class="me-1">➕</span> New Analysis
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <select class="form-select" @bind="filterGlacierId">
+                <option value="">All Glaciers</option>
+                @if (glaciers != null)
+                {
+                    @foreach (var g in glaciers)
+                    {
+                        <option value="@g.Id">@g.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" @bind="filterType" @bind:after="LoadAnalyses">
+                <option value="">All Types</option>
+                @foreach (var type in Enum.GetValues<AnalysisType>())
+                {
+                    <option value="@type">@type</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" @bind="filterAnomaliesOnly" @bind:after="LoadAnalyses" id="anomalyFilter" />
+                <label class="form-check-label" for="anomalyFilter">Show anomalies only</label>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <span class="text-muted">@(analyses?.Count ?? 0) results</span>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (analyses != null && analyses.Any())
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Glacier</th>
+                                    <th>Type</th>
+                                    <th>Value</th>
+                                    <th>Unit</th>
+                                    <th>Status</th>
+                                    <th>Completed</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var analysis in analyses)
+                                {
+                                    <tr class="@(analysis.IsAnomaly ? "table-danger" : "")">
+                                        <td>
+                                            <a href="/glacier/@analysis.GlacierId" class="text-decoration-none">
+                                                @(GetGlacierName(analysis.GlacierId))
+                                            </a>
+                                        </td>
+                                        <td><span class="badge bg-info">@analysis.AnalysisType</span></td>
+                                        <td class="fw-bold">@analysis.Value.ToString("F2")</td>
+                                        <td>@analysis.Unit</td>
+                                        <td>
+                                            @if (analysis.IsAnomaly)
+                                            {
+                                                <span class="badge bg-danger">⚠️ Anomaly</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">Normal</span>
+                                            }
+                                        </td>
+                                        <td>@analysis.CreatedAt.ToString("MMM dd, yyyy HH:mm")</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-info" @onclick="() => ViewDetails(analysis)">ℹ️</button>
+                                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAnalysis(analysis.Id)">🗑️</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <nav class="mt-3">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                        <button class="page-link" @onclick="PreviousPage">Previous</button>
+                    </li>
+                    @for (int i = 1; i <= Math.Min(totalPages, 5); i++)
+                    {
+                        var pageNum = i;
+                        <li class="page-item @(currentPage == pageNum ? "active" : "")">
+                            <button class="page-link" @onclick="() => GoToPage(pageNum)">@pageNum</button>
+                        </li>
+                    }
+                    <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                        <button class="page-link" @onclick="NextPage">Next</button>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <h5>No analyses found</h5>
+            <p>Try adjusting your filters or create a new analysis.</p>
+        </div>
+    }
+
+    @if (showDetailModal && selectedAnalysis != null)
+    {
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Analysis Details</h5>
+                        <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <dl class="row">
+                            <dt class="col-sm-4">ID</dt>
+                            <dd class="col-sm-8"><code>@selectedAnalysis.Id</code></dd>
+                            <dt class="col-sm-4">Glacier</dt>
+                            <dd class="col-sm-8">@(GetGlacierName(selectedAnalysis.GlacierId))</dd>
+                            <dt class="col-sm-4">Type</dt>
+                            <dd class="col-sm-8">@selectedAnalysis.AnalysisType</dd>
+                            <dt class="col-sm-4">Value</dt>
+                            <dd class="col-sm-8">@selectedAnalysis.Value.ToString("F4") @selectedAnalysis.Unit</dd>
+                            <dt class="col-sm-4">Is Anomaly</dt>
+                            <dd class="col-sm-8">@(selectedAnalysis.IsAnomaly ? "Yes" : "No")</dd>
+                            @if (selectedAnalysis.IsAnomaly && !string.IsNullOrEmpty(selectedAnalysis.AnomalySeverity))
+                            {
+                                <dt class="col-sm-4">Anomaly Severity</dt>
+                                <dd class="col-sm-8"><span class="badge bg-danger">@selectedAnalysis.AnomalySeverity</span></dd>
+                            }
+                            @if (!string.IsNullOrEmpty(selectedAnalysis.Notes))
+                            {
+                                <dt class="col-sm-4">Notes</dt>
+                                <dd class="col-sm-8">@selectedAnalysis.Notes</dd>
+                            }
+                            <dt class="col-sm-4">Created</dt>
+                            <dd class="col-sm-8">@selectedAnalysis.CreatedAt.ToString("MMMM dd, yyyy HH:mm:ss")</dd>
+                        </dl>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<AnalysisResult>? analyses;
+    private List<Glacier>? glaciers;
+    private bool isLoading = true;
+    private string filterGlacierId = string.Empty;
+    private string filterType = string.Empty;
+    private bool filterAnomaliesOnly = false;
+    private int currentPage = 1;
+    private int pageSize = 20;
+    private int totalPages = 1;
+
+    private bool showDetailModal = false;
+    private AnalysisResult? selectedAnalysis;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGlacierOptions();
+        await LoadAnalyses();
+    }
+
+    private async Task LoadGlacierOptions()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("GlacierApi");
+            var response = await client.GetAsync("/api/glacier?pageSize=200");
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<PagedResult<Glacier>>();
+                glaciers = result?.Items.ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading glaciers: {ex.Message}");
+        }
+    }
+
+    private async Task LoadAnalyses()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("GlacierApi");
+            var url = $"/api/analysis?page={currentPage}&pageSize={pageSize}";
+
+            if (!string.IsNullOrEmpty(filterGlacierId))
+                url = $"/api/analysis/glacier/{filterGlacierId}?limit={pageSize}";
+            else if (!string.IsNullOrEmpty(filterType) && Enum.TryParse<AnalysisType>(filterType, out var type))
+                url = $"/api/analysis?page={currentPage}&pageSize={pageSize}&analysisType={type}";
+            else if (filterAnomaliesOnly)
+                url = $"/api/analysis/anomalies?limit={pageSize}";
+
+            var response = await client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<PagedResult<AnalysisResult>>();
+                analyses = result?.Items.ToList();
+                totalPages = (int)Math.Ceiling((result?.TotalCount ?? 0) / (double)pageSize);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading analyses: {ex.Message}");
+            analyses = new();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private string GetGlacierName(Guid glacierId)
+    {
+        return glaciers?.FirstOrDefault(g => g.Id == glacierId)?.Name ?? glacierId.ToString()[..8];
+    }
+
+    private void ViewDetails(AnalysisResult analysis)
+    {
+        selectedAnalysis = analysis;
+        showDetailModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showDetailModal = false;
+        selectedAnalysis = null;
+    }
+
+    private async Task DeleteAnalysis(Guid id)
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this analysis?");
+        if (confirmed)
+        {
+            try
+            {
+                var client = HttpClientFactory.CreateClient("GlacierApi");
+                await client.DeleteAsync($"/api/analysis/{id}");
+                await LoadAnalyses();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting analysis: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadAnalyses();
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadAnalyses();
+        }
+    }
+
+    private async Task GoToPage(int page)
+    {
+        currentPage = page;
+        await LoadAnalyses();
+    }
+
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+}

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "glacierkz-native",
+  "version-semver": "1.0.0",
+  "description": "High-performance raster processing library for glacier monitoring satellite imagery",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "gdal",
+      "version>=": "3.7.0"
+    },
+    {
+      "name": "boost",
+      "version>=": "1.82.0",
+      "features": ["system", "filesystem"]
+    },
+    {
+      "name": "googletest",
+      "version>=": "1.14.0"
+    },
+    {
+      "name": "pybind11",
+      "version>=": "2.11.0"
+    },
+    {
+      "name": "fmt",
+      "version>=": "10.1.0"
+    },
+    {
+      "name": "spdlog",
+      "version>=": "1.12.0"
+    }
+  ]
+}

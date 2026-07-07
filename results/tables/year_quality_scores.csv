@@ -1,0 +1,17 @@
+year,sensor,source_file,source_flag,methods_available,has_rf,has_unet,has_ndsi,quality_score,confidence,include_in_strict_trend,caveat
+2000,Landsat,data/raw/landsat/landsat_2000.tif,landsat_historical,"NDSI,RF,U-Net",True,True,True,90,high,True,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.
+2003,Landsat,data/raw/landsat/landsat_2003.tif,landsat_historical,"NDSI,RF,U-Net",True,True,True,90,high,True,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.
+2005,Landsat,data/raw/landsat/landsat_2005.tif,landsat_historical,"NDSI,RF,U-Net",True,True,True,90,high,True,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.
+2008,Landsat,data/raw/landsat/landsat_2008.tif,landsat_historical,"NDSI,RF,U-Net",True,True,True,90,high,True,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.
+2010,Landsat,data/raw/landsat/landsat_2010.tif,landsat_historical,"NDSI,RF,U-Net",True,True,True,90,high,True,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.
+2013,Landsat,data/raw/landsat/landsat_2013.tif,landsat_historical,"NDSI,RF,U-Net",True,True,True,90,high,True,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.
+2015,Sentinel-2,data/raw/sentinel2/sentinel2_2015.tif,sentinel2_toa_fallback,"NDSI,RF",True,False,True,57,low,False,Late-2015 annual TOA fallback; exclude from strict summer Sentinel-2 trend.
+2016,Sentinel-2,data/raw/sentinel2/sentinel2_2016.tif,sentinel2_sr_or_harmonized,"NDSI,RF,U-Net",True,True,True,100,high,True,
+2017,Sentinel-2,data/raw/sentinel2/sentinel2_2017.tif,sentinel2_sr_or_harmonized,"NDSI,RF,U-Net",True,True,True,100,high,True,
+2018,Sentinel-2,data/raw/sentinel2/sentinel2_2018.tif,sentinel2_sr_or_harmonized,"NDSI,RF,U-Net",True,True,True,100,high,True,
+2019,Sentinel-2,data/raw/sentinel2/sentinel2_2019.tif,sentinel2_sr_or_harmonized,"NDSI,RF",True,False,True,92,high,True,
+2020,Sentinel-2,data/raw/sentinel2/sentinel2_2020.tif,sentinel2_sr_or_harmonized,"NDSI,RF",True,False,True,92,high,True,
+2021,Sentinel-2,data/raw/sentinel2/sentinel2_2021.tif,sentinel2_sr_or_harmonized,"NDSI,RF",True,False,True,92,high,True,
+2022,Sentinel-2,data/raw/sentinel2/sentinel2_2022.tif,sentinel2_sr_or_harmonized,"NDSI,RF",True,False,True,92,high,True,
+2023,Sentinel-2,data/raw/sentinel2/sentinel2_2023.tif,sentinel2_sr_or_harmonized,"NDSI,RF",True,False,True,92,high,True,
+2024,Sentinel-2,data/raw/sentinel2/sentinel2_2024.tif,sentinel2_sr_or_harmonized,"NDSI,RF",True,False,True,92,high,True,

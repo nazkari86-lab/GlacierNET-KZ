@@ -1,0 +1,338 @@
+[
+  {
+    "path": "data/raw/sentinel2/sentinel2_2015.tif",
+    "sensor": "sentinel2",
+    "year": 2015,
+    "bands": 7,
+    "dtype": "uint16",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 252.749,
+    "sha256_first64mb": "3499781c5344d5818b188329f8875c50baea7a91f71cbd04f7b1b1654cc93863",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": "Fallback Sentinel-2 TOA annual late-2015 composite; no summer L2A/SR scenes for AOI."
+  },
+  {
+    "path": "data/raw/sentinel2/sentinel2_2016.tif",
+    "sensor": "sentinel2",
+    "year": 2016,
+    "bands": 11,
+    "dtype": "float32",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 1333.553,
+    "sha256_first64mb": "818f9d777f478bc840cfce87711f33b403da01138bd06a61f9a7e3aba05554f5",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": ""
+  },
+  {
+    "path": "data/raw/sentinel2/sentinel2_2017.tif",
+    "sensor": "sentinel2",
+    "year": 2017,
+    "bands": 11,
+    "dtype": "float32",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 769.047,
+    "sha256_first64mb": "3f503b7ae6300fb2bda4e55d52c7e47946b7b3e5ba3562e76a66481e46fe0796",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": ""
+  },
+  {
+    "path": "data/raw/sentinel2/sentinel2_2018.tif",
+    "sensor": "sentinel2",
+    "year": 2018,
+    "bands": 11,
+    "dtype": "float32",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 753.099,
+    "sha256_first64mb": "f8189c1cb79630aadfb3a7e5caf29b79ef5c6fe1b8f2589cd7b007bc7f3c63c9",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": ""
+  },
+  {
+    "path": "data/raw/sentinel2/sentinel2_2019.tif",
+    "sensor": "sentinel2",
+    "year": 2019,
+    "bands": 11,
+    "dtype": "float32",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 1340.186,
+    "sha256_first64mb": "63397a3dbb1f1984d7f1612ce0ed66ae02b9b9ea58ee06e6387c2fdeb296dd67",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": ""
+  },
+  {
+    "path": "data/raw/sentinel2/sentinel2_2020.tif",
+    "sensor": "sentinel2",
+    "year": 2020,
+    "bands": 7,
+    "dtype": "uint16",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 486.282,
+    "sha256_first64mb": "844f231316aa562aa19487d400359914e31e2e3a829b727ac1876980ef64e506",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": "Compact reflectance-only export; indices are derived locally by src.data_loader.load_image()."
+  },
+  {
+    "path": "data/raw/sentinel2/sentinel2_2021.tif",
+    "sensor": "sentinel2",
+    "year": 2021,
+    "bands": 11,
+    "dtype": "float32",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 1338.712,
+    "sha256_first64mb": "9ad2155f864a76d262781e1d1363f32a8e73a998b7a1b7ddb101020862d8d730",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": ""
+  },
+  {
+    "path": "data/raw/sentinel2/sentinel2_2022.tif",
+    "sensor": "sentinel2",
+    "year": 2022,
+    "bands": 7,
+    "dtype": "float32",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 579.811,
+    "sha256_first64mb": "241b5d3d39e4b1e2480658d8b1161459f26e2cc51230931095b96a24b359d99e",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": "Compact reflectance-only export; indices are derived locally by src.data_loader.load_image()."
+  },
+  {
+    "path": "data/raw/sentinel2/sentinel2_2023.tif",
+    "sensor": "sentinel2",
+    "year": 2023,
+    "bands": 11,
+    "dtype": "float32",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 1338.592,
+    "sha256_first64mb": "e04de6c984e6e2bf41fb51c0a1b1e627ff8a8e93cb9a0c474956cdec9c56eef2",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": ""
+  },
+  {
+    "path": "data/raw/sentinel2/sentinel2_2024.tif",
+    "sensor": "sentinel2",
+    "year": 2024,
+    "bands": 11,
+    "dtype": "float32",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 1344.266,
+    "sha256_first64mb": "1e3931abbd5076da16becaaca1d7273ce8a29b83ba5759d6fcacdf58fcad5545",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": ""
+  },
+  {
+    "path": "data/raw/landsat/landsat_2000.tif",
+    "sensor": "landsat",
+    "year": 2000,
+    "bands": 9,
+    "dtype": "float32",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 994.123,
+    "sha256_first64mb": "f2dc007ccacce51fd4b96337d9ef222003f0ace07f2aa5e8284f4c26e49c606a",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": ""
+  },
+  {
+    "path": "data/raw/landsat/landsat_2003.tif",
+    "sensor": "landsat",
+    "year": 2003,
+    "bands": 9,
+    "dtype": "float32",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 1015.327,
+    "sha256_first64mb": "a17293ffb4d79972208adb3ec520df778edee6f76dae565f7359e06e6cf97235",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": ""
+  },
+  {
+    "path": "data/raw/landsat/landsat_2005.tif",
+    "sensor": "landsat",
+    "year": 2005,
+    "bands": 9,
+    "dtype": "float32",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 947.368,
+    "sha256_first64mb": "2357f8e141dd03b681f9c2629907e33ec23a2a43a82feab49726df9ff8d7aade",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": ""
+  },
+  {
+    "path": "data/raw/landsat/landsat_2008.tif",
+    "sensor": "landsat",
+    "year": 2008,
+    "bands": 9,
+    "dtype": "float32",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 1022.16,
+    "sha256_first64mb": "4093d123a60923bca588e321380b70ca9f407c47836520c42ce9cf8a33284846",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": ""
+  },
+  {
+    "path": "data/raw/landsat/landsat_2010.tif",
+    "sensor": "landsat",
+    "year": 2010,
+    "bands": 9,
+    "dtype": "float32",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 1006.154,
+    "sha256_first64mb": "89bddcc1c2dcbadd8289ca4231bfbda929d9c9064ac5685f3e3fb88b0e415489",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": ""
+  },
+  {
+    "path": "data/raw/landsat/landsat_2013.tif",
+    "sensor": "landsat",
+    "year": 2013,
+    "bands": 9,
+    "dtype": "float32",
+    "crs": "EPSG:32642",
+    "height": 5228,
+    "width": 8583,
+    "pixel_size_x": 10.0,
+    "pixel_size_y": 10.0,
+    "size_mb": 1046.034,
+    "sha256_first64mb": "4b77db5de47b9a9781ad41d70c31e971ebfb43b7add8112455fa0d150aef06be",
+    "bounds": [
+      1109430.0,
+      4765960.0,
+      1195260.0,
+      4818240.0
+    ],
+    "notes": ""
+  }
+]

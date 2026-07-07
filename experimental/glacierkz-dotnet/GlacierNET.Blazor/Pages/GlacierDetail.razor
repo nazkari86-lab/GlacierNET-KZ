@@ -1,0 +1,293 @@
+@page "/glacier/{Id:guid}"
+@using GlacierNET.Analysis.Models
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+
+<PageTitle>Glacier Details - GlacierNET-KZ</PageTitle>
+
+<div class="container-fluid">
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (glacier == null)
+    {
+        <div class="alert alert-danger">
+            <h5>Glacier not found</h5>
+            <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/glaciers")'>Back to List</button>
+        </div>
+    }
+    else
+    {
+        <div class="row mb-3">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/glaciers">Glaciers</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">@glacier.Name</li>
+                    </ol>
+                </nav>
+                <div>
+                    <button class="btn btn-outline-secondary me-2" @onclick="RefreshData">🔄 Refresh</button>
+                    <button class="btn btn-outline-danger" @onclick="ConfirmDelete">🗑️ Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h2 class="mb-1">@glacier.Name</h2>
+                                <p class="text-muted mb-0">📍 @glacier.Region</p>
+                            </div>
+                            <span class="badge @GetStatusBadge(glacier.Status) fs-6">@glacier.Status</span>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 text-center">
+                                    <div class="text-muted small">Area</div>
+                                    <div class="fw-bold fs-4">@glacier.AreaKm2.ToString("F2")</div>
+                                    <div class="text-muted small">km²</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 text-center">
+                                    <div class="text-muted small">Latitude</div>
+                                    <div class="fw-bold fs-4">@glacier.Latitude?.ToString("F4")</div>
+                                    <div class="text-muted small">degrees</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 text-center">
+                                    <div class="text-muted small">Longitude</div>
+                                    <div class="fw-bold fs-4">@glacier.Longitude?.ToString("F4")</div>
+                                    <div class="text-muted small">degrees</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 text-center">
+                                    <div class="text-muted small">Avg Temp</div>
+                                    <div class="fw-bold fs-4">@glacier.AverageTemperature.ToString("F1")</div>
+                                    <div class="text-muted small">°C</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(glacier.Description))
+                        {
+                            <div class="mb-4">
+                                <h5>Description</h5>
+                                <p>@glacier.Description</p>
+                            </div>
+                        }
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="border rounded p-3">
+                                    <div class="text-muted small">Elevation Range</div>
+                                    <div>@glacier.MinElevation?.ToString("F0")m - @glacier.MaxElevation?.ToString("F0")m</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="border rounded p-3">
+                                    <div class="text-muted small">Last Updated</div>
+                                    <div>@glacier.LastUpdated?.ToString("MMMM dd, yyyy HH:mm")</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">📊 Quick Stats</div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Analyses</span>
+                            <span class="badge bg-info">@(analysisResults?.Count ?? 0)</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Anomalies Detected</span>
+                            <span class="badge bg-danger">@(analysisResults?.Count(a => a.IsAnomaly) ?? 0)</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Avg Value</span>
+                            <span class="badge bg-secondary">@(analysisResults?.Any() == true ? analysisResults.Average(a => a.Value).ToString("F2") : "N/A")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">📈 Trend Summary</div>
+                    <div class="card-body">
+                        @if (trendData != null && trendData.Any())
+                        {
+                            var latestTrend = trendData.OrderByDescending(t => t.MeasurementDate).First();
+                            <div class="mb-2">
+                                <div class="text-muted small">Latest Measurement</div>
+                                <div class="fw-bold">@latestTrend.Value.ToString("F2") @latestTrend.Unit</div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="text-muted small">Measurement Date</div>
+                                <div>@latestTrend.MeasurementDate.ToString("MMMM dd, yyyy")</div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="text-muted small">Data Points</div>
+                                <div>@trendData.Count</div>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted">No trend data available</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>🔬 Analysis Results</span>
+                        <button class="btn btn-sm btn-outline-primary" @onclick='() => Navigation.NavigateTo($"/analyses?glacierId={Id}")'>View All</button>
+                    </div>
+                    <div class="card-body">
+                        @if (analysisResults != null && analysisResults.Any())
+                        {
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Value</th>
+                                        <th>Unit</th>
+                                        <th>Status</th>
+                                        <th>Completed</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var result in analysisResults.OrderByDescending(r => r.CreatedAt).Take(10))
+                                    {
+                                        <tr>
+                                            <td>@result.AnalysisType</td>
+                                            <td>@result.Value.ToString("F2")</td>
+                                            <td>@result.Unit</td>
+                                            <td>
+                                                @if (result.IsAnomaly)
+                                                {
+                                                    <span class="badge bg-danger">⚠️ Anomaly</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">Normal</span>
+                                                }
+                                            </td>
+                                            <td>@result.CreatedAt.ToString("MMM dd, HH:mm")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p class="text-muted">No analysis results yet. Create an analysis to get started.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private bool isLoading = true;
+    private Glacier? glacier;
+    private List<AnalysisResult>? analysisResults;
+    private List<TrendData>? trendData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGlacierData();
+    }
+
+    private async Task LoadGlacierData()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("GlacierApi");
+
+            var glacierResponse = await client.GetAsync($"/api/glacier/{Id}");
+            if (glacierResponse.IsSuccessStatusCode)
+            {
+                glacier = await glacierResponse.Content.ReadFromJsonAsync<Glacier>();
+            }
+
+            if (glacier != null)
+            {
+                var analysisResponse = await client.GetAsync($"/api/analysis/glacier/{Id}?limit=10");
+                if (analysisResponse.IsSuccessStatusCode)
+                {
+                    analysisResults = await analysisResponse.Content.ReadFromJsonAsync<List<AnalysisResult>>();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading glacier: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RefreshData()
+    {
+        await LoadGlacierData();
+    }
+
+    private async Task ConfirmDelete()
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete '{glacier?.Name}'?");
+        if (confirmed)
+        {
+            try
+            {
+                var client = HttpClientFactory.CreateClient("GlacierApi");
+                await client.DeleteAsync($"/api/glacier/{Id}");
+                Navigation.NavigateTo("/glaciers");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting glacier: {ex.Message}");
+            }
+        }
+    }
+
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+
+    private string GetStatusBadge(GlacierStatus status) => status switch
+    {
+        GlacierStatus.Stable => "bg-success",
+        GlacierStatus.Retreating => "bg-danger",
+        GlacierStatus.Advancing => "bg-primary",
+        GlacierStatus.Surging => "bg-warning",
+        GlacierStatus.Collapsed => "bg-dark",
+        _ => "bg-secondary"
+    };
+}
