@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Build grant-ready time series and year quality tables.
+"""Build decision-ready time series and year quality tables.
 
-The raw research tables keep every available prediction.  Grant/pilot
-materials need a stricter view: explicit data-source flags, caveats, and a
-clean trend subset that does not silently mix fallback imagery with standard
+The raw research tables keep every available prediction. Public reports and
+pilot materials need a stricter view: explicit data-source flags, caveats, and
+a clean trend subset that does not silently mix fallback imagery with standard
 summer composites.
 """
 
@@ -26,8 +26,8 @@ from src import config, metrics  # noqa: E402
 
 AREAS_CSV = config.TABLES_DIR / "glacier_areas_all_years.csv"
 QUALITY_CSV = config.TABLES_DIR / "year_quality_scores.csv"
-GRANT_TS_CSV = config.TABLES_DIR / "grant_ready_area_timeseries.csv"
-GRANT_SUMMARY_JSON = config.RESULTS_DIR / "grant_readiness_summary.json"
+DECISION_TS_CSV = config.TABLES_DIR / "decision_ready_area_timeseries.csv"
+DECISION_SUMMARY_JSON = config.RESULTS_DIR / "decision_readiness_summary.json"
 
 METHOD_PRIORITY = ["RF", "U-Net", "NDSI"]
 
@@ -151,12 +151,12 @@ def main() -> None:
     quality_rows = [quality_for_year(year, year_rows) for year, year_rows in sorted(by_year.items())]
     quality_by_year = {int(r["year"]): r for r in quality_rows}
 
-    grant_rows: list[dict[str, str | int | float | bool]] = []
+    decision_rows: list[dict[str, str | int | float | bool]] = []
     created_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     for year, year_rows in sorted(by_year.items()):
         primary = choose_primary_row(year_rows)
         quality = quality_by_year[year]
-        grant_rows.append(
+        decision_rows.append(
             {
                 "year": year,
                 "area_km2": primary["area_km2"],
@@ -178,27 +178,27 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(quality_rows)
 
-    with GRANT_TS_CSV.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(grant_rows[0].keys()))
+    with DECISION_TS_CSV.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=list(decision_rows[0].keys()))
         writer.writeheader()
-        writer.writerows(grant_rows)
+        writer.writerows(decision_rows)
 
     summary = {
         "created_at": created_at,
         "quality_table": str(QUALITY_CSV.relative_to(ROOT)),
-        "grant_timeseries_table": str(GRANT_TS_CSV.relative_to(ROOT)),
-        "strict_trend": trend_summary([{k: str(v) for k, v in row.items()} for row in grant_rows]),
-        "grant_readiness_notes": [
-            "Use grant_ready_area_timeseries.csv for pitch decks and pilot proposals.",
+        "decision_timeseries_table": str(DECISION_TS_CSV.relative_to(ROOT)),
+        "strict_trend": trend_summary([{k: str(v) for k, v in row.items()} for row in decision_rows]),
+        "decision_readiness_notes": [
+            "Use decision_ready_area_timeseries.csv for public reports, demos and pilot proposals.",
             "Use glacier_areas_all_years.csv for full research traceability.",
             "2015 is retained for transparency but excluded from strict trend by default.",
         ],
     }
-    GRANT_SUMMARY_JSON.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+    DECISION_SUMMARY_JSON.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
 
     print(f"Wrote {len(quality_rows)} quality rows -> {QUALITY_CSV}")
-    print(f"Wrote {len(grant_rows)} grant time-series rows -> {GRANT_TS_CSV}")
-    print(f"Wrote grant summary -> {GRANT_SUMMARY_JSON}")
+    print(f"Wrote {len(decision_rows)} decision time-series rows -> {DECISION_TS_CSV}")
+    print(f"Wrote decision summary -> {DECISION_SUMMARY_JSON}")
 
 
 if __name__ == "__main__":

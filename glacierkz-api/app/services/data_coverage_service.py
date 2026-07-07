@@ -63,8 +63,8 @@ def load_csv_table(name: str) -> list[dict[str, Any]]:
         return list(csv.DictReader(f))
 
 
-def load_grant_readiness_summary() -> dict[str, Any]:
-    path = RESULTS_DIR / "grant_readiness_summary.json"
+def load_decision_readiness_summary() -> dict[str, Any]:
+    path = RESULTS_DIR / "decision_readiness_summary.json"
     if not path.exists():
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
@@ -106,11 +106,11 @@ def get_data_coverage() -> dict[str, Any]:
     }
 
 
-def get_grant_readiness() -> dict[str, Any]:
-    """Grant-facing data package: clean time series, year quality, trend summary."""
+def get_decision_readiness() -> dict[str, Any]:
+    """Decision-facing data package: clean time series, year quality, trend summary."""
     return {
-        "summary": load_grant_readiness_summary(),
-        "timeseries": load_csv_table("grant_ready_area_timeseries.csv"),
+        "summary": load_decision_readiness_summary(),
+        "timeseries": load_csv_table("decision_ready_area_timeseries.csv"),
         "year_quality": load_csv_table("year_quality_scores.csv"),
         "updated_from": str(RESULTS_DIR),
     }

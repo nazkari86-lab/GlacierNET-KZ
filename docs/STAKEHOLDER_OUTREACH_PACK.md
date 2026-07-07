@@ -1,6 +1,6 @@
 # GlacierNET-KZ Stakeholder Outreach Pack
 
-Цель: быстро получить customer discovery, пилотный интерес и LOI для Astana Hub / AI'preneurs / climate grants.
+Цель: быстро получить customer discovery, пилотный интерес и LOI для Astana Hub, AI'preneurs, climate-tech programs и B2G/B2B пилотов.
 
 ## One-line pitch
 
@@ -60,7 +60,7 @@ Could I ask for a short expert review or 20-minute feedback call? I would value 
 - which validation steps are most important;
 - whether a pilot or student research collaboration would be possible.
 
-If the project is relevant, a short email confirming interest would significantly strengthen the grant application.
+If the project is relevant, a short email confirming interest would significantly strengthen the program application and pilot proposal.
 
 Best regards,  
 Dulat Nurlanuly
@@ -78,7 +78,7 @@ The MVP is already working with real data:
 - Sentinel-2 2015-2024 and Landsat 2000-2013;
 - U-Net F1 0.876 and RF/NDSI baselines;
 - Next.js dashboard, FastAPI backend, MCP/LLM interface;
-- reproducible data-quality and grant-readiness reports.
+- reproducible data-quality and decision-readiness reports.
 
 I would appreciate feedback on positioning, customer discovery, and whether this is better suited for AI'preneurs, Astana Innovations Accelerator, or another program.
 

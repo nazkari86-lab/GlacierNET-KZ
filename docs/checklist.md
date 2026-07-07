@@ -66,17 +66,17 @@
 - [x] Структура научной работы готова (`paper/draft_outline.md`)
 - [x] Черновик заполнен реальными метриками из `results/` (см. `paper/results_template.md`)
 - [x] Список литературы собран (`docs/literature_review.md`, 14 источников)
-- [x] Grant-ready таблицы созданы с явными caveat/confidence полями
-      (`results/tables/grant_ready_area_timeseries.csv`,
+- [x] Decision-ready таблицы созданы с явными caveat/confidence полями
+      (`results/tables/decision_ready_area_timeseries.csv`,
       `results/tables/year_quality_scores.csv`,
-      `results/grant_readiness_summary.json`)
-- [x] Dashboard/API/MCP читают grant-readiness пакет
-      (`/api/data/grant-readiness`, `glacierkz://grant-readiness`)
+      `results/decision_readiness_summary.json`)
+- [x] Dashboard/API/MCP читают decision-readiness пакет
+      (`/api/data/decision-readiness`, `glacierkz://decision-readiness`)
 - [x] Stakeholder outreach pack и трекер подготовлены
       (`docs/STAKEHOLDER_OUTREACH_PACK.md`,
       `docs/stakeholder_outreach_tracker.csv`)
-- [x] Grant package можно пересобрать одной командой
-      (`scripts/build_grant_package.py`)
+- [x] Project evidence package можно пересобрать одной командой
+      (`scripts/build_project_evidence_package.py`)
 - [ ] Работа проверена учителем / научным руководителем
 - [ ] Зарегистрирован на Дарын
 - [x] Подготовлен постер — черновик `competition/ISEF_POSTER.md`

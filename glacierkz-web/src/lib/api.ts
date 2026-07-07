@@ -284,7 +284,7 @@ export async function fetchDataCoverage(): Promise<DataCoverage> {
   return res.json();
 }
 
-export interface GrantTimeSeriesRow {
+export interface DecisionTimeSeriesRow {
   year: string;
   area_km2: string;
   primary_method: string;
@@ -313,10 +313,10 @@ export interface YearQualityRow {
   caveat: string;
 }
 
-export interface GrantReadinessSummary {
+export interface DecisionReadinessSummary {
   created_at?: string;
   quality_table?: string;
-  grant_timeseries_table?: string;
+  decision_timeseries_table?: string;
   strict_trend?: {
     ok: boolean;
     n_years?: number;
@@ -331,18 +331,18 @@ export interface GrantReadinessSummary {
     forecast_2050_ci95_lower?: number;
     forecast_2050_ci95_upper?: number;
   };
-  grant_readiness_notes?: string[];
+  decision_readiness_notes?: string[];
 }
 
-export interface GrantReadiness {
-  summary: GrantReadinessSummary;
-  timeseries: GrantTimeSeriesRow[];
+export interface DecisionReadiness {
+  summary: DecisionReadinessSummary;
+  timeseries: DecisionTimeSeriesRow[];
   year_quality: YearQualityRow[];
   updated_from: string;
 }
 
-export async function fetchGrantReadiness(): Promise<GrantReadiness> {
-  const res = checkResponse(await fetch(apiUrl("/api/data/grant-readiness")));
+export async function fetchDecisionReadiness(): Promise<DecisionReadiness> {
+  const res = checkResponse(await fetch(apiUrl("/api/data/decision-readiness")));
   return res.json();
 }
 

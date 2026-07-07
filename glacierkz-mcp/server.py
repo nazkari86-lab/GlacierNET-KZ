@@ -498,12 +498,12 @@ def get_data_inventory(limit: int = 20) -> str:
 
 
 @mcp.tool()
-def get_grant_readiness() -> str:
-    """Return grant-facing time series, year quality scores and strict trend summary."""
+def get_decision_readiness() -> str:
+    """Return decision-facing time series, year quality scores and strict trend summary."""
     import csv
 
-    summary = _read_json_file(RESULTS_DIR / "grant_readiness_summary.json")
-    ts_path = TABLES_DIR / "grant_ready_area_timeseries.csv"
+    summary = _read_json_file(RESULTS_DIR / "decision_readiness_summary.json")
+    ts_path = TABLES_DIR / "decision_ready_area_timeseries.csv"
     quality_path = TABLES_DIR / "year_quality_scores.csv"
     timeseries: list[dict[str, str]] = []
     year_quality: list[dict[str, str]] = []
@@ -1222,10 +1222,10 @@ def data_inventory_resource() -> str:
     return json.dumps(_read_json_file(RESULTS_DIR / "data_inventory.json"), indent=2, ensure_ascii=False)
 
 
-@mcp.resource("glacierkz://grant-readiness")
-def grant_readiness_resource() -> str:
-    """Machine-readable grant readiness summary and strict trend context."""
-    return get_grant_readiness()
+@mcp.resource("glacierkz://decision-readiness")
+def decision_readiness_resource() -> str:
+    """Machine-readable decision readiness summary and strict trend context."""
+    return get_decision_readiness()
 
 
 @mcp.resource("glacierkz://year/{year}")

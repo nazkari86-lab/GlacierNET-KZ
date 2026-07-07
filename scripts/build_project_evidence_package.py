@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild the grant-facing evidence package from current local artifacts."""
+"""Rebuild the decision-facing evidence package from current local artifacts."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PYTHON = sys.executable
-SUMMARY = ROOT / "results" / "grant_readiness_summary.json"
+SUMMARY = ROOT / "results" / "decision_readiness_summary.json"
 
 
 def run_step(label: str, script: str) -> None:
@@ -22,7 +22,7 @@ def main() -> int:
     steps = [
         ("Validate local GeoTIFF quality", "validate_data_quality.py"),
         ("Refresh raster inventory", "build_data_inventory.py"),
-        ("Refresh grant readiness tables", "build_grant_readiness_tables.py"),
+        ("Refresh decision readiness tables", "build_decision_readiness_tables.py"),
     ]
     for label, script in steps:
         run_step(label, script)
@@ -31,7 +31,7 @@ def main() -> int:
         raise FileNotFoundError(f"Expected summary was not created: {SUMMARY}")
     summary = json.loads(SUMMARY.read_text(encoding="utf-8"))
     trend = summary.get("strict_trend", {})
-    print("\n== Grant package summary ==", flush=True)
+    print("\n== Project evidence package summary ==", flush=True)
     print(f"strict_trend_ok={trend.get('ok')}", flush=True)
     print(f"n_years={trend.get('n_years')}", flush=True)
     print(f"slope_km2_per_year={trend.get('slope_km2_per_year')}", flush=True)

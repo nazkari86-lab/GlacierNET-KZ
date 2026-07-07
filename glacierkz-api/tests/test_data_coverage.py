@@ -32,8 +32,8 @@ def test_glacier_areas_endpoint():
     assert isinstance(body["rows"], list)
 
 
-def test_grant_readiness_endpoint():
-    resp = client.get("/api/data/grant-readiness")
+def test_decision_readiness_endpoint():
+    resp = client.get("/api/data/decision-readiness")
     assert resp.status_code == 200
     body = resp.json()
     assert "summary" in body

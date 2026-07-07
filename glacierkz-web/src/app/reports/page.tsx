@@ -9,7 +9,7 @@ import { LineChart, DonutChart } from "@/components/Charts"
 import { toast } from "@/components/Toast"
 import { FileText, Download, TrendingUp, BarChart3, Mountain } from "lucide-react"
 import { exportToCSV, exportToJSON, exportToPDF } from "@/lib/export"
-import { fetchGrantReadiness, type GrantReadiness, type GrantTimeSeriesRow } from "@/lib/api"
+import { fetchDecisionReadiness, type DecisionReadiness, type DecisionTimeSeriesRow } from "@/lib/api"
 
 interface Report {
   date: string
@@ -35,11 +35,11 @@ const reportsData: Report[] = [
 
 export default function ReportsPage() {
   const { t } = useI18n()
-  const [grantReadiness, setGrantReadiness] = useState<GrantReadiness | null>(null)
+  const [decisionReadiness, setDecisionReadiness] = useState<DecisionReadiness | null>(null)
 
   useEffect(() => {
-    fetchGrantReadiness()
-      .then(setGrantReadiness)
+    fetchDecisionReadiness()
+      .then(setDecisionReadiness)
       .catch(() => {})
   }, [])
 
@@ -75,7 +75,7 @@ export default function ReportsPage() {
   }, [])
 
   const handleExport = (format: string) => {
-    const rows = grantReadiness?.timeseries || []
+    const rows = decisionReadiness?.timeseries || []
     const columns = [
       { key: "year", header: "Year" },
       { key: "area_km2", header: "Area km2" },
@@ -89,9 +89,9 @@ export default function ReportsPage() {
     ]
     if (rows.length > 0) {
       if (format === "CSV") {
-        exportToCSV(rows as unknown as Record<string, unknown>[], columns, "glaciernet_kz_grant_ready_timeseries")
+        exportToCSV(rows as unknown as Record<string, unknown>[], columns, "glaciernet_kz_decision_ready_timeseries")
       } else if (format === "JSON") {
-        exportToJSON([grantReadiness], "glaciernet_kz_grant_readiness")
+        exportToJSON([decisionReadiness], "glaciernet_kz_decision_readiness")
       } else if (format === "PDF") {
         void exportToPDF(
           rows as unknown as Record<string, unknown>[],
@@ -138,16 +138,16 @@ export default function ReportsPage() {
     },
   ]
 
-  const grantRows = grantReadiness?.timeseries || []
-  const strictRows = grantRows.filter((r) => r.include_in_strict_trend === "True")
-  const excludedRows = grantRows.filter((r) => r.include_in_strict_trend !== "True")
-  const trend = grantReadiness?.summary.strict_trend
+  const decisionRows = decisionReadiness?.timeseries || []
+  const strictRows = decisionRows.filter((r) => r.include_in_strict_trend === "True")
+  const excludedRows = decisionRows.filter((r) => r.include_in_strict_trend !== "True")
+  const trend = decisionReadiness?.summary.strict_trend
   const avgQuality =
-    grantRows.length > 0
-      ? grantRows.reduce((sum, r) => sum + Number(r.quality_score || 0), 0) / grantRows.length
+    decisionRows.length > 0
+      ? decisionRows.reduce((sum, r) => sum + Number(r.quality_score || 0), 0) / decisionRows.length
       : 0
 
-  const grantColumns: ColumnDef<GrantTimeSeriesRow>[] = [
+  const decisionColumns: ColumnDef<DecisionTimeSeriesRow>[] = [
     { key: "year", header: "Year", sortable: true },
     { key: "area_km2", header: "Area km2", sortable: true },
     { key: "primary_method", header: "Method", sortable: true },
@@ -201,14 +201,14 @@ export default function ReportsPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          label="Grant strict years"
+          label="Strict trend years"
           value={trend?.n_years ?? strictRows.length}
           icon={<FileText className="h-5 w-5" />}
           color="blue"
         />
         <StatCard
           label="Avg data quality"
-          value={grantRows.length ? `${avgQuality.toFixed(0)}/100` : "—"}
+          value={decisionRows.length ? `${avgQuality.toFixed(0)}/100` : "—"}
           icon={<BarChart3 className="h-5 w-5" />}
           color="emerald"
         />
@@ -227,7 +227,7 @@ export default function ReportsPage() {
       </div>
 
       <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
-        <h2 className="mb-2 text-lg font-semibold text-emerald-950">Grant readiness decision view</h2>
+        <h2 className="mb-2 text-lg font-semibold text-emerald-950">Decision readiness view</h2>
         <div className="grid gap-3 text-sm text-emerald-900 md:grid-cols-3">
           <p>
             Strict trend excludes caveat years and uses the preferred available method order: RF, U-Net, then NDSI.
@@ -242,8 +242,8 @@ export default function ReportsPage() {
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-        <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Grant-ready area time series</h2>
-        <DataTable data={grantRows} columns={grantColumns} sortable pagination pageSize={8} emptyMessage="Grant tables not generated yet" />
+        <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Decision-ready area time series</h2>
+        <DataTable data={decisionRows} columns={decisionColumns} sortable pagination pageSize={8} emptyMessage="Decision tables not generated yet" />
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">

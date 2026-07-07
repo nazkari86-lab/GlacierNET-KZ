@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-07-07T21:17:37+00:00",
+  "created_at": "2026-07-07T21:37:59+00:00",
   "quality_table": "results/tables/year_quality_scores.csv",
-  "grant_timeseries_table": "results/tables/grant_ready_area_timeseries.csv",
+  "decision_timeseries_table": "results/tables/decision_ready_area_timeseries.csv",
   "strict_trend": {
     "ok": true,
     "method_preference": [
@@ -66,8 +66,8 @@
       2050
     ]
   },
-  "grant_readiness_notes": [
-    "Use grant_ready_area_timeseries.csv for pitch decks and pilot proposals.",
+  "decision_readiness_notes": [
+    "Use decision_ready_area_timeseries.csv for public reports, demos and pilot proposals.",
     "Use glacier_areas_all_years.csv for full research traceability.",
     "2015 is retained for transparency but excluded from strict trend by default."
   ]

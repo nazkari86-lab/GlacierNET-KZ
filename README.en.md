@@ -4,7 +4,7 @@
 
 Built for international science competitions: **Daryn → ISEF → GENIUS Olympiad**.
 
-[![CI](https://github.com/nicklaua/GlacierNET-KZ/actions/workflows/ci.yml/badge.svg)](https://github.com/nicklaua/GlacierNET-KZ/actions/workflows/ci.yml)
+[![CI](https://github.com/nazkari86-lab/GlacierNET-KZ/actions/workflows/ci.yml/badge.svg)](https://github.com/nazkari86-lab/GlacierNET-KZ/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![FAIR](https://img.shields.io/badge/FAIR-Reproducible-green)](docs/REPRODUCIBILITY.md)
@@ -12,6 +12,21 @@ Built for international science competitions: **Daryn → ISEF → GENIUS Olympi
 [![HuggingFace Spaces](https://img.shields.io/badge/🤗-Live_Demo-yellow)](https://huggingface.co/spaces/dulatnurlanuly/codedepo-v2)
 
 [Русская версия](README.md) · [Docs](docs/README.md) · [Reproducibility](docs/REPRODUCIBILITY.md) · [Data Citations](docs/DATA_CITATION.md) · [Architecture](docs/ARCHITECTURE.md)
+
+---
+
+## Project Description
+
+**GlacierNET-KZ** is an open research and applied monitoring platform for Kazakhstan glaciers. It combines Sentinel-2, Landsat, RGI/WGMS data, spectral indices, Random Forest and U-Net models to produce glacier maps, annual area estimates, trend forecasts, confidence scores and decision reports.
+
+The project is designed for researchers, students, public-sector analysts and climate/water-risk teams that need a reproducible way to inspect glacier retreat without manually rebuilding the full GIS workflow every time. The platform includes a Python ML pipeline, FastAPI backend, Next.js dashboard, STAC/data-quality artifacts, and an MCP server for AI-assisted analysis.
+
+Main use cases:
+- analyze Ili Alatau glacier area change from 2000 to 2024;
+- compare NDSI, Random Forest and U-Net outputs on real satellite data;
+- generate decision-ready reports with caveats, p-values and confidence flags;
+- support pilot projects in climate monitoring and water-security planning;
+- teach a complete geospatial ML workflow from raw imagery to dashboard.
 
 ---
 

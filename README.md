@@ -2,7 +2,7 @@
 
 [English version](README.en.md) · [Documentation](docs/README.md) · [Reproducibility](docs/REPRODUCIBILITY.md) · [Citation (CITATION.cff)](CITATION.cff) · [Contributing](CONTRIBUTING.md)
 
-[![CI](https://github.com/nicklaua/GlacierNET-KZ/actions/workflows/ci.yml/badge.svg)](https://github.com/nicklaua/GlacierNET-KZ/actions/workflows/ci.yml)
+[![CI](https://github.com/nazkari86-lab/GlacierNET-KZ/actions/workflows/ci.yml/badge.svg)](https://github.com/nazkari86-lab/GlacierNET-KZ/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![HuggingFace Spaces](https://img.shields.io/badge/🤗-Live_Demo-yellow)](https://huggingface.co/spaces/dulatnurlanuly/codedepo-v2)
@@ -12,6 +12,21 @@ ML-мониторинг отступания ледников Казахстан
 
 Проект для научных конкурсов **Дарын → ISEF → GENIUS Olympiad**.
 Научная база и план — см. `docs/`.
+
+---
+
+## Описание проекта
+
+**GlacierNET-KZ** — открытая исследовательская и прикладная платформа для мониторинга ледников Казахстана по спутниковым данным. Проект объединяет Sentinel-2, Landsat, RGI/WGMS, классические спектральные индексы и ML-модели, чтобы строить карты ледников, измерять изменение площади, оценивать качество данных по годам и формировать отчёты для исследователей, преподавателей, госорганов и организаций, работающих с климатическими и водными рисками.
+
+Основная идея проста: вместо ручной обработки снимков в GIS пользователь получает воспроизводимый pipeline, web-dashboard, API и MCP-интерфейс, которые показывают не только результат модели, но и ограничения данных: сенсор, caveat, confidence score, p-value, 95% CI и годы, исключённые из строгого тренда.
+
+Ключевые сценарии:
+- научный анализ изменения ледников Заилийского Алатау за 2000–2024;
+- быстрые decision reports для не-технических пользователей;
+- сравнение NDSI, Random Forest и U-Net на реальных данных;
+- подготовка пилотов по климатическому мониторингу и водной безопасности;
+- образовательная демонстрация полного ML/geospatial pipeline.
 
 ---
 

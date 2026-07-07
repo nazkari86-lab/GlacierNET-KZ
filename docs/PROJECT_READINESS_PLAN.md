@@ -1,8 +1,8 @@
-# GlacierNET-KZ Grant Readiness Max Plan
+# GlacierNET-KZ Project Readiness Max Plan
 
 Дата аудита: 2026-07-08
 
-Цель: довести GlacierNET-KZ до максимально сильной заявки для Astana Hub, AI'preneurs, climate-tech грантов, научных конкурсов и B2G/B2B пилотов. 100% гарантии гранта невозможны, но этот план закрывает основные причины отказа: слабый рынок, нет пилота, нет покупателя, спорная научная валидация, непонятная бизнес-модель.
+Цель: довести GlacierNET-KZ до максимально сильной публичной версии для Astana Hub, AI'preneurs, climate-tech programs, научных конкурсов и B2G/B2B пилотов. 100% гарантии отбора невозможны, но этот план закрывает основные причины отказа: слабый рынок, нет пилота, нет покупателя, спорная научная валидация, непонятная бизнес-модель.
 
 ## Текущая сильная база
 
@@ -44,7 +44,7 @@
 5. Business model needs sharper buyer, pricing, procurement path, and pilot scope.
 6. Scientific story has outlier years and must distinguish climate signal from data/season/cloud artifacts.
 
-## 30-дневный план до near-grant-ready
+## 30-дневный план до near-decision-ready
 
 ### Week 1: Scientific credibility
 
@@ -63,7 +63,7 @@
 
 ### Week 2: Product and demo
 
-- Build a grant demo flow:
+- Build a public demo flow:
   1. Open dashboard.
   2. Select Tuyuksu/Bogdanovich.
   3. Show 2000-2024 glacier area history.
@@ -100,7 +100,7 @@
   - deliverables: dashboard + annual report + API + training
   - success metrics: report time reduction, validation accuracy, stakeholder usability
 
-### Week 4: Grant package
+### Week 4: Project evidence package
 
 - Prepare 10-slide pitch deck:
   1. Title and one-line value
@@ -112,7 +112,7 @@
   7. Customer/pilot evidence
   8. Business model
   9. Roadmap and scaling to Central Asia
-  10. Ask: grant/pilot/funding
+  10. Ask: pilot, expert validation, partnership or funding
 - Prepare 90-second demo video.
 - Prepare one-page executive summary.
 - Prepare technical appendix:
@@ -143,7 +143,7 @@ Suggested pilot pricing:
 - Government/NGO pilot: 3-8M KZT for one region and annual report.
 - Full annual monitoring: 10-30M KZT/year depending on coverage and support.
 
-## Grant scoring strategy
+## Program Scoring Strategy
 
 ### Astana Hub / AI'preneurs
 
@@ -185,7 +185,7 @@ To maximize:
 - show paid pilot path
 - show annual recurring revenue model
 
-### Scientific/climate grants
+### Scientific And Climate Programs
 
 What they reward:
 
@@ -235,7 +235,7 @@ To maximize:
      - water-supply implication
      - recommended action
 
-## Things to avoid in grant pitch
+## Things To Avoid In Public Pitch
 
 - Do not overclaim "100% accurate glacier monitoring".
 - Do not show 2015 as normal Sentinel summer SR.
@@ -245,7 +245,7 @@ To maximize:
 
 ## Near-100% readiness definition
 
-The project is near-grant-ready when these are true:
+The project is near-decision-ready when these are true:
 
 - Live demo works in under 3 minutes.
 - One PDF decision report is generated from dashboard.
@@ -258,10 +258,10 @@ The project is near-grant-ready when these are true:
 
 ## Next immediate tasks
 
-1. Done: create cleaned `results/tables/grant_ready_area_timeseries.csv`.
+1. Done: create cleaned `results/tables/decision_ready_area_timeseries.csv`.
 2. Done: add `results/tables/year_quality_scores.csv`.
 3. Done: add dashboard cards for quality/confidence and stakeholder report export.
 4. Build 2016-2024 multi-year patch dataset with disk-safe limits.
 5. Done: draft 15 outreach targets/emails and add `docs/stakeholder_outreach_tracker.csv`.
 6. Create pitch deck and one-page pilot proposal.
-7. Done: add `scripts/build_grant_package.py` to rebuild data quality, inventory and grant-ready tables in one command.
+7. Done: add `scripts/build_project_evidence_package.py` to rebuild data quality, inventory and decision-ready tables in one command.

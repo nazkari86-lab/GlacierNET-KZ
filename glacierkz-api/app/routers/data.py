@@ -8,7 +8,7 @@ from fastapi import APIRouter
 
 from app.services.data_coverage_service import (
     get_data_coverage,
-    get_grant_readiness,
+    get_decision_readiness,
     load_csv_table,
     load_glacier_areas,
 )
@@ -30,9 +30,9 @@ async def glacier_areas(method: str | None = None) -> dict[str, Any]:
     return {"rows": rows, "count": len(rows)}
 
 
-@router.get("/grant-readiness", summary="Grant-ready time series, year quality and trend summary")
-async def grant_readiness() -> dict[str, Any]:
-    return get_grant_readiness()
+@router.get("/decision-readiness", summary="Decision-ready time series, year quality and trend summary")
+async def decision_readiness() -> dict[str, Any]:
+    return get_decision_readiness()
 
 
 @router.get("/year-quality", summary="Per-year data quality and confidence scores")
