@@ -42,7 +42,7 @@ jobs:
             --cov=src --cov=glacierkz-api/app \
             --cov-report=xml --cov-report=term-missing \
             --cov-fail-under=25
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v7
         if: always()
         with:
           file: coverage.xml
