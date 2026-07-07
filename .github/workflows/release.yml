@@ -31,7 +31,7 @@ jobs:
             echo "No changelog section for v${TAG}" > release_notes.md
           fi
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.10"
 
