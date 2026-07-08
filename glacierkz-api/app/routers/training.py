@@ -219,7 +219,7 @@ async def start_training(config: TrainConfig) -> TrainStatus:
 
     run: dict[str, Any] = {
         "task_id": task_id,
-        "config": config.model_dump(),
+        "config": config.model_dump() if hasattr(config, "model_dump") else config.dict(),
         "status": "pending",
         "epoch": 0,
         "total_epochs": config.epochs,

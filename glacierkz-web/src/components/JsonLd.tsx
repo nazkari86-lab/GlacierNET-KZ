@@ -1,4 +1,4 @@
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://github.com/nicklaua/GlacierNET-KZ";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://github.com/nazkari86-lab/GlacierNET-KZ";
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -43,7 +43,7 @@ const structuredData = {
     "EN/RU/KK localization",
   ],
   inLanguage: ["en", "ru", "kk"],
-  keywords: "glacier, remote sensing, U-Net, Sentinel-2, Kazakhstan, climate change, ISEF",
+  keywords: "glacier, remote sensing, U-Net, Sentinel-2, Landsat, Kazakhstan, climate change",
 };
 
 export default function JsonLd() {

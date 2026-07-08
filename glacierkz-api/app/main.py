@@ -70,7 +70,7 @@ app = FastAPI(
     openapi_url="/openapi.json",
     contact={
         "name": "GlacierNET-KZ",
-        "url": "https://github.com/nicklaua/GlacierNET-KZ",
+        "url": "https://github.com/nazkari86-lab/GlacierNET-KZ",
     },
     license_info={
         "name": "MIT",

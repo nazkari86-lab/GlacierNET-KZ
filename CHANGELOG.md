@@ -12,14 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `./scripts/start.sh` — one-command Docker or native dev stack
 - `/hub` service directory page (EN/RU/KK) in Next.js dashboard
 - International documentation: [REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md) (FAIR principles), [DATA_CITATION.md](docs/DATA_CITATION.md) (BibTeX for all datasets)
-- [GENIUS Olympiad](competition/GENIUS_OLYMPIAD.md) submission package
+- Research documentation and reproducibility package
 - STAC 1.0.0 catalog export (`scripts/export_stac_catalog.py`) for QGIS / planetary-scale interoperability
 - Documentation index ([docs/README.md](docs/README.md))
 - GitHub Dependabot and release workflow for sustainable open-source maintenance
 - English glacier names in `src/config.py` (`name_en` field)
 
 ### Changed
-- Unified repository URLs to `nicklaua/GlacierNET-KZ` across package metadata
+- Unified repository URLs to `nazkari86-lab/GlacierNET-KZ` across package metadata
 - Enhanced README.en.md with international standards section and global positioning
 - JsonLd structured data: citation, geographic coverage, free access flags
 
@@ -42,5 +42,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Linear trend: −12.7 km²/yr (R² = 0.54)
 - Forecast 2050: ~350 km² (−38% vs 2000)
 
-[0.2.0]: https://github.com/nicklaua/GlacierNET-KZ/releases/tag/v0.2.0
-[0.1.0]: https://github.com/nicklaua/GlacierNET-KZ/releases/tag/v0.1.0
+[0.2.0]: https://github.com/nazkari86-lab/GlacierNET-KZ/releases/tag/v0.2.0
+[0.1.0]: https://github.com/nazkari86-lab/GlacierNET-KZ/releases/tag/v0.1.0

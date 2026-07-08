@@ -4,8 +4,8 @@ from pydantic import BaseModel, Field
 
 
 class TrendRequest(BaseModel):
-    file_ids: list[str] = Field(..., min_length=2, description="List of result IDs for different years")
-    years: list[int] = Field(..., min_length=2)
+    file_ids: list[str] = Field(..., min_items=2, description="List of result IDs for different years")
+    years: list[int] = Field(..., min_items=2)
     forecast_until: int = 2050
 
 

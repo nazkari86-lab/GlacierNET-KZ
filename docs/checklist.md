@@ -62,7 +62,7 @@
 - [x] Финальный график сохранён с реальными данными
       (`results/figures/glacier_trend_forecast.png`, `glacier_maps_by_year.png`)
 
-## Месяц 9–12 — Подготовка к конкурсам
+## Месяц 9–12 — Публичная версия и валидация
 - [x] Структура научной работы готова (`paper/draft_outline.md`)
 - [x] Черновик заполнен реальными метриками из `results/` (см. `paper/results_template.md`)
 - [x] Список литературы собран (`docs/literature_review.md`, 14 источников)
@@ -77,11 +77,10 @@
       `docs/stakeholder_outreach_tracker.csv`)
 - [x] Project evidence package можно пересобрать одной командой
       (`scripts/build_project_evidence_package.py`)
-- [ ] Работа проверена учителем / научным руководителем
-- [ ] Зарегистрирован на Дарын
-- [x] Подготовлен постер — черновик `competition/ISEF_POSTER.md`
-- [x] Подготовлена презентация (7 минут) — `competition/ISEF_PRESENTATION.md`
-- [ ] Проведено 3+ репетиции защиты
+- [ ] Работа проверена внешним специалистом или научным консультантом
+- [ ] Подготовлен публичный demo walkthrough
+- [ ] Подготовлен release package для GitHub
+- [ ] Проведены 3+ воспроизводимых demo-прогона
 
 ---
 

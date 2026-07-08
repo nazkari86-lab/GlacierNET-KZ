@@ -48,6 +48,6 @@ ML-based glacier monitoring for Kazakhstan's Ili Alatau using U-Net and satellit
   title={GlacierNET-KZ: ML Glacier Monitoring for Kazakhstan},
   author={Nick Laua},
   year={2026},
-  url={https://github.com/nicklaua/GlacierNET-KZ}
+  url={https://github.com/nazkari86-lab/GlacierNET-KZ}
 }
 ```

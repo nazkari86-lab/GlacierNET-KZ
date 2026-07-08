@@ -1,225 +1,253 @@
 # GlacierNET-KZ
 
-[English version](README.en.md) · [Documentation](docs/README.md) · [Reproducibility](docs/REPRODUCIBILITY.md) · [Citation (CITATION.cff)](CITATION.cff) · [Contributing](CONTRIBUTING.md)
+[English](README.en.md) · [Documentation](docs/README.md) · [Reproducibility](docs/REPRODUCIBILITY.md) · [API](docs/API_REFERENCE.md) · [Citation](CITATION.cff)
 
 [![CI](https://github.com/nazkari86-lab/GlacierNET-KZ/actions/workflows/ci.yml/badge.svg)](https://github.com/nazkari86-lab/GlacierNET-KZ/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![HuggingFace Spaces](https://img.shields.io/badge/🤗-Live_Demo-yellow)](https://huggingface.co/spaces/dulatnurlanuly/codedepo-v2)
+[![FAIR](https://img.shields.io/badge/FAIR-Reproducible-green)](docs/REPRODUCIBILITY.md)
+[![STAC 1.0](https://img.shields.io/badge/STAC-1.0-orange)](scripts/export_stac_catalog.py)
 
-ML-мониторинг отступания ледников Казахстана (Заилийский Алатау / Джунгарский Алатау)
-с помощью U-Net и спутниковых снимков Sentinel-2 / Landsat.
+**GlacierNET-KZ** is an open-source geospatial AI platform for monitoring glacier retreat in Kazakhstan. It combines Sentinel-2 and Landsat imagery, RGI/WGMS glacier references, spectral indices, Random Forest baselines, U-Net models, a FastAPI backend, a Next.js dashboard, STAC metadata, and reproducible notebooks.
 
-Проект для научных конкурсов **Дарын → ISEF → GENIUS Olympiad**.
-Научная база и план — см. `docs/`.
+The project is designed for researchers, climate analysts, GIS teams, educators, and public-sector users who need a transparent workflow from raw satellite imagery to glacier masks, area-change tables, trend analysis, and decision-ready reports.
 
----
+## What It Does
 
-## Описание проекта
+- Builds glacier segmentation datasets from Sentinel-2, Landsat, and RGI data.
+- Trains and compares NDSI, Random Forest, U-Net, Attention U-Net, and U-Net++ models.
+- Estimates annual glacier area and long-term retreat trends.
+- Produces confidence-aware reports with caveats, p-values, confidence intervals, and data-quality metadata.
+- Exposes results through notebooks, REST API, dashboard, Gradio demo, and MCP-compatible tools.
+- Exports reproducibility artifacts: STAC catalog, inventory tables, figures, metrics, and data citations.
 
-**GlacierNET-KZ** — открытая исследовательская и прикладная платформа для мониторинга ледников Казахстана по спутниковым данным. Проект объединяет Sentinel-2, Landsat, RGI/WGMS, классические спектральные индексы и ML-модели, чтобы строить карты ледников, измерять изменение площади, оценивать качество данных по годам и формировать отчёты для исследователей, преподавателей, госорганов и организаций, работающих с климатическими и водными рисками.
+## Current Results
 
-Основная идея проста: вместо ручной обработки снимков в GIS пользователь получает воспроизводимый pipeline, web-dashboard, API и MCP-интерфейс, которые показывают не только результат модели, но и ограничения данных: сенсор, caveat, confidence score, p-value, 95% CI и годы, исключённые из строгого тренда.
-
-Ключевые сценарии:
-- научный анализ изменения ледников Заилийского Алатау за 2000–2024;
-- быстрые decision reports для не-технических пользователей;
-- сравнение NDSI, Random Forest и U-Net на реальных данных;
-- подготовка пилотов по климатическому мониторингу и водной безопасности;
-- образовательная демонстрация полного ML/geospatial pipeline.
-
----
-
-## Статус проекта
-
-Код пайплайна полностью реализован и протестирован на **реальных данных** (2000–2024).
-Результаты доступны в `results/` и `paper/results_template.md`.
-
-- [x] Структура проекта создана
-- [x] `src/` — модули предобработки, U-Net, метрик, визуализации
-- [x] 6 Jupyter-ноутбуков (01–06) с кодом по плану
-- [x] Сквозной тест пайплайна на синтетических данных пройден
-- [x] Реальные снимки Sentinel-2 (2015–2024) — compact 7-band или legacy 11-band GeoTIFF; 2015 задокументирован как late-year TOA fallback
-- [x] Реальные снимки Landsat (2000, 2003, 2005, 2008, 2010, 2013) скачаны
-- [x] RGI 7.0 контуры ледников загружены и растеризованы
-- [x] Data quality, inventory и STAC-артефакты обновлены (`results/data_quality_report.json`, `results/tables/data_inventory.csv`, `results/stac/catalog.json`)
-- [x] Маски построены, патчи нарезаны
-- [x] Базовые модели (NDSI, Random Forest) обучены на реальных данных
-- [x] U-Net обучен на реальных данных (F1=0.876, IoU=0.780)
-- [x] Временной анализ и прогноз до 2050 построены
-- [x] WGMS-валидация (Туюксу) — данные из FoG 2026 (`data/wgms/tuyuksu_areas.json`, 25 лет)
-- [x] Научная работа заполнена реальными данными
-
-### Ключевые результаты
-
-| Метрика | Значение |
-|---------|----------|
-| U-Net F1 | 0.876 |
+| Metric | Value |
+|--------|-------|
+| U-Net F1 / IoU | 0.876 / 0.780 |
 | Random Forest F1 | 0.853 |
-| NDSI F1 | 0.851 |
-| Потеря ледников 2000–2020 | −129.5 км² (−22.4%) |
-| Скорость потерь | −12.7 км²/год |
-| Прогноз 2050 | ~350 км² (−38% от 2000) |
-| Эквивалент водоснабжения Алматы | ~10 лет |
+| NDSI baseline F1 | 0.851 |
+| Glacier area loss, 2000-2020 | -129.5 km² (-22.4%) |
+| Linear trend | -12.7 km²/year |
+| Forecast to 2050 | ~350 km² |
+| Main reference glacier | Tuyuksu, Kazakhstan |
 
----
+Results are stored under `results/`, with methodology notes in `paper/` and reproducibility instructions in `docs/REPRODUCIBILITY.md`.
 
-## Международные стандарты
+## Quick Start
 
-| Стандарт | Реализация |
-|----------|------------|
-| Открытая наука | MIT, полный исходный код, HuggingFace demo |
-| FAIR | [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md) |
-| Геоданные | STAC 1.0, GeoTIFF, [DATA_CITATION.md](docs/DATA_CITATION.md) |
-| i18n | Dashboard EN / RU / KK |
-| Конкурсы | [ISEF](competition/ISEF_POSTER.md), [GENIUS](competition/GENIUS_OLYMPIAD.md) |
+### Option A: Unified Local Stack
 
----
-
-## Единый localhost
+Use this when you want the dashboard, API, demo, and gateway under one localhost URL.
 
 ```bash
+git clone https://github.com/nazkari86-lab/GlacierNET-KZ.git
+cd GlacierNET-KZ
 ./scripts/start.sh
-# → http://localhost:8080/hub
 ```
 
-| Сервис | URL |
-|--------|-----|
-| Хаб | http://localhost:8080/hub |
+Open:
+
+| Service | URL |
+|---------|-----|
+| Hub | http://localhost:8080/hub |
 | Dashboard | http://localhost:8080/dashboard |
-| Gradio демо | http://localhost:8080/demo |
+| Segmentation UI | http://localhost:8080/predict |
+| Gradio demo | http://localhost:8080/demo |
 | API docs | http://localhost:8080/docs |
-| MCP | http://localhost:8080/mcp/tools |
+| MCP tools | http://localhost:8080/mcp/tools |
+| Health check | http://localhost:8080/health |
 
-🏔️ [HuggingFace Spaces](https://huggingface.co/spaces/dulatnurlanuly/codedepo-v2) — облачная демо-версия.
+For hot-reload development:
 
----
-
-## Структура проекта
-
-```
-GlacierNET-KZ/
-├── data/
-│   ├── raw/
-│   │   ├── sentinel2/      # Sentinel-2 композиты (скачать через 01_data_download.ipynb)
-│   │   └── landsat/        # Landsat композиты
-│   ├── processed/
-│   │   ├── patches/         # X_train.npy, y_train.npy, ...
-│   │   └── masks/           # Маски ледников по годам
-│   └── rgi/                 # Контуры RGI 7.0 / GLIMS
-│
-├── notebooks/
-│   ├── 01_data_download.ipynb     # GEE: Sentinel-2, Landsat, RGI (ЛОКАЛЬНО, требует GEE auth)
-│   ├── 02_preprocessing.ipynb     # Маски, патчи, train/val/test
-│   ├── 03_baseline_models.ipynb   # NDSI, Random Forest
-│   ├── 04_unet_training.ipynb     # Обучение U-Net
-│   ├── 05_temporal_analysis.ipynb # Временной анализ, прогноз 2050, WGMS, водоснабжение
-│   ├── 06_visualization.ipynb     # Финальные карты и графики
-│   ├── _generate_notebooks.py     # Генератор .ipynb из исходного кода (для git-ревью)
-│   ├── _synthetic_smoke_test.py   # Сквозной тест пайплайна без TF
-│   └── _unet_smoke_test.py        # Сквозной тест U-Net
-│
-├── src/
-│   ├── config.py          # Все константы: область, годы, каналы, гиперпараметры
-│   ├── data_loader.py      # GEE загрузка + чтение GeoTIFF (rasterio)
-│   ├── preprocessing.py    # Растеризация RGI, патчи, аугментация, split
-│   ├── models.py            # U-Net, Dice/BCE loss, генератор данных, MC-Dropout
-│   ├── metrics.py           # F1/IoU, тренд, прогноз 2050, WGMS RMSE, водоснабжение
-│   └── visualization.py     # RGB/маски, кривые обучения, карты, прогноз
-│
-├── models/                  # Сохранённые модели (random_forest.pkl, unet_best.h5, attention_unet_best.h5)
-├── glacierkz-api/           # FastAPI backend (REST + WebSocket + MCP bridge)
-├── glacierkz-web/           # Next.js 16 dashboard (en/ru/kk i18n)
-├── glacierkz-mcp/           # MCP server for LLM tool access
-├── experimental/          # Phase 9 multi-lang prototypes (C, C++, Go, Java, .NET)
-├── tests/                   # Pytest suite (334+ tests)
-├── .github/workflows/       # CI: Ruff, pytest, Pyright, Vitest, ESLint, Playwright, Docker
-├── results/
-│   ├── figures/             # Графики (PNG)
-│   └── tables/              # CSV таблицы результатов
-├── spaces/                  # HuggingFace Spaces Gradio app
-├── paper/                    # Научная работа
-├── docs/
-│   ├── README.md              # Индекс документации
-│   ├── REPRODUCIBILITY.md     # FAIR / воспроизводимость (международный стандарт)
-│   ├── DATA_CITATION.md       # BibTeX для Sentinel-2, Landsat, RGI, WGMS
-│   └── literature_review.md   # Обзор литературы (из research_database)
-└── requirements.txt
+```bash
+./scripts/start.sh --native
 ```
 
----
+To stop native services:
 
-## Быстрый старт (локально, не в облачной песочнице)
+```bash
+./scripts/start.sh --stop
+```
 
-GEE-аутентификация, скачивание Sentinel-2/Landsat/RGI и обучение U-Net
-**требуют локальной машины** с доступом в интернет — облачная среда,
-в которой был сгенерирован этот код, не имеет доступа к Earth Engine,
-NSIDC/GLIMS, WGMS или Google Drive.
+### Option B: Python Pipeline Only
 
-### 1. Установка окружения
+Use this when you want to run notebooks, tests, model training, or data processing locally.
 
 ```bash
 conda create -n glaciers python=3.10
 conda activate glaciers
 conda install -c conda-forge gdal rasterio geopandas shapely fiona
 pip install -r requirements.txt
+pip install -e ".[dev,api]"
 ```
 
-> Примечание: TensorFlow 2.13 требует `numpy<1.24.4`. Если возникает
-> конфликт версий numpy/scipy/scikit-learn, поставьте `numpy==1.26.4`
-> ПОСЛЕ tensorflow (как сделано в этом проекте) — TF 2.13 фактически
-> работает и с numpy 1.26. Архитектура U-Net в `src/models.py`
-> совместима с любой версией TensorFlow >= 2.10.
+Run smoke checks that do not require Earth Engine:
 
-### 2. Аутентификация Earth Engine
+```bash
+python notebooks/_synthetic_smoke_test.py
+python notebooks/_unet_smoke_test.py
+pytest tests/ -q
+```
+
+### Option C: Frontend Only
+
+```bash
+cd glacierkz-web
+npm install
+npm run dev
+```
+
+The frontend reads API configuration from `NEXT_PUBLIC_API_URL`. For the unified gateway, leave it empty so browser requests stay same-origin.
+
+## Full Data Pipeline
+
+The full workflow requires a local machine with internet access, Google Earth Engine authentication, and enough disk space for raster data.
+
+### 1. Authenticate Earth Engine
 
 ```bash
 earthengine authenticate
 ```
 
-### 3. Скачивание данных
+### 2. Download Inputs
 
-Откройте `notebooks/01_data_download.ipynb`, выполните все ячейки.
-Задачи экспорта появятся на https://code.earthengine.google.com/tasks.
-После завершения скачайте файлы из Google Drive (папка `GlacierKZ`) в
-`data/raw/sentinel2/` и `data/raw/landsat/`.
-
-Контуры RGI 7.0 (регион 13, Central Asia) также можно скачать вручную с
-https://www.glims.org/RGI/rgi70_dl.html и положить shapefile в `data/rgi/`.
-
-### 4. Запуск пайплайна
-
-```
-02_preprocessing.ipynb     -> data/processed/patches/*.npy
-03_baseline_models.ipynb   -> models/random_forest.pkl, results/tables/model_comparison.csv
-04_unet_training.ipynb     -> models/unet_best.h5
-05_temporal_analysis.ipynb -> results/tables/glacier_areas_*.csv, прогноз до 2050
-06_visualization.ipynb     -> results/figures/*.png
-```
-
-### 5. Проверка кода без данных (синтетический тест)
+Run:
 
 ```bash
-python notebooks/_synthetic_smoke_test.py
-python notebooks/_unet_smoke_test.py
-python scripts/validate_data_quality.py
-python scripts/build_data_inventory.py
-python scripts/export_stac_catalog.py   # STAC 1.0 каталог для QGIS
+jupyter lab notebooks/
 ```
 
----
+Execute notebooks in order:
 
-## Целевые ледники
+| Step | Notebook | Output |
+|------|----------|--------|
+| 01 | `01_data_download.ipynb` | Sentinel-2, Landsat, RGI inputs |
+| 02 | `02_preprocessing.ipynb` | masks, patches, train/val/test arrays |
+| 03 | `03_baseline_models.ipynb` | NDSI and Random Forest metrics |
+| 04 | `04_unet_training.ipynb` | U-Net weights and training logs |
+| 05 | `05_temporal_analysis.ipynb` | area tables, trends, forecast |
+| 06 | `06_visualization.ipynb` | final maps and figures |
 
-См. `src/config.py` → `GLACIERS`. Приоритет №1 — **Горный Туюксу**
-(WGMS reference glacier, данные с 1957 г.).
+Expected local data layout:
 
-## Научная новизна
+```text
+data/
+  raw/
+    sentinel2/
+    landsat/
+  rgi/
+  processed/
+    masks/
+    patches/
+```
 
-См. `docs/literature_review.md`. Ключевой тезис (Springer 2025, обзор DL+Казахстан):
-ML-методов для ледников Тянь-Шаня и Джунгарского Алатау в литературе
-практически нет — это ниша проекта.
+### 3. Validate Data Artifacts
 
-## Лицензия
+```bash
+python scripts/validate_data_quality.py
+python scripts/build_data_inventory.py
+python scripts/export_stac_catalog.py
+```
 
-См. `LICENSE`.
+The STAC catalog is written to:
+
+```text
+results/stac/catalog.json
+```
+
+### 4. Train U-Net++
+
+```bash
+python scripts/train_unet_plus_plus.py --year 2020
+```
+
+Model weights are stored in `models/`. Large model and raster artifacts are intentionally gitignored; publish them through releases or external storage.
+
+## Architecture
+
+```text
+Sentinel-2 / Landsat / RGI / WGMS
+        |
+        v
+Preprocessing and spectral indices
+        |
+        v
+NDSI, Random Forest, U-Net, Attention U-Net, U-Net++
+        |
+        v
+Sliding-window inference, TTA, uncertainty estimates
+        |
+        v
+Temporal analysis, trend, forecast, validation
+        |
+        v
+FastAPI, Next.js dashboard, Gradio demo, STAC catalog, MCP tools
+```
+
+## Repository Layout
+
+| Path | Purpose |
+|------|---------|
+| `src/` | Core ML, preprocessing, metrics, visualization |
+| `notebooks/` | Reproducible data and model pipeline |
+| `glacierkz-api/` | FastAPI backend, REST, WebSocket, MCP bridge |
+| `glacierkz-web/` | Next.js dashboard with EN/RU/KK localization |
+| `glacierkz-mcp/` | Standalone MCP server |
+| `spaces/` | HuggingFace Spaces / Gradio demo |
+| `scripts/` | Training, validation, STAC, data-quality utilities |
+| `docs/` | User, developer, API, architecture, and reproducibility docs |
+| `results/` | Generated figures, tables, reports, and STAC catalog |
+| `paper/` | Methodology and research write-up |
+| `tests/` | Unit and integration tests |
+
+## Environment Variables
+
+Most users can start with `.env.example`.
+
+Common variables:
+
+| Variable | Purpose |
+|----------|---------|
+| `NEXT_PUBLIC_API_URL` | Frontend API base URL; empty for unified localhost |
+| `NEXT_PUBLIC_SITE_URL` | Public site URL for metadata |
+| `MAX_FILE_SIZE_MB` | API upload limit |
+| `CORE_DIR` | Optional path to the core `src/` package |
+| `GOOGLE_CLIENT_SECRET` | Google Drive/Earth Engine support scripts |
+| `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY` | Optional LLM report providers |
+| `OLLAMA_BASE_URL` | Optional local LLM fallback |
+
+## Quality Checks
+
+```bash
+ruff check .
+ruff format --check .
+pytest tests/ -q
+pyright
+```
+
+Frontend:
+
+```bash
+cd glacierkz-web
+npm install
+npm run lint
+npm run test
+npm run build
+```
+
+## Data and Citation
+
+GlacierNET-KZ uses open satellite and glacier inventory sources. Cite the original providers when publishing derived results:
+
+- Sentinel-2 / Copernicus
+- Landsat / USGS
+- RGI / GLIMS
+- WGMS Fluctuations of Glaciers
+
+See `docs/DATA_CITATION.md` and `CITATION.cff`.
+
+## License
+
+MIT. See `LICENSE`.

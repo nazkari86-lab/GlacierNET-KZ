@@ -23,8 +23,8 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "tensorflow>=2.12.0",
-    "numpy>=1.24.0",
+    "tensorflow>=2.12.0,<2.16.0",
+    "numpy>=1.24.0,<2.0.0",
     "scipy>=1.11.0",
     "scikit-learn>=1.3.0",
     "rasterio>=1.3.0",
@@ -43,7 +43,7 @@ dependencies = [
 
 [project.optional-dependencies]
 api = [
-    "fastapi>=0.100.0",
+    "fastapi>=0.100.0,<0.104.0",
     "uvicorn[standard]>=0.23.0",
     "python-multipart>=0.0.6",
     "httpx>=0.24.0,<0.28.0",
@@ -61,11 +61,11 @@ dev = [
 glacierkz = "predict:main"
 
 [project.urls]
-Homepage = "https://github.com/nicklaua/GlacierNET-KZ"
-Documentation = "https://github.com/nicklaua/GlacierNET-KZ/tree/main/docs"
-Repository = "https://github.com/nicklaua/GlacierNET-KZ"
-Issues = "https://github.com/nicklaua/GlacierNET-KZ/issues"
-Changelog = "https://github.com/nicklaua/GlacierNET-KZ/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/nazkari86-lab/GlacierNET-KZ"
+Documentation = "https://github.com/nazkari86-lab/GlacierNET-KZ/tree/main/docs"
+Repository = "https://github.com/nazkari86-lab/GlacierNET-KZ"
+Issues = "https://github.com/nazkari86-lab/GlacierNET-KZ/issues"
+Changelog = "https://github.com/nazkari86-lab/GlacierNET-KZ/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["."]

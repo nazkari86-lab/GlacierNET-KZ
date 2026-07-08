@@ -8,7 +8,7 @@ Thank you for your interest in contributing! This project monitors glacier retre
 
 ```bash
 # Clone the repo
-git clone https://github.com/nicklaua/GlacierNET-KZ.git
+git clone https://github.com/nazkari86-lab/GlacierNET-KZ.git
 cd GlacierNET-KZ
 
 # Install dependencies

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://github.com/nicklaua/GlacierNET-KZ";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://github.com/nazkari86-lab/GlacierNET-KZ";
 
 export default function robots(): MetadataRoute.Robots {
   return {

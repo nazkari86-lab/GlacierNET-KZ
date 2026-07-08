@@ -1,6 +1,6 @@
 # Data Citation Guide
 
-> Required citations when using GlacierNET-KZ in ISEF, GENIUS Olympiad, journal papers, or posters. Follow each data provider's terms of use.
+> Required citations when using GlacierNET-KZ in journal papers, technical reports, dashboards, or derived datasets. Follow each data provider's terms of use.
 
 ## Satellite imagery
 
@@ -87,7 +87,7 @@ Local copy: `data/wgms/tuyuksu_areas.json` (25 years, FoG 2026 extract).
   author  = {Nurlanuly, Dulat},
   title   = {GlacierNET-KZ: Deep Learning Glacier Monitoring for Kazakhstan},
   year    = {2026},
-  url     = {https://github.com/nicklaua/GlacierNET-KZ},
+  url     = {https://github.com/nazkari86-lab/GlacierNET-KZ},
   version = {0.2.0},
   license = {MIT}
 }
@@ -95,6 +95,6 @@ Local copy: `data/wgms/tuyuksu_areas.json` (25 years, FoG 2026 extract).
 
 Or use [`CITATION.cff`](../CITATION.cff) for GitHub's "Cite this repository" button.
 
-## Acknowledgements (poster / paper template)
+## Acknowledgements Template
 
 > Satellite data: Copernicus Sentinel-2 (ESA) and Landsat (USGS), accessed via Google Earth Engine. Glacier outlines: Randolph Glacier Inventory 7.0 (Pfeffer et al., 2014). In-situ validation: WGMS reference glacier Tuyuksu. Deep learning pipeline: GlacierNET-KZ (Nurlanuly, 2026).

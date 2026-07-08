@@ -9,13 +9,13 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 export const metadata: Metadata = {
   title: "GlacierNET-KZ — Glacier Segmentation",
-  description: "AI-powered glacier segmentation and monitoring for Zailiysky Alatau, Kazakhstan. Sentinel-2 + U-Net deep learning.",
-  keywords: ["glacier", "segmentation", "remote sensing", "Sentinel-2", "U-Net", "Kazakhstan", "Zailiysky Alatau", "climate change", "ISEF"],
+  description: "Geospatial AI glacier segmentation and monitoring for Zailiysky Alatau, Kazakhstan. Sentinel-2 + Landsat + U-Net.",
+  keywords: ["glacier", "segmentation", "remote sensing", "Sentinel-2", "Landsat", "U-Net", "Kazakhstan", "Zailiysky Alatau", "climate change"],
   authors: [{ name: "GlacierNET-KZ Team" }],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://github.com/nicklaua/GlacierNET-KZ"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://github.com/nazkari86-lab/GlacierNET-KZ"),
   openGraph: {
     title: "GlacierNET-KZ — AI Glacier Monitoring",
-    description: "Deep learning glacier segmentation and monitoring for Zailiysky Alatau, Kazakhstan",
+    description: "Geospatial AI glacier segmentation and monitoring for Zailiysky Alatau, Kazakhstan",
     type: "website",
     locale: "en_US",
     alternateLocale: ["ru_RU", "kk_KZ"],

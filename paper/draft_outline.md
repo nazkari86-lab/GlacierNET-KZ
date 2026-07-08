@@ -1,7 +1,7 @@
 # Научная работа — структура черновика
 
 Проект: ML-мониторинг отступания ледников Казахстана (Заилийский Алатау)
-Конкурсы: Дарын → ISEF → GENIUS Olympiad
+Research artifact: GlacierNET-KZ technical paper
 
 Заполняется по мере получения результатов из `notebooks/03..06`.
 Числа из `results/tables/*.csv` и `predictions/{year}/results.json`.
@@ -165,7 +165,7 @@ debris-covered участках. Precision=0.9554 у baseline U-Net миними
 ## 7. Список литературы
 
 См. `docs/literature_review.md` — минимум 15 источников, формат
-ГОСТ или APA (уточнить по требованиям конкурса на daryn.kz).
+APA or another target publication style.
 
 ---
 

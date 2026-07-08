@@ -63,7 +63,7 @@ jupyter lab
 - **Inputs**: `results/tables/`, `results/figures/`
 - **Outputs**: `results/figures/publication/`
 - **Duration**: ~10 min
-- **Notes**: Produces figures for paper and competition presentation.
+- **Notes**: Produces figures for the research write-up and dashboard.
 
 ## Troubleshooting
 

@@ -6,8 +6,8 @@ type: software
 authors:
   - family-names: Nurlanuly
     given-names: Dulat
-repository-code: 'https://github.com/nicklaua/GlacierNET-KZ'
-url: 'https://github.com/nicklaua/GlacierNET-KZ'
+repository-code: 'https://github.com/nazkari86-lab/GlacierNET-KZ'
+url: 'https://github.com/nazkari86-lab/GlacierNET-KZ'
 license: MIT
 version: 0.2.0
 date-released: '2026-06-28'
@@ -19,7 +19,6 @@ keywords:
   - Sentinel-2
   - Kazakhstan
   - climate-change
-  - ISEF
 abstract: >-
   Deep-learning platform for monitoring glacier retreat in Kazakhstan's
   Zailiysky and Junggar Alatau using Sentinel-2/Landsat imagery, U-Net
@@ -32,4 +31,4 @@ preferred-citation:
     - family-names: Nurlanuly
       given-names: Dulat
   year: 2026
-  url: 'https://github.com/nicklaua/GlacierNET-KZ'
+  url: 'https://github.com/nazkari86-lab/GlacierNET-KZ'

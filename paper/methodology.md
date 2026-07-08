@@ -204,6 +204,6 @@ For each year Y:
 - pip for ML deps (tensorflow, scikit-learn)
 
 ### 3.7.3 Code Availability
-- Full codebase: github.com/user/GlacierNET-KZ (public after competition)
+- Full codebase: github.com/nazkari86-lab/GlacierNET-KZ
 - Notebooks: step-by-step reproduction of all results
 - Docker: reproducible API deployment

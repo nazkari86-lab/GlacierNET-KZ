@@ -3,15 +3,6 @@ import logging
 import urllib.request
 from typing import Optional
 
-from litellm import completion
-from litellm.exceptions import (
-    APIConnectionError,
-    APIError,
-    AuthenticationError,
-    InternalServerError,
-    RateLimitError,
-)
-
 from app import config
 
 log = logging.getLogger(__name__)
@@ -65,6 +56,12 @@ def analyze(
     temperature: Optional[float] = None,
     max_tokens: Optional[int] = None,
 ) -> dict:
+    try:
+        from litellm import completion
+    except Exception as e:
+        log.warning("LiteLLM is not available: %s", e)
+        return _fallback_unavailable()
+
     _provider = provider or config.LLM_PROVIDER
     _requested_model = model or config.LLM_MODEL
     _model_full = _model_mapping(_provider, _requested_model)
@@ -102,24 +99,18 @@ def analyze(
             "model": _requested_model,
             "fallback_used": False,
         }
-    except AuthenticationError as e:
-        log.warning("LLM auth failed for %s/%s: %s", _provider, _requested_model, e)
-        return _fallback(prompt, _system, _temp, _max)
-    except RateLimitError as e:
-        log.warning("LLM rate limited for %s/%s: %s", _provider, _requested_model, e)
-        return _fallback(prompt, _system, _temp, _max)
-    except APIConnectionError as e:
-        log.warning("LLM connection failed for %s/%s: %s", _provider, _requested_model, e)
-        return _fallback(prompt, _system, _temp, _max)
-    except (InternalServerError, APIError) as e:
-        log.warning("LLM API error for %s/%s: %s", _provider, _requested_model, e)
-        return _fallback(prompt, _system, _temp, _max)
     except Exception as e:
-        log.warning("LLM unexpected error for %s/%s: %s", _provider, _requested_model, e)
+        log.warning("LLM request failed for %s/%s: %s", _provider, _requested_model, e)
         return _fallback(prompt, _system, _temp, _max)
 
 
 def _fallback(prompt: str, system: str, temp: float, max_tok: int) -> dict:
+    try:
+        from litellm import completion
+    except Exception as e:
+        log.warning("LiteLLM fallback is not available: %s", e)
+        return _fallback_unavailable()
+
     fallback_model = _model_mapping("ollama", config.LLM_FALLBACK_MODEL)
     try:
         log.info("Fallback to Ollama: %s", fallback_model)
@@ -145,12 +136,16 @@ def _fallback(prompt: str, system: str, temp: float, max_tok: int) -> dict:
         }
     except Exception as e:
         log.warning("Ollama fallback failed: %s", e)
-        return {
-            "content": "❌ Все LLM-провайдеры недоступны. Проверьте API-ключи или подключение к Ollama.",
-            "provider": "",
-            "model": "",
-            "fallback_used": True,
-        }
+        return _fallback_unavailable()
+
+
+def _fallback_unavailable() -> dict:
+    return {
+        "content": "Все LLM-провайдеры недоступны. Проверьте API-ключи или подключение к Ollama.",
+        "provider": "",
+        "model": "",
+        "fallback_used": True,
+    }
 
 
 def _fetch_json(url: str, headers: Optional[dict] = None, timeout: int = 5) -> Optional[dict]:

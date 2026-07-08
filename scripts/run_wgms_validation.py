@@ -83,7 +83,7 @@ def main() -> None:
     print(f"\nWGMS Validation (scaled bbox proxy, {len(years)} years: {years[0]}–{years[-1]})")
     print(f"  RMSE: {rmse:.4f} km²")
     print(f"  MAE:  {mae:.4f} km²")
-    print(f"  Note: For competition-grade RMSE, crop masks to RGI Tuyuksu polygon.")
+    print(f"  Note: For publication-grade RMSE, crop masks to RGI Tuyuksu polygon.")
 
     config.TABLES_DIR.mkdir(parents=True, exist_ok=True)
     import csv

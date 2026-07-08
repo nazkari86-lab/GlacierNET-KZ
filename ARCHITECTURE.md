@@ -51,7 +51,7 @@ Next.js dashboard (hub, maps, reports). Talks to API — keep env URLs consisten
 | New model | `src/` + training router |
 | New API endpoint | `glacierkz-api/app/routers/` |
 | New viz | `glacierkz-web/` |
-| Competition docs | `competition/` |
+| Research write-up | `paper/` |
 
 ## Out of scope
 

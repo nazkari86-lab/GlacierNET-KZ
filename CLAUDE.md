@@ -41,7 +41,7 @@ Activate project venv if present: `source .venv/bin/activate`
 | Web | `glacierkz-web/` | Next.js dashboard |
 | Data | `data/` | GeoTIFF, large — never read into context |
 | Notebooks | `notebooks/` | Research / repro |
-| Competition | `competition/` | ISEF/GENIUS docs |
+| Research write-up | `paper/` | methodology and results notes |
 
 ## Boundaries
 

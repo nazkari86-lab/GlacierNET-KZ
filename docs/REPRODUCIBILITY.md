@@ -1,13 +1,13 @@
 # Reproducibility Guide
 
-> How to reproduce GlacierNET-KZ results on any machine — aligned with [FAIR](https://www.go-fair.org/fair-principles/) data principles and open-science best practices for ISEF, GENIUS Olympiad, and peer review.
+> How to reproduce GlacierNET-KZ results on any machine — aligned with [FAIR](https://www.go-fair.org/fair-principles/) data principles and open-science best practices.
 
 ## Quick reproduction (no Earth Engine)
 
 Verifies that the codebase is intact and the ML stack runs:
 
 ```bash
-git clone https://github.com/nicklaua/GlacierNET-KZ.git
+git clone https://github.com/nazkari86-lab/GlacierNET-KZ.git
 cd GlacierNET-KZ
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
@@ -107,7 +107,7 @@ python scripts/generate_figures.py       # Regenerate paper figures
 
 ### 8. Reporting issues
 
-If your reproduction diverges, open a [GitHub Issue](https://github.com/nicklaua/GlacierNET-KZ/issues) with:
+If your reproduction diverges, open a [GitHub Issue](https://github.com/nazkari86-lab/GlacierNET-KZ/issues) with:
 
 1. `pip freeze` output
 2. OS and Python version

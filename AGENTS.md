@@ -33,7 +33,7 @@
 - **05_temporal_analysis.ipynb**: WGMS cell still expects `data/wgms/tuyuksu_areas.json` — use `scripts/wgms_setup.py` + `docs/wgms_validation.md`
 - **CORS_ORIGINS**: now strips whitespace after split
 - **Model weights**: `unet_best.h5`, `attention_unet_best.h5`, `unet_plus_plus_best.h5`, `random_forest.pkl` exist locally (gitignored)
-- **Checklist**: raw data baseline complete — remaining: multi-year Sentinel patch dataset, EDA, RF feature importance, competition prep
+- **Checklist**: raw data baseline complete — remaining: multi-year Sentinel patch dataset, EDA, RF feature importance, public release prep
 - **Paper**: `paper/draft_outline.md` filled with metrics from `results/tables/model_comparison.csv`, temporal series from `glacier_areas_all_years.csv`
 
 ## Key Results (real data, 2000–2020)
@@ -87,4 +87,4 @@ Do **not** run full training in CI — ~1–3 h locally with early stopping.
 3. Recompute area/trend tables with explicit provenance columns and 95% CI/p-value fields
 4. Run WGMS validation in notebook 05 after confirming FoG extraction
 5. `seed_db.py` for full history in API database
-6. Competition prep (poster, presentation, teacher review)
+6. Public release prep (walkthrough, release notes, external review)

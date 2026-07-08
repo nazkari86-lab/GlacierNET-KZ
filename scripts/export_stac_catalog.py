@@ -26,7 +26,7 @@ from src.config import (
     YEARS_SENTINEL2,
 )
 
-REPO_URL = "https://github.com/nicklaua/GlacierNET-KZ"
+REPO_URL = "https://github.com/nazkari86-lab/GlacierNET-KZ"
 LICENSE = "MIT"
 
 

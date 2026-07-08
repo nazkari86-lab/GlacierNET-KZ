@@ -1,7 +1,7 @@
 # Контакты и потенциальные партнёрства
 
-Из исследовательской базы проекта. Партнёрство/переписка с этими
-организациями — дополнительный балл на конкурсах (Идея E).
+Из исследовательской базы проекта. Эти организации могут помочь с
+валидацией данных, методологией, внешней рецензией и прикладными пилотами.
 
 ---
 
@@ -46,14 +46,13 @@
 ## Шаблон письма (английский, для зарубежных контактов)
 
 ```
-Subject: High school research project on glacier monitoring in Kazakhstan (Tien Shan) — request for guidance
+Subject: Glacier monitoring project in Kazakhstan (Tien Shan) — request for guidance
 
 Dear [Name],
 
-My name is [Your Name], a [grade]-grade student in Kazakhstan working on a
-research project that applies a U-Net deep learning model to monitor
-glacier retreat in the Zailiysky Alatau (Tuyuksu glacier group) using
-Sentinel-2 imagery, for the Daryn / ISEF / GENIUS Olympiad competitions.
+My name is [Your Name], and I am working on an open-source research project
+that applies a U-Net deep learning model to monitor glacier retreat in the
+Zailiysky Alatau (Tuyuksu glacier group) using Sentinel-2 imagery.
 
 I read your work on [paper title, DOI] and found it directly relevant to
 my methodology. I would be grateful for any guidance on [specific
@@ -68,14 +67,13 @@ Thank you for your time,
 ## Шаблон письма (русский, для КазНУ / Института географии)
 
 ```
-Тема: Школьный исследовательский проект по мониторингу ледников Казахстана (просьба о консультации)
+Тема: Проект по мониторингу ледников Казахстана (просьба о консультации)
 
 Здравствуйте, [Имя]!
 
-Меня зовут [Имя], я учусь в [класс] классе и работаю над проектом по
-применению нейросети U-Net для мониторинга отступания ледников
-Заилийского Алатау (группа Туюксу) на основе снимков Sentinel-2,
-для участия в конкурсах Дарын / ISEF / GENIUS Olympiad.
+Меня зовут [Имя], я работаю над open-source проектом по применению
+нейросети U-Net для мониторинга отступания ледников Заилийского Алатау
+(группа Туюксу) на основе снимков Sentinel-2.
 
 Я ознакомился(-ась) с работой [название, DOI] и нашёл(-шла) её крайне
 релевантной для своей методологии. Буду благодарен(-на) за консультацию

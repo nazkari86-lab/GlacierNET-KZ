@@ -14,7 +14,7 @@
 
 **Где это нужно:** ледники Заилийского (Илийского) Алатау кормят реки, от которых зависит вода для **Алматы** (~2.4 млн человек). Лёд тает — через десятилетия меньше воды.
 
-**Кто автор:** Dulat Nurlanuly · проект для конкурсов **Дарын → ISEF → GENIUS Olympiad** · лицензия **MIT** (можно свободно изучать и использовать код).
+**Кто автор:** Dulat Nurlanuly · open-source проект под лицензией **MIT** (можно свободно изучать и использовать код).
 
 ---
 
@@ -154,7 +154,7 @@
 | **federated_learning.py** | Эксперимент: обучение без передачи данных |
 | **…остальные…** | Продвинутые/экспериментальные модули (NAS, GNN, …) |
 
-> **Важно:** для конкурса и статьи достаточно **config, data_loader, preprocessing, models, metrics, visualization**. Остальное — задел на будущее.
+> **Важно:** для базового воспроизводимого пайплайна достаточно **config, data_loader, preprocessing, models, metrics, visualization**. Остальное — расширения и эксперименты.
 
 ### `notebooks/` — пошаговые инструкции (Jupyter)
 
@@ -165,7 +165,7 @@
 | **03_baseline_models** | Обучает NDSI и Random Forest |
 | **04_unet_training** | Обучает U-Net, сохраняет `models/unet_best.h5` |
 | **05_temporal_analysis** | Считает площади по годам, прогноз 2050 |
-| **06_visualization** | Финальные картинки для постера |
+| **06_visualization** | Финальные карты и графики для отчёта |
 | **_synthetic_smoke_test.py** | Быстрая проверка: код работает без спутников |
 | **_unet_smoke_test.py** | Проверка U-Net на синтетике |
 
@@ -304,14 +304,6 @@ glacierkz-api/app/
 | **results_template.md** | Реальные цифры для раздела Results |
 | **methodology.md** | Описание методологии |
 
-### `competition/` — материалы для конкурсов
-
-| Файл | Конкурс |
-|------|---------|
-| **ISEF_POSTER.md** | Макет постера Regeneron ISEF |
-| **ISEF_PRESENTATION.md** | Сценарий 7-минутного доклада |
-| **GENIUS_OLYMPIAD.md** | Пакет для GENIUS Olympiad |
-
 ### `experimental/` — эксперименты на других языках
 
 Прототипы на **C, C++, Go, Java, .NET** — не для продакшена, только исследование.
@@ -371,7 +363,7 @@ jupyter lab notebooks/
 |-----------|---------------|
 | **Обязательно понять** | `src/config.py`, `src/models.py`, `notebooks/01-06`, `README.md` |
 | **Для демонстрации** | `glacierkz-web/`, `spaces/`, `glacierkz-api/` |
-| **Для статьи/конкурса** | `paper/`, `competition/`, `results/`, `docs/literature_review.md` |
+| **Для отчёта/статьи** | `paper/`, `results/`, `docs/literature_review.md` |
 | **Можно не трогать** | `experimental/`, `__pycache__/`, `.venv/`, `node_modules/` |
 | **Экспериментальное** | `src/diffusion_model.py`, `federated_learning.py`, `neural_architecture_search.py` |
 
@@ -380,7 +372,7 @@ jupyter lab notebooks/
 ## 8. Частые вопросы
 
 **Почему так много файлов?**  
-Проект вырос из научного конкурса в полноценную платформу: ML + API + сайт + демо + тесты + документация.
+Проект вырос в полноценную платформу: ML + API + сайт + демо + тесты + документация.
 
 **Нужен ли GPU?**  
 Для обучения U-Net — желательно. Для инференса (предсказания) и веб-интерфейса — хватит CPU.
@@ -403,7 +395,6 @@ jupyter lab notebooks/
 | Разобраться в коде ML | `src/config.py` → `src/models.py` → ноутбук 04 |
 | Понять API | http://localhost:8080/docs |
 | Написать статью | `paper/draft_outline.md` + `results/tables/` |
-| Подготовить постер | `competition/ISEF_POSTER.md` |
 | Внести вклад | `CONTRIBUTING.md` |
 | Полный список файлов | `docs/PROJECT_FULL_REFERENCE.md` |
 
