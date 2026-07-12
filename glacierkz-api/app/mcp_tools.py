@@ -10,17 +10,16 @@ from __future__ import annotations
 
 import importlib
 import logging
+import sys
 import time
 from pathlib import Path
 from typing import Any
 
-logger = logging.getLogger(__name__)
-
 from app.utils import resolve_core_dir
 
-CORE_DIR = resolve_core_dir(__file__)
+logger = logging.getLogger(__name__)
 
-import sys
+CORE_DIR = resolve_core_dir(__file__)
 
 if str(CORE_DIR) not in sys.path:
     sys.path.insert(0, str(CORE_DIR))
@@ -188,7 +187,7 @@ def list_models() -> dict:
     """
     try:
         from src.models import MODEL_REGISTRY
-        from src.segmentation_models import SEGMENTATION_MODELS, list_segmentation_models
+        from src.segmentation_models import SEGMENTATION_MODELS
 
         all_models = []
         all_names = sorted(set(list(MODEL_REGISTRY) + list(SEGMENTATION_MODELS)))
@@ -1513,8 +1512,9 @@ def active_learning_suggest(
     """
     try:
         try:
+            import numpy as np
+
             from src.active_learning import (
-                ActiveLearningConfig,
                 density_weighted_sampling,
                 entropy_sampling,
                 margin_sampling,
@@ -1522,10 +1522,6 @@ def active_learning_suggest(
                 uncertainty_sampling,
             )
 
-            config = ActiveLearningConfig(query_batch_size=n_suggest)
-            import numpy as np
-
-            features = np.random.rand(unlabeled_pool_size, 128).astype(np.float32)
             scores = np.random.rand(unlabeled_pool_size).astype(np.float32)
 
             strategy_map = {
@@ -1616,6 +1612,8 @@ def search_architectures(
             best = nas.run()
         except Exception as exc:
             logger.warning("src.neural_architecture_search failed: %s", exc)
+            import numpy as np
+
             best = {
                 "architecture": {
                     "encoder_filters": [32, 64, 128, 256],
@@ -2024,7 +2022,7 @@ def graph_neural_network_predict(
                 edges.append([i, i + 1])
                 edges.append([i + 1, i])
             edge_index = np.array(edges, dtype=np.int32).T if edges else np.array([[0], [0]], dtype=np.int32)
-            adj = build_adjacency_matrix(edge_index, num_nodes)
+            build_adjacency_matrix(edge_index, num_nodes)
             model = build_gnn_model(config)
             nodes = np.random.rand(num_nodes, node_features).astype(np.float32)
             out = model.predict(nodes[np.newaxis, ...], verbose=0)
@@ -2034,7 +2032,6 @@ def graph_neural_network_predict(
             import numpy as np
 
             out = np.random.rand(num_nodes, hidden_dim).astype(np.float32)
-            adj = None
 
         return _ok(
             {
@@ -2182,14 +2179,13 @@ def diffusion_sample(
         np = _lazy_import("numpy")
 
         try:
-            from src.diffusion_model import DiffusionConfig, build_ddpm_model, get_noise_schedule, sample_ddpm
+            from src.diffusion_model import DiffusionConfig, build_ddpm_model, sample_ddpm
 
             config = DiffusionConfig(
                 image_size=image_size,
                 timesteps=timesteps,
                 schedule_type=schedule_type,
             )
-            betas = get_noise_schedule(config)
             model = build_ddpm_model(config)
             samples = sample_ddpm(model, None, config, num_samples=num_samples)
         except Exception as exc:
@@ -2236,10 +2232,9 @@ def federated_learning_status() -> dict:
     """
     try:
         try:
-            from src.federated_learning import FederatedConfig, FederatedServer
+            from src.federated_learning import FederatedConfig
 
             config = FederatedConfig()
-            server = FederatedServer(config)
             status = {
                 "strategy": config.strategy if hasattr(config, "strategy") else "fedavg",
                 "num_clients": config.num_clients if hasattr(config, "num_clients") else 0,
@@ -2288,7 +2283,6 @@ def load_satellite_image(
         Specific bands to load. Defaults to all available.
     """
     try:
-        np = _lazy_import("numpy")
         if not Path(image_path).exists():
             return _err(f"Image not found: {image_path}")
 

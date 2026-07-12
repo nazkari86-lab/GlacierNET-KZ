@@ -5,6 +5,7 @@ Checks all required services and dependencies before deployment.
 Run with: python scripts/validate-env.py
 """
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -86,6 +87,7 @@ def check_env_files() -> bool:
     print("\n[5] Environment files")
     all_ok = True
     root = Path(__file__).resolve().parent.parent
+    ci_mode = "GITHUB_ACTIONS" in os.environ or "CI" in os.environ
 
     api_env = root / "glacierkz-api" / ".env"
     api_example = root / "glacierkz-api" / ".env.example"
@@ -95,8 +97,8 @@ def check_env_files() -> bool:
     if api_env.exists():
         check("glacierkz-api/.env", True, "exists")
     elif api_example.exists():
-        check("glacierkz-api/.env", False, "missing — copy from .env.example")
-        all_ok = False
+        check("glacierkz-api/.env.example", True, "template available" if ci_mode else "copy to .env locally")
+        all_ok = all_ok and ci_mode
     else:
         check("glacierkz-api/.env", False, "missing (no .env.example either)")
         all_ok = False
@@ -104,8 +106,8 @@ def check_env_files() -> bool:
     if web_env.exists():
         check("glacierkz-web/.env.local", True, "exists")
     elif web_example.exists():
-        check("glacierkz-web/.env.local", False, "missing — copy from .env.example")
-        all_ok = False
+        check("glacierkz-web/.env.example", True, "template available" if ci_mode else "copy to .env.local locally")
+        all_ok = all_ok and ci_mode
     else:
         check("glacierkz-web/.env.local", False, "missing (no .env.example either)")
         all_ok = False
@@ -126,9 +128,11 @@ def check_api_key_exposure() -> bool:
     ]
 
     found = []
+    skip_dirs = {".git", "venv", "__pycache__", "node_modules", ".next"}
+    self_path = Path(__file__).resolve()
     for pattern in dangerous:
         for f in root.rglob("*.py"):
-            if "__pycache__" in str(f) or "node_modules" in str(f):
+            if f.resolve() == self_path or any(part in skip_dirs or part.startswith(".venv") for part in f.parts):
                 continue
             try:
                 content = f.read_text(errors="ignore")

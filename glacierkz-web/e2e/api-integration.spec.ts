@@ -16,7 +16,7 @@ test.describe("API integration", () => {
   });
 
   test("models endpoint lists available architectures", async ({ request }) => {
-    const res = await request.get(`${API_URL}/api/models`);
+    const res = await request.get(`${API_URL}/api/models/all`);
     expect(res.ok()).toBeTruthy();
     const models = await res.json();
     expect(Array.isArray(models)).toBeTruthy();

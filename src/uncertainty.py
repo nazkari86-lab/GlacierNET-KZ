@@ -548,8 +548,6 @@ def _general_calibration(
 
     # Brier score: mean squared error of probabilistic predictions
     if n_classes == 2 and flat_probs.shape[1] == 1:
-        brier = float(np.mean((flat_p - flat_l) ** 2)) if False else 0.0
-        # recompute properly
         brier = float(np.mean((flat_probs.ravel() - flat_labels.astype(np.float64)) ** 2))
     else:
         one_hot = np.zeros((flat_labels.shape[0], n_classes), dtype=np.float64)

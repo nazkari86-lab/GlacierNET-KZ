@@ -4,17 +4,17 @@ import uuid
 from pathlib import Path
 from typing import Optional
 
-logger = logging.getLogger(__name__)
-
 import numpy as np
 from PIL import Image
 
+from app.config import RESULTS_DIR
 from app.utils import resolve_core_dir
+
+logger = logging.getLogger(__name__)
 
 CORE_DIR = resolve_core_dir(__file__)
 
 import src.config as core_config  # noqa: E402
-from app.config import RESULTS_DIR  # noqa: E402
 from src.data_loader import _append_sentinel2_indices, read_raster_meta  # noqa: E402
 from src.data_loader import load_image as core_load_image  # noqa: E402
 from src.metrics import pixels_to_area_km2  # noqa: E402

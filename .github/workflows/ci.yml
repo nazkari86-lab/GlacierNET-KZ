@@ -130,7 +130,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-      - run: pip install -r requirements.txt -r glacierkz-api/requirements-api.txt bandit safety
+      - run: pip install -r requirements.txt -r glacierkz-api/requirements-api.txt bandit safety==2.3.5
       - name: Run Bandit (Python security)
         run: bandit -r glacierkz-api/app/ -ll --skip B101
       - name: Run Safety (dependency vulnerabilities)

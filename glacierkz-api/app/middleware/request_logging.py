@@ -9,10 +9,10 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
-_SENSITIVE_KEYS_RE = re.compile(r"(api[_-]?key|token|secret|password)", re.IGNORECASE)
-
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+
+_SENSITIVE_KEYS_RE = re.compile(r"(api[_-]?key|token|secret|password)", re.IGNORECASE)
 
 logger = logging.getLogger("glacierkz.access")
 

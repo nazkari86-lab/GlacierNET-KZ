@@ -77,11 +77,11 @@ def get_data_coverage() -> dict[str, Any]:
 
     raw_s2 = _glob_years(RAW_S2, "sentinel2") if RAW_S2.exists() else []
     raw_ls = _glob_years(RAW_LS, "landsat") if RAW_LS.exists() else []
-    predictions = sorted(
-        int(p.name)
-        for p in PREDICTIONS_DIR.iterdir()
-        if p.is_dir() and p.name.isdigit()
-    ) if PREDICTIONS_DIR.exists() else []
+    predictions = (
+        sorted(int(p.name) for p in PREDICTIONS_DIR.iterdir() if p.is_dir() and p.name.isdigit())
+        if PREDICTIONS_DIR.exists()
+        else []
+    )
 
     target_s2 = status.get("sentinel2_years_target") or list(range(2015, 2025))
     target_ls = status.get("landsat_years_target") or [2000, 2003, 2005, 2008, 2010, 2013]

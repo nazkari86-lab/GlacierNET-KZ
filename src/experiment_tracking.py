@@ -44,7 +44,6 @@ except ImportError:
     _cv2_available = False
 
 try:
-    from scipy import ndimage as _scipy_ndimage  # type: ignore[import-untyped]
     from scipy.ndimage import imread as _scipy_imread  # type: ignore[attr-defined]
 
     _scipy_available = True

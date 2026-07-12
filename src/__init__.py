@@ -64,7 +64,7 @@ def __getattr__(name: str) -> object:
 
 if TYPE_CHECKING:
     # Static analysers see the concrete modules for type checking only.
-    from . import (
+    from . import (  # noqa: F401
         active_learning,
         anomaly,
         augmentation,

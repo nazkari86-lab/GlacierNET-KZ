@@ -406,9 +406,12 @@ def vit_classifier(config: ViTConfig):
         return tf.concat([cls, patch_tensor], axis=1)
 
     x = tf.keras.layers.Lambda(add_tokens, name="add_cls_token")(patches)
-    x = tf.keras.layers.Embedding(config.num_patches + 1, config.embed_dim, name="pos_embedding")(
-        tf.range(config.num_patches + 1)
-    ) + x
+    x = (
+        tf.keras.layers.Embedding(config.num_patches + 1, config.embed_dim, name="pos_embedding")(
+            tf.range(config.num_patches + 1)
+        )
+        + x
+    )
 
     x = tf.keras.layers.Dropout(config.dropout_rate)(x)
 

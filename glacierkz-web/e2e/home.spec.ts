@@ -11,7 +11,7 @@ test.describe("Home page", () => {
     await page.goto("/");
     await page.getByRole("radio", { name: "RU" }).click();
     await expect(page.locator("html")).toHaveAttribute("lang", "ru");
-    await expect(page.getByRole("link", { name: "Предсказание" })).toBeVisible();
+    await expect(page.getByLabel("Main navigation").getByRole("link", { name: "Предсказание" })).toBeVisible();
   });
 
   test("navigates to predict page", async ({ page }) => {

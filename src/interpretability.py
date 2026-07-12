@@ -122,7 +122,7 @@ def _find_last_conv_layer(model, layer_name: str | None = None) -> str:
             return layer_name
         except ValueError:
             raise ValueError(
-                f"Layer '{layer_name}' not found in model. Available layers: {[l.name for l in model.layers]}"
+                f"Layer '{layer_name}' not found in model. Available layers: {[layer.name for layer in model.layers]}"
             )
 
     conv_layers = [

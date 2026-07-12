@@ -56,6 +56,7 @@ export default function PredictPage() {
         </div>
       </header>
       <main id="main-content" className="mx-auto max-w-5xl space-y-6 px-4 py-8">
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{t("predict.title")}</h1>
         <ErrorBoundary>
           <section className="rounded-xl bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-lg font-semibold">{t("predict.step1")}</h2>
