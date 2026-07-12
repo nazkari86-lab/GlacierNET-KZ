@@ -275,7 +275,7 @@ def adjust_gamma(
 ) -> np.ndarray:
     """Gamma-коррекция: image = image ^ gamma."""
     gamma = rng.uniform(*gamma_range)
-    return np.clip(image**gamma, 0, 1).astype(np.float32)
+    return np.power(np.clip(image, 0, 1), gamma).astype(np.float32)
 
 
 def add_gaussian_noise(image: np.ndarray, rng: np.random.Generator, std: float = 0.01) -> np.ndarray:
@@ -398,6 +398,7 @@ def augment_patch(
     mask: np.ndarray,
     rng: np.random.Generator | None = None,
     cfg: AugmentationConfig | None = None,
+    photometric_channels: int | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Полный пайплайн аугментации для одного патча.
 
@@ -413,6 +414,10 @@ def augment_patch(
         Генератор случайных чисел.
     cfg : AugmentationConfig, optional
         Конфигурация аугментации.
+    photometric_channels : int, optional
+        Число первых каналов, к которым применяются фотометрические
+        преобразования. Остальные каналы (например, индексы и terrain
+        features) сохраняют физический диапазон значений.
 
     Returns
     -------
@@ -424,6 +429,14 @@ def augment_patch(
         cfg = AugmentationConfig()
 
     img, msk = image.copy(), mask.copy()
+    n_photometric = image.shape[-1] if photometric_channels is None else photometric_channels
+    if not 1 <= n_photometric <= image.shape[-1]:
+        raise ValueError(f"photometric_channels must be in [1, {image.shape[-1]}], got {n_photometric}")
+
+    def transform_photometric(transform, *args):
+        result = img.copy()
+        result[..., :n_photometric] = transform(result[..., :n_photometric], *args)
+        return result
 
     # Геометрические
     if rng.random() < cfg.p_flip_lr:
@@ -444,25 +457,25 @@ def augment_patch(
 
     # Фотометрические
     if rng.random() < cfg.p_brightness:
-        img = adjust_brightness(img, rng, cfg.brightness_range, cfg.brightness_offset)
+        img = transform_photometric(adjust_brightness, rng, cfg.brightness_range, cfg.brightness_offset)
 
     if rng.random() < cfg.p_contrast:
-        img = adjust_contrast(img, rng, cfg.contrast_range)
+        img = transform_photometric(adjust_contrast, rng, cfg.contrast_range)
 
     if rng.random() < cfg.p_gamma:
-        img = adjust_gamma(img, rng, cfg.gamma_range)
+        img = transform_photometric(adjust_gamma, rng, cfg.gamma_range)
 
     if rng.random() < cfg.p_gaussian_noise:
-        img = add_gaussian_noise(img, rng, cfg.noise_std)
+        img = transform_photometric(add_gaussian_noise, rng, cfg.noise_std)
 
     if rng.random() < cfg.p_gaussian_blur:
-        img = gaussian_blur(img, rng, cfg.blur_sigma_range)
+        img = transform_photometric(gaussian_blur, rng, cfg.blur_sigma_range)
 
     if rng.random() < cfg.p_channel_dropout:
-        img = channel_dropout(img, rng, cfg.channel_dropout_prob, cfg.min_channels)
+        img = transform_photometric(channel_dropout, rng, cfg.channel_dropout_prob, cfg.min_channels)
 
     if rng.random() < cfg.p_spectral_jitter:
-        img = spectral_jitter(img, rng, cfg.spectral_jitter_std)
+        img = transform_photometric(spectral_jitter, rng, cfg.spectral_jitter_std)
 
     return img, msk
 

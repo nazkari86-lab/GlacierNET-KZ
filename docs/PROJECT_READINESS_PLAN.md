@@ -39,7 +39,7 @@
 
 1. Нет подтвержденного клиента или пилота.
 2. Нет LOI от госоргана, университета, института или water/climate organization.
-3. Multi-year training still weak: supervised patches mainly 2020, multi-year sample only started.
+3. The capped 2016-2024 temporal benchmark now has a reportable untouched-2024 result (`Dice=0.7802`, `IoU=0.7382`), but it remains limited to one AOI and RGI-derived masks; external/cross-region validation is still required.
 4. 2015 Sentinel-2 is a late-year TOA fallback and must be separated from strict summer SR analysis.
 5. Business model needs sharper buyer, pricing, procurement path, and pilot scope.
 6. Scientific story has outlier years and must distinguish climate signal from data/season/cloud artifacts.
@@ -57,9 +57,9 @@
   - model uncertainty
   - data quality score per year
   - cloud/season caveat per year
-- Add RF feature importance plot and table.
-- Add multi-year Sentinel-2 patch dataset for 2016-2024, excluding 2015 by default.
-- Re-evaluate U-Net on at least 2 held-out years or spatial splits.
+- Done: add RF feature importance plot and table.
+- Done: add a capped multi-year Sentinel-2 patch dataset for 2016-2024, excluding 2015 by default.
+- Done: add a strict 2023/2024 held-out-year evaluation path. Remaining: scale the dataset and obtain a converged temporal benchmark.
 
 ### Week 2: Product and demo
 

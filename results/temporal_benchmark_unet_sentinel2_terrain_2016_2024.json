@@ -1,0 +1,50 @@
+{
+  "created_at": "2026-07-11T20:50:59+00:00",
+  "evaluation_protocol": "untouched temporal test-year holdout",
+  "model_path": "models/unet_best_sentinel2_terrain_year_holdout_2016_2024",
+  "patches_dir": "data/processed/patches/sentinel2_terrain_year_holdout_2016_2024",
+  "train_years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022
+  ],
+  "validation_years": [
+    2023
+  ],
+  "test_years": [
+    2024
+  ],
+  "feature_schema": [
+    "B2",
+    "B3",
+    "B4",
+    "B8",
+    "B8A",
+    "B11",
+    "B12",
+    "NDSI",
+    "NDWI",
+    "BSI",
+    "EVI",
+    "elevation_m_normalized",
+    "slope_degrees_normalized",
+    "aspect_degrees_normalized"
+  ],
+  "test_patch_shape": [
+    256,
+    256,
+    256,
+    14
+  ],
+  "metrics": {
+    "loss": 0.2576601505279541,
+    "dice_coefficient": 0.7801628112792969,
+    "binary_io_u": 0.7382286787033081,
+    "precision": 0.9712451696395874,
+    "recall": 0.7547240257263184
+  }
+}

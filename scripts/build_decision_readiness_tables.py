@@ -12,6 +12,7 @@ from __future__ import annotations
 import csv
 import json
 import math
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -30,6 +31,11 @@ DECISION_TS_CSV = config.TABLES_DIR / "decision_ready_area_timeseries.csv"
 DECISION_SUMMARY_JSON = config.RESULTS_DIR / "decision_readiness_summary.json"
 
 METHOD_PRIORITY = ["RF", "U-Net", "NDSI"]
+MODEL_FILES = {
+    "RF": "models/random_forest.pkl",
+    "U-Net": "models/unet_best.h5",
+    "NDSI": "spectral_index:ndsi",
+}
 
 
 def read_area_rows() -> list[dict[str, str]]:
@@ -48,9 +54,13 @@ def source_flag(year: int, sensor: str, source_file: str) -> tuple[str, str, boo
             False,
         )
     if sensor == "Sentinel-2":
-        return "sentinel2_sr_or_harmonized", "", True
+        return "sentinel2_sr", "", True
     if sensor == "Landsat":
-        return "landsat_historical", "Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.", True
+        return (
+            "landsat_historical",
+            "Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.",
+            True,
+        )
     return "unknown", "Unknown source.", False
 
 
@@ -106,6 +116,18 @@ def choose_primary_row(rows: list[dict[str, str]]) -> dict[str, str]:
     return rows[0]
 
 
+def git_or_snapshot_id() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=ROOT,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return "unknown"
+
+
 def safe_float(value: str) -> float:
     try:
         return float(value)
@@ -153,6 +175,7 @@ def main() -> None:
 
     decision_rows: list[dict[str, str | int | float | bool]] = []
     created_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    snapshot_id = git_or_snapshot_id()
     for year, year_rows in sorted(by_year.items()):
         primary = choose_primary_row(year_rows)
         quality = quality_by_year[year]
@@ -167,6 +190,8 @@ def main() -> None:
                 "confidence": quality["confidence"],
                 "include_in_strict_trend": quality["include_in_strict_trend"],
                 "source_file": primary["source_file"],
+                "model_file": MODEL_FILES.get(primary["method"], "unknown"),
+                "git_or_snapshot_id": snapshot_id,
                 "caveat": quality["caveat"],
                 "created_at": created_at,
             }
@@ -174,12 +199,12 @@ def main() -> None:
 
     config.TABLES_DIR.mkdir(parents=True, exist_ok=True)
     with QUALITY_CSV.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(quality_rows[0].keys()))
+        writer = csv.DictWriter(f, fieldnames=list(quality_rows[0].keys()), lineterminator="\n")
         writer.writeheader()
         writer.writerows(quality_rows)
 
     with DECISION_TS_CSV.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(decision_rows[0].keys()))
+        writer = csv.DictWriter(f, fieldnames=list(decision_rows[0].keys()), lineterminator="\n")
         writer.writeheader()
         writer.writerows(decision_rows)
 

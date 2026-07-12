@@ -39,6 +39,7 @@ results/tables/*
 !results/grant_readiness_summary.json
 !results/pipeline_status.json
 !results/wgms_validation_report.json
+!results/temporal_benchmark_unet_sentinel2_terrain_2016_2024.json
 predictions/
 glacierkz-api/results/
 **/build/
@@ -66,8 +67,12 @@ data/rgi/*.prj
 data/rgi/*.cpg
 data/processed/patches/**/*.npy
 data/processed/masks/*.tif
+data/ancillary/**/*.tif
+data/external/glathida/**
 models/*.h5
 models/*.pkl
+models/*
+!models/.gitkeep
 
 # OS
 .DS_Store

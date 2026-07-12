@@ -13,10 +13,10 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import rasterio
+import rasterio  # noqa: E402
 
-from predict import list_available_years
-from src import config
+from predict import list_available_years  # noqa: E402
+from src import config  # noqa: E402
 
 OUT = config.TABLES_DIR / "glacier_areas_all_years.csv"
 METHOD_MAP = {"ndsi": "NDSI", "rf": "RF", "unet": "U-Net"}
@@ -110,7 +110,7 @@ def main() -> None:
         "created_at",
     ]
     with OUT.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 

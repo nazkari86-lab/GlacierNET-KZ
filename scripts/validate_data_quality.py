@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -16,6 +17,22 @@ from src import config, data_loader  # noqa: E402
 OUT = config.RESULTS_DIR / "data_quality_report.json"
 
 
+def open_raster_with_retry(path: Path, attempts: int = 3):
+    import rasterio
+    from rasterio.errors import RasterioIOError
+
+    last_error: RasterioIOError | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return rasterio.open(path)
+        except RasterioIOError as error:
+            last_error = error
+            if "Interrupted system call" not in str(error) or attempt == attempts:
+                raise
+            time.sleep(0.25 * attempt)
+    raise last_error or RuntimeError(f"Could not open raster: {path}")
+
+
 def expected_loaded_channels(path: Path) -> int:
     if path.name.startswith("sentinel2_"):
         return config.N_CHANNELS
@@ -25,10 +42,8 @@ def expected_loaded_channels(path: Path) -> int:
 
 
 def validate_raster(path: Path, expected_shape: tuple[int, int] | None) -> tuple[dict, list[str]]:
-    import rasterio
-
     errors: list[str] = []
-    with rasterio.open(path) as src:
+    with open_raster_with_retry(path) as src:
         shape = (src.height, src.width)
         if str(src.crs) != config.EXPORT_CRS:
             errors.append(f"{path.name}: CRS {src.crs} != {config.EXPORT_CRS}")
@@ -71,9 +86,7 @@ def main() -> int:
     expected_shape = None
     for path in sorted(sentinel_paths.values()) + sorted(landsat_paths.values()):
         if expected_shape is None:
-            import rasterio
-
-            with rasterio.open(path) as src:
+            with open_raster_with_retry(path) as src:
                 expected_shape = (src.height, src.width)
         row, row_errors = validate_raster(path, expected_shape)
         rows.append(row)

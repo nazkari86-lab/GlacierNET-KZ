@@ -1,0 +1,18 @@
+{
+  "reference": "data/raw/sentinel2/sentinel2_2020.tif",
+  "terrain": "data/ancillary/terrain/terrain_features.tif",
+  "worldcover": "data/ancillary/worldcover/worldcover_2021_aligned.tif",
+  "dem_sources": [
+    "data/ancillary/copdem/Copernicus_DSM_COG_10_N42_00_E076_00_DEM.tif",
+    "data/ancillary/copdem/Copernicus_DSM_COG_10_N42_00_E077_00_DEM.tif",
+    "data/ancillary/copdem/Copernicus_DSM_COG_10_N43_00_E076_00_DEM.tif",
+    "data/ancillary/copdem/Copernicus_DSM_COG_10_N43_00_E077_00_DEM.tif"
+  ],
+  "worldcover_source": "data/ancillary/worldcover/ESA_WorldCover_10m_2021_v200_N42E075_Map.tif",
+  "channels": [
+    "elevation_m",
+    "slope_degrees",
+    "aspect_degrees",
+    "esa_worldcover_2021_class"
+  ]
+}

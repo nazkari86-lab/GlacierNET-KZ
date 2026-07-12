@@ -39,8 +39,27 @@
     2010,
     2013
   ],
+  "training_masks": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "mask_manifest": "data/processed/masks/manifest.json",
   "patches": [
     2020
+  ],
+  "patch_manifests": [
+    "data/processed/patches/sentinel2_multiyear_sample/manifest.json",
+    "data/processed/patches/sentinel2_multiyear_sample_2016_2024/manifest.json",
+    "data/processed/patches/sentinel2_terrain_sample_2016_2024/manifest.json",
+    "data/processed/patches/sentinel2_terrain_year_holdout_2016_2024/manifest.json",
+    "data/processed/patches/sentinel2_year_holdout_2016_2024/manifest.json"
   ],
   "predictions": [
     2000,

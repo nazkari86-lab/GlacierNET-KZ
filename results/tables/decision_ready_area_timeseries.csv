@@ -1,17 +1,17 @@
-year,area_km2,primary_method,sensor,source_flag,quality_score,confidence,include_in_strict_trend,source_file,caveat,created_at
-2000,579.08,RF,Landsat,landsat_historical,90,high,True,data/raw/landsat/landsat_2000.tif,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.,2026-07-07T21:37:59+00:00
-2003,726.56,RF,Landsat,landsat_historical,90,high,True,data/raw/landsat/landsat_2003.tif,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.,2026-07-07T21:37:59+00:00
-2005,577.51,RF,Landsat,landsat_historical,90,high,True,data/raw/landsat/landsat_2005.tif,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.,2026-07-07T21:37:59+00:00
-2008,401.18,RF,Landsat,landsat_historical,90,high,True,data/raw/landsat/landsat_2008.tif,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.,2026-07-07T21:37:59+00:00
-2010,493.38,RF,Landsat,landsat_historical,90,high,True,data/raw/landsat/landsat_2010.tif,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.,2026-07-07T21:37:59+00:00
-2013,474.83,RF,Landsat,landsat_historical,90,high,True,data/raw/landsat/landsat_2013.tif,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.,2026-07-07T21:37:59+00:00
-2015,1875.42,RF,Sentinel-2,sentinel2_toa_fallback,57,low,False,data/raw/sentinel2/sentinel2_2015.tif,Late-2015 annual TOA fallback; exclude from strict summer Sentinel-2 trend.,2026-07-07T21:37:59+00:00
-2016,443.43,RF,Sentinel-2,sentinel2_sr_or_harmonized,100,high,True,data/raw/sentinel2/sentinel2_2016.tif,,2026-07-07T21:37:59+00:00
-2017,324.93,RF,Sentinel-2,sentinel2_sr_or_harmonized,100,high,True,data/raw/sentinel2/sentinel2_2017.tif,,2026-07-07T21:37:59+00:00
-2018,859.19,RF,Sentinel-2,sentinel2_sr_or_harmonized,100,high,True,data/raw/sentinel2/sentinel2_2018.tif,,2026-07-07T21:37:59+00:00
-2019,532.61,RF,Sentinel-2,sentinel2_sr_or_harmonized,92,high,True,data/raw/sentinel2/sentinel2_2019.tif,,2026-07-07T21:37:59+00:00
-2020,449.55,RF,Sentinel-2,sentinel2_sr_or_harmonized,92,high,True,data/raw/sentinel2/sentinel2_2020.tif,,2026-07-07T21:37:59+00:00
-2021,382.25,RF,Sentinel-2,sentinel2_sr_or_harmonized,92,high,True,data/raw/sentinel2/sentinel2_2021.tif,,2026-07-07T21:37:59+00:00
-2022,396.41,RF,Sentinel-2,sentinel2_sr_or_harmonized,92,high,True,data/raw/sentinel2/sentinel2_2022.tif,,2026-07-07T21:37:59+00:00
-2023,383.81,RF,Sentinel-2,sentinel2_sr_or_harmonized,92,high,True,data/raw/sentinel2/sentinel2_2023.tif,,2026-07-07T21:37:59+00:00
-2024,450.47,RF,Sentinel-2,sentinel2_sr_or_harmonized,92,high,True,data/raw/sentinel2/sentinel2_2024.tif,,2026-07-07T21:37:59+00:00
+year,area_km2,primary_method,sensor,source_flag,quality_score,confidence,include_in_strict_trend,source_file,model_file,git_or_snapshot_id,caveat,created_at
+2000,579.08,RF,Landsat,landsat_historical,90,high,True,data/raw/landsat/landsat_2000.tif,models/random_forest.pkl,eafe34f,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.,2026-07-12T01:55:10+00:00
+2003,726.56,RF,Landsat,landsat_historical,90,high,True,data/raw/landsat/landsat_2003.tif,models/random_forest.pkl,eafe34f,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.,2026-07-12T01:55:10+00:00
+2005,577.51,RF,Landsat,landsat_historical,90,high,True,data/raw/landsat/landsat_2005.tif,models/random_forest.pkl,eafe34f,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.,2026-07-12T01:55:10+00:00
+2008,401.18,RF,Landsat,landsat_historical,90,high,True,data/raw/landsat/landsat_2008.tif,models/random_forest.pkl,eafe34f,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.,2026-07-12T01:55:10+00:00
+2010,493.38,RF,Landsat,landsat_historical,90,high,True,data/raw/landsat/landsat_2010.tif,models/random_forest.pkl,eafe34f,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.,2026-07-12T01:55:10+00:00
+2013,474.83,RF,Landsat,landsat_historical,90,high,True,data/raw/landsat/landsat_2013.tif,models/random_forest.pkl,eafe34f,Historical Landsat composite; lower spectral/channel compatibility than Sentinel-2.,2026-07-12T01:55:10+00:00
+2015,1875.42,RF,Sentinel-2,sentinel2_toa_fallback,57,low,False,data/raw/sentinel2/sentinel2_2015.tif,models/random_forest.pkl,eafe34f,Late-2015 annual TOA fallback; exclude from strict summer Sentinel-2 trend.,2026-07-12T01:55:10+00:00
+2016,443.43,RF,Sentinel-2,sentinel2_sr,100,high,True,data/raw/sentinel2/sentinel2_2016.tif,models/random_forest.pkl,eafe34f,,2026-07-12T01:55:10+00:00
+2017,324.93,RF,Sentinel-2,sentinel2_sr,100,high,True,data/raw/sentinel2/sentinel2_2017.tif,models/random_forest.pkl,eafe34f,,2026-07-12T01:55:10+00:00
+2018,859.19,RF,Sentinel-2,sentinel2_sr,100,high,True,data/raw/sentinel2/sentinel2_2018.tif,models/random_forest.pkl,eafe34f,,2026-07-12T01:55:10+00:00
+2019,532.61,RF,Sentinel-2,sentinel2_sr,92,high,True,data/raw/sentinel2/sentinel2_2019.tif,models/random_forest.pkl,eafe34f,,2026-07-12T01:55:10+00:00
+2020,449.55,RF,Sentinel-2,sentinel2_sr,92,high,True,data/raw/sentinel2/sentinel2_2020.tif,models/random_forest.pkl,eafe34f,,2026-07-12T01:55:10+00:00
+2021,382.25,RF,Sentinel-2,sentinel2_sr,92,high,True,data/raw/sentinel2/sentinel2_2021.tif,models/random_forest.pkl,eafe34f,,2026-07-12T01:55:10+00:00
+2022,396.41,RF,Sentinel-2,sentinel2_sr,92,high,True,data/raw/sentinel2/sentinel2_2022.tif,models/random_forest.pkl,eafe34f,,2026-07-12T01:55:10+00:00
+2023,383.81,RF,Sentinel-2,sentinel2_sr,92,high,True,data/raw/sentinel2/sentinel2_2023.tif,models/random_forest.pkl,eafe34f,,2026-07-12T01:55:10+00:00
+2024,450.47,RF,Sentinel-2,sentinel2_sr,92,high,True,data/raw/sentinel2/sentinel2_2024.tif,models/random_forest.pkl,eafe34f,,2026-07-12T01:55:10+00:00

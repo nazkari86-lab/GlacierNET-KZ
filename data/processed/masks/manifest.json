@@ -1,0 +1,151 @@
+{
+  "created_at": "2026-07-11T15:03:29+00:00",
+  "years_requested": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "excluded_years": [
+    2015
+  ],
+  "rgi_file": "data/rgi/rgi_study_area.shp",
+  "mask_role": "training_label_rasterization",
+  "notes": [
+    "Masks are rasterized from RGI study-area polygons onto each Sentinel-2 raster grid.",
+    "2015 is excluded by default because it is a late-year TOA fallback, not strict summer SR."
+  ],
+  "years": [
+    {
+      "year": 2016,
+      "source_file": "data/raw/sentinel2/sentinel2_2016.tif",
+      "mask_file": "data/processed/masks/mask_2016.tif",
+      "source_flag": "sentinel2_sr",
+      "created_this_run": true,
+      "shape": [
+        5228,
+        8583
+      ],
+      "glacier_pixels": 4461809,
+      "total_pixels": 44871924,
+      "glacier_fraction": 0.09943431442788145
+    },
+    {
+      "year": 2017,
+      "source_file": "data/raw/sentinel2/sentinel2_2017.tif",
+      "mask_file": "data/processed/masks/mask_2017.tif",
+      "source_flag": "sentinel2_sr",
+      "created_this_run": true,
+      "shape": [
+        5228,
+        8583
+      ],
+      "glacier_pixels": 4461809,
+      "total_pixels": 44871924,
+      "glacier_fraction": 0.09943431442788145
+    },
+    {
+      "year": 2018,
+      "source_file": "data/raw/sentinel2/sentinel2_2018.tif",
+      "mask_file": "data/processed/masks/mask_2018.tif",
+      "source_flag": "sentinel2_sr",
+      "created_this_run": true,
+      "shape": [
+        5228,
+        8583
+      ],
+      "glacier_pixels": 4461809,
+      "total_pixels": 44871924,
+      "glacier_fraction": 0.09943431442788145
+    },
+    {
+      "year": 2019,
+      "source_file": "data/raw/sentinel2/sentinel2_2019.tif",
+      "mask_file": "data/processed/masks/mask_2019.tif",
+      "source_flag": "sentinel2_sr",
+      "created_this_run": true,
+      "shape": [
+        5228,
+        8583
+      ],
+      "glacier_pixels": 4461809,
+      "total_pixels": 44871924,
+      "glacier_fraction": 0.09943431442788145
+    },
+    {
+      "year": 2020,
+      "source_file": "data/raw/sentinel2/sentinel2_2020.tif",
+      "mask_file": "data/processed/masks/mask_2020.tif",
+      "source_flag": "sentinel2_sr",
+      "created_this_run": true,
+      "shape": [
+        5228,
+        8583
+      ],
+      "glacier_pixels": 4461809,
+      "total_pixels": 44871924,
+      "glacier_fraction": 0.09943431442788145
+    },
+    {
+      "year": 2021,
+      "source_file": "data/raw/sentinel2/sentinel2_2021.tif",
+      "mask_file": "data/processed/masks/mask_2021.tif",
+      "source_flag": "sentinel2_sr",
+      "created_this_run": false,
+      "shape": [
+        5228,
+        8583
+      ],
+      "glacier_pixels": 4461809,
+      "total_pixels": 44871924,
+      "glacier_fraction": 0.09943431442788145
+    },
+    {
+      "year": 2022,
+      "source_file": "data/raw/sentinel2/sentinel2_2022.tif",
+      "mask_file": "data/processed/masks/mask_2022.tif",
+      "source_flag": "sentinel2_sr",
+      "created_this_run": true,
+      "shape": [
+        5228,
+        8583
+      ],
+      "glacier_pixels": 4461809,
+      "total_pixels": 44871924,
+      "glacier_fraction": 0.09943431442788145
+    },
+    {
+      "year": 2023,
+      "source_file": "data/raw/sentinel2/sentinel2_2023.tif",
+      "mask_file": "data/processed/masks/mask_2023.tif",
+      "source_flag": "sentinel2_sr",
+      "created_this_run": true,
+      "shape": [
+        5228,
+        8583
+      ],
+      "glacier_pixels": 4461809,
+      "total_pixels": 44871924,
+      "glacier_fraction": 0.09943431442788145
+    },
+    {
+      "year": 2024,
+      "source_file": "data/raw/sentinel2/sentinel2_2024.tif",
+      "mask_file": "data/processed/masks/mask_2024.tif",
+      "source_flag": "sentinel2_sr",
+      "created_this_run": true,
+      "shape": [
+        5228,
+        8583
+      ],
+      "glacier_pixels": 4461809,
+      "total_pixels": 44871924,
+      "glacier_fraction": 0.09943431442788145
+    }
+  ]
+}

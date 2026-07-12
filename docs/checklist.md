@@ -17,7 +17,17 @@
 - [x] Данные Sentinel-2 скачаны (2015–2024; 2015 — late-year TOA fallback, 2020/2022 — compact exports)
 - [x] Данные Landsat за 2000–2013 скачаны (2000, 2003, 2005, 2008, 2010, 2013)
 - [x] RGI контуры загружены для изучаемого района
-- [x] Маски ледников созданы (2020 + многолетние предсказания в `predictions/`)
+- [x] Официальные ancillary-источники зафиксированы и подготовлены:
+      Copernicus DEM GLO-30 (высота, уклон, экспозиция), ESA WorldCover 2021
+      (land-cover context), WGMS GlaThiDa (внешний thickness reference); полный
+      checksummed каталог создается через `scripts/build_ml_dataset_catalog.py`
+- [~] Sentinel-1 GRD summer composites 2017–2024 отправлены в Google Earth
+      Engine/Drive и загружены с проверкой размера; SAR-каналы доступны как
+      опциональные `VV/VH` признаки в `scripts/build_multimodal_patches.py`,
+      но еще не смешаны с текущим 14-канальным benchmark
+- [x] Маски ледников созданы для строгих Sentinel-2 лет 2016–2024
+      (`data/processed/masks/mask_*.tif`,
+      `data/processed/masks/manifest.json`)
 - [x] Data quality gate пройден (`results/data_quality_report.json`, `ok=true`)
 - [x] STAC/data inventory обновлены (`results/stac/catalog.json`, `results/tables/data_inventory.csv`)
 
@@ -33,14 +43,43 @@
       (`src/preprocessing.train_val_test_split`)
 - [x] Синтетический smoke-тест пайплайна пройден
       (`notebooks/_synthetic_smoke_test.py`)
-- [ ] Multi-year Sentinel-2 patch dataset создан и проверен
-- [ ] Базовый EDA на реальных данных (гистограммы, примеры снимков + масок)
+- [x] Capped multi-year Sentinel-2 patch sample создан и проверен
+      (`data/processed/patches/sentinel2_multiyear_sample_2016_2024`,
+      64 patches/year, 2016–2024; валидируется через
+      `scripts/validate_patch_manifest.py`)
+- [x] Multi-year training smoke-run выполнен
+      (`src.train --patches-dir ... --model unet --epochs 1`; сохранены
+      `models/unet_best_sentinel2_multiyear_sample_2016_2024` и
+      `models/unet_final_sentinel2_multiyear_sample_2016_2024`; метрики
+      smoke-run не являются production quality)
+- [x] Temporal year-held-out split создан и проверен без дублирования массивов
+      (`2016–2022 -> train`, `2023 -> validation`, `2024 -> test`;
+      `scripts/build_year_holdout_manifest.py`,
+      `data/processed/patches/sentinel2_year_holdout_2016_2024/manifest.json`)
+- [x] Расширенный temporal dataset создан и провалидирован: 2 304 патча
+      (2016–2024, 256/year), 14 каналов Sentinel-2 + terrain (elevation,
+      slope, aspect), строгий split `2016–2022 -> train`, `2023 -> validation`,
+      `2024 -> test`; mmap loader исключает полную загрузку набора в RAM
+- [x] Capped temporal U-Net benchmark выполнен на strict year holdout:
+      train `2016–2022`, validation `2023`, untouched test `2024`; на 14-channel
+      Sentinel-2 + terrain sample test `Dice=0.7802`, `IoU=0.7382`,
+      precision `0.9712`, recall `0.7547`
+      (`results/temporal_benchmark_unet_sentinel2_terrain_2016_2024.json`).
+      Это оценка в том же AOI с RGI-derived masks, не внешняя полевая валидация
+      и не доказательство cross-region generalization.
+- [ ] Full multi-year Sentinel-2 patch dataset создан и проверен
+      (year-held-out strategy уже определена; требуется больше диска/времени)
+- [x] Базовый EDA на реальных данных создан
+      (`results/figures/eda_sentinel2_2020.png`,
+      `results/tables/eda_sentinel2_2020.csv`)
 
 ## Месяц 4 — Базовые модели
 - [x] NDSI пороговая классификация реализована (`03_baseline_models.ipynb`)
 - [x] Random Forest реализован (`03_baseline_models.ipynb`)
 - [x] Таблица базовых метрик заполнена реальными значениями (`results/tables/model_comparison.csv`)
-- [ ] Важность признаков RF проанализирована на реальных данных
+- [x] Важность признаков RF проанализирована на реальных данных
+      (`results/tables/random_forest_feature_importance.csv`,
+      `results/figures/random_forest_feature_importance.png`; NDSI = 26.96%)
 
 ## Месяц 5–6 — U-Net
 - [x] U-Net реализован, `model.summary()` без ошибок (проверено в
@@ -70,6 +109,16 @@
       (`results/tables/decision_ready_area_timeseries.csv`,
       `results/tables/year_quality_scores.csv`,
       `results/decision_readiness_summary.json`)
+- [x] Decision-ready provenance gate добавлен и проходит
+      (`scripts/validate_decision_readiness.py`,
+      `tests/test_decision_readiness.py`)
+- [x] Patch manifest gate добавлен для multi-year sample
+      (`scripts/validate_patch_manifest.py`,
+      `tests/test_patch_manifest.py`)
+- [x] Training mask gate добавлен и проходит за 2016–2024
+      (`scripts/build_year_masks.py`,
+      `scripts/validate_training_masks.py`,
+      `tests/test_training_masks.py`)
 - [x] Dashboard/API/MCP читают decision-readiness пакет
       (`/api/data/decision-readiness`, `glacierkz://decision-readiness`)
 - [x] Stakeholder outreach pack и трекер подготовлены
@@ -78,8 +127,9 @@
 - [x] Project evidence package можно пересобрать одной командой
       (`scripts/build_project_evidence_package.py`)
 - [ ] Работа проверена внешним специалистом или научным консультантом
-- [ ] Подготовлен публичный demo walkthrough
-- [ ] Подготовлен release package для GitHub
+- [x] Подготовлен публичный demo walkthrough (`docs/DEMO_WALKTHROUGH.md`)
+- [x] Подготовлен локальный release package и gate для GitHub
+      (`docs/RELEASE_PACKAGE.md`, `scripts/verify_local_release_package.py`)
 - [ ] Проведены 3+ воспроизводимых demo-прогона
 
 ---

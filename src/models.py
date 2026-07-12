@@ -41,7 +41,7 @@ def build_data_generator():
                 self.rng.shuffle(self.indices)
 
         def __len__(self):
-            return max(1, len(self.X) // self.batch_size)
+            return max(1, int(np.ceil(len(self.X) / self.batch_size)))
 
         def __getitem__(self, idx):
             batch_idx = self.indices[idx * self.batch_size : (idx + 1) * self.batch_size]
@@ -49,8 +49,14 @@ def build_data_generator():
             y_batch = self.y[batch_idx].astype(np.float32)[..., np.newaxis]
 
             if self.augment:
+                photometric_channels = min(len(config.S2_BANDS), X_batch.shape[-1])
                 for i in range(len(X_batch)):
-                    img, msk = augment_patch(X_batch[i], y_batch[i, ..., 0], self.rng)
+                    img, msk = augment_patch(
+                        X_batch[i],
+                        y_batch[i, ..., 0],
+                        self.rng,
+                        photometric_channels=photometric_channels,
+                    )
                     X_batch[i] = img
                     y_batch[i, ..., 0] = msk
 
@@ -341,9 +347,9 @@ def build_model(input_shape=None, filters=None, dropout_rate=0.1):
 # Re-exported from src.losses to avoid duplication.
 # ----------------------------------------------------------------------
 
-from .losses import combined_bce_dice_loss as combined_loss
-from .losses import combined_focal_dice_loss as combined_focal_loss
-from .losses import dice_coefficient, dice_loss, focal_loss
+from .losses import combined_bce_dice_loss as combined_loss  # noqa: E402
+from .losses import combined_focal_dice_loss as combined_focal_loss  # noqa: E402
+from .losses import dice_coefficient, dice_loss, focal_loss  # noqa: E402
 
 
 def get_custom_objects():

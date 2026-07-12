@@ -62,6 +62,48 @@ Region used: **RGI 7.0 region 13 — Central Asia**.
 }
 ```
 
+## Terrain and land-cover context
+
+### Copernicus DEM GLO-30
+
+```bibtex
+@misc{copernicus_dem_glo30,
+  author = {{European Space Agency}},
+  title  = {Copernicus DEM GLO-30},
+  year   = {2024},
+  note   = {Accessed from the Copernicus DEM AWS Open Data registry},
+  url    = {https://registry.opendata.aws/copernicus-dem/}
+}
+```
+
+Used only as static terrain features (elevation, slope, aspect), not as labels.
+
+### ESA WorldCover 2021 v200
+
+```bibtex
+@misc{esa_worldcover_2021,
+  author = {{European Space Agency}},
+  title  = {ESA WorldCover 10 m 2021 v200},
+  year   = {2021},
+  url    = {https://esa-worldcover.org/}
+}
+```
+
+Used for land-cover context and hard-negative analysis, not as a glacier-outline label.
+
+### GlaThiDa
+
+```bibtex
+@misc{wgms_glathida,
+  author = {{World Glacier Monitoring Service}},
+  title  = {Glacier Thickness Database (GlaThiDa)},
+  year   = {2026},
+  url    = {https://gitlab.com/wgms/glathida}
+}
+```
+
+GlaThiDa is retained as an external thickness-supervision and transfer-learning reference. It is not used as local Kazakhstan segmentation ground truth.
+
 ## In-situ validation
 
 ### WGMS — Tuyuksu (ID 817)
@@ -97,4 +139,4 @@ Or use [`CITATION.cff`](../CITATION.cff) for GitHub's "Cite this repository" but
 
 ## Acknowledgements Template
 
-> Satellite data: Copernicus Sentinel-2 (ESA) and Landsat (USGS), accessed via Google Earth Engine. Glacier outlines: Randolph Glacier Inventory 7.0 (Pfeffer et al., 2014). In-situ validation: WGMS reference glacier Tuyuksu. Deep learning pipeline: GlacierNET-KZ (Nurlanuly, 2026).
+> Satellite data: Copernicus Sentinel-2 (ESA) and Landsat (USGS), accessed via Google Earth Engine. Glacier outlines: Randolph Glacier Inventory 7.0 (Pfeffer et al., 2014). Terrain context: Copernicus DEM GLO-30 and ESA WorldCover. In-situ validation: WGMS reference glacier Tuyuksu. Deep learning pipeline: GlacierNET-KZ (Nurlanuly, 2026).

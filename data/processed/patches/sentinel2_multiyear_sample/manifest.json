@@ -5,7 +5,9 @@
   ],
   "notes": [
     "Sentinel-2 rasters are loaded through src.data_loader.load_image().",
-    "Compact 7-band rasters are expanded to 11 channels by deriving NDSI/NDWI/BSI/EVI locally."
+    "Compact 7-band rasters are expanded to 11 channels by deriving NDSI/NDWI/BSI/EVI locally.",
+    "2015 is excluded by default because it is a late-year TOA fallback, not strict summer SR.",
+    "Use held-out years or spatial splits for publication-grade validation."
   ],
   "years": [
     {
@@ -21,7 +23,13 @@
       "train_patches": 89,
       "val_patches": 19,
       "test_patches": 20,
-      "glacier_pixel_fraction": 0.25338292121887207
+      "glacier_pixel_fraction": 0.25338292121887207,
+      "split_strategy": "random_patch_split",
+      "split_leakage_warning": "Overlapping patches are split randomly. Use year-held-out or spatial split before reporting scientific generalization metrics."
     }
-  ]
+  ],
+  "excluded_years": [
+    2015
+  ],
+  "dataset_role": "patch_generation_sample"
 }

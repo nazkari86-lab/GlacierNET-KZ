@@ -11,18 +11,20 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src import config
-
-REPORT = config.RESULTS_DIR / "pipeline_status.json"
-
 
 def main() -> None:
+    from src import config
+
+    report = config.RESULTS_DIR / "pipeline_status.json"
     status = {
         "sentinel2_years_target": config.YEARS_SENTINEL2,
         "landsat_years_target": config.YEARS_LANDSAT,
         "raw_sentinel2": [],
         "raw_landsat": [],
+        "training_masks": [],
+        "mask_manifest": None,
         "patches": [],
+        "patch_manifests": [],
         "predictions": [],
         "missing_sentinel2": [],
         "missing_landsat": [],
@@ -42,14 +44,29 @@ def main() -> None:
         else:
             status["missing_landsat"].append(year)
 
+    if config.DATA_MASKS.exists():
+        status["training_masks"] = sorted(
+            int(path.stem.split("_")[-1])
+            for path in config.DATA_MASKS.glob("mask_*.tif")
+            if path.stem.split("_")[-1].isdigit()
+        )
+        manifest_path = config.DATA_MASKS / "manifest.json"
+        if manifest_path.exists():
+            status["mask_manifest"] = str(manifest_path.relative_to(ROOT))
+
     if config.DATA_PATCHES.exists():
-        status["patches"] = sorted(int(p.name) for p in config.DATA_PATCHES.iterdir() if p.is_dir() and p.name.isdigit())
+        status["patches"] = sorted(
+            int(p.name) for p in config.DATA_PATCHES.iterdir() if p.is_dir() and p.name.isdigit()
+        )
+        status["patch_manifests"] = sorted(
+            str(p.relative_to(ROOT)) for p in config.DATA_PATCHES.glob("**/manifest.json")
+        )
 
     pred_dir = ROOT / "predictions"
     if pred_dir.exists():
         status["predictions"] = sorted(int(p.name) for p in pred_dir.iterdir() if p.is_dir() and p.name.isdigit())
 
-    REPORT.write_text(json.dumps(status, indent=2), encoding="utf-8")
+    report.write_text(json.dumps(status, indent=2), encoding="utf-8")
 
     print("Pipeline Status")
     print("=" * 50)
@@ -57,9 +74,10 @@ def main() -> None:
     print(f"  Missing:       {status['missing_sentinel2']}")
     print(f"Landsat raw:     {status['raw_landsat'] or 'NONE'}")
     print(f"  Missing:       {status['missing_landsat']}")
+    print(f"Training masks:  {status['training_masks']}")
     print(f"Patches:         {status['patches']}")
     print(f"Predictions:     {status['predictions']}")
-    print(f"\nReport → {REPORT}")
+    print(f"\nReport → {report}")
 
     if status["missing_sentinel2"]:
         print("\nNext step: Run notebooks/01_data_download.ipynb for missing Sentinel-2 years")

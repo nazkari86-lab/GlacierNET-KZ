@@ -9,6 +9,8 @@
 | [REPRODUCIBILITY.md](./REPRODUCIBILITY.md) | Researchers / developers | FAIR principles, exact reproduction steps |
 | [UNIFIED_STACK.md](./UNIFIED_STACK.md) | Developers | Single localhost gateway (port 8080) |
 | [DATA_CITATION.md](./DATA_CITATION.md) | Researchers | BibTeX for Sentinel-2, Landsat, RGI, WGMS |
+| [DEMO_WALKTHROUGH.md](./DEMO_WALKTHROUGH.md) | Presenters | Safe three-minute public demo sequence |
+| [RELEASE_PACKAGE.md](./RELEASE_PACKAGE.md) | Maintainers | Local GitHub release gate and contents |
 | [literature_review.md](./literature_review.md) | Scientists | Literature gap analysis (Tian Shan / DL) |
 | [wgms_validation.md](./wgms_validation.md) | Scientists | WGMS Tuyuksu cross-validation protocol |
 | [checklist.md](./checklist.md) | Project team | Internal milestone tracker (RU) |

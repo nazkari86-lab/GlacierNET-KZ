@@ -70,6 +70,11 @@ def write_split(out_dir: Path, x: np.ndarray, y: np.ndarray, seed: int) -> dict:
     for name, arr in arrays.items():
         np.save(out_dir / name, arr)
     return {
+        "split_strategy": "random_patch_split",
+        "split_leakage_warning": (
+            "Overlapping patches are split randomly. Use year-held-out or spatial split "
+            "before reporting scientific generalization metrics."
+        ),
         "train_patches": int(len(x_train)),
         "val_patches": int(len(x_val)),
         "test_patches": int(len(x_test)),
@@ -144,9 +149,13 @@ def main() -> int:
     manifest = {
         "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "years_requested": years,
+        "excluded_years": [2015] if 2015 not in years else [],
+        "dataset_role": "patch_generation",
         "notes": [
             "Sentinel-2 rasters are loaded through src.data_loader.load_image().",
             "Compact 7-band rasters are expanded to 11 channels by deriving NDSI/NDWI/BSI/EVI locally.",
+            "2015 is excluded by default because it is a late-year TOA fallback, not strict summer SR.",
+            "Use held-out years or spatial splits for publication-grade validation.",
         ],
         "years": [],
     }

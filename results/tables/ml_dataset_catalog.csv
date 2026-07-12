@@ -1,0 +1,9 @@
+id,role,access_mode,state,file_count,total_bytes,citation_url
+sentinel2_sr,primary optical segmentation input,local Earth Engine exports,ready,10,9999533162,https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR_HARMONIZED
+landsat_collection2,historical optical input,local Earth Engine exports,ready,6,6324134859,https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C02_T1_L2
+rgi_v7_central_asia,supervised glacier-outline labels,local official archive,ready,5,238965922,https://www.glims.org/RGI/
+wgms_fog_2026_02_10,area and change validation,local official archive,ready,1,39137587,https://doi.org/10.5904/wgms-fog-2026-02-10
+glathida_main,external thickness supervision and transfer-learning reference,public WGMS GitLab archive,ready,1,68502938,https://gitlab.com/wgms/glathida
+copernicus_dem_glo30,"terrain features: elevation, slope, aspect",public AWS Open Data,ready,4,127575844,https://registry.opendata.aws/copernicus-dem/
+esa_worldcover_2021,land-cover context and hard-negative analysis,public ESA S3,ready,1,54019129,https://esa-worldcover.org/
+sentinel1_summer_composites,SAR features for cloud-robust multimodal segmentation,Earth Engine export queue,ready,8,1440632583,https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S1_GRD

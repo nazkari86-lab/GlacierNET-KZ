@@ -22,7 +22,13 @@ def main() -> int:
     steps = [
         ("Validate local GeoTIFF quality", "validate_data_quality.py"),
         ("Refresh raster inventory", "build_data_inventory.py"),
+        ("Validate Sentinel-2 training masks", "validate_training_masks.py"),
+        ("Validate ancillary terrain and land-cover features", "validate_ancillary_features.py"),
+        ("Refresh ML dataset catalog", "build_ml_dataset_catalog.py"),
+        ("Build real-data EDA", "build_real_data_eda.py"),
+        ("Analyze Random Forest feature importance", "analyze_rf_feature_importance.py"),
         ("Refresh decision readiness tables", "build_decision_readiness_tables.py"),
+        ("Validate decision readiness provenance", "validate_decision_readiness.py"),
     ]
     for label, script in steps:
         run_step(label, script)
