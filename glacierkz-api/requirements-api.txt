@@ -15,7 +15,7 @@ opencv-python==4.9.0.80
 tqdm==4.66.1
 pydantic==2.5.3
 python-dotenv==1.0.0
-httpx>=0.24.0,<0.28.0
+httpx>=0.24.0,<0.29.0
 litellm>=1.50.0
 openai>=1.0.0
 psutil>=5.9.0
