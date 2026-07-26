@@ -34,7 +34,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
       - run: pip install -r requirements.lock
-      - run: pip install pytest-cov
+      - run: pip install pytest-cov pytest-asyncio
       - name: Run tests with coverage
         run: |
           python -m pytest tests/ glacierkz-api/tests/ -v \
