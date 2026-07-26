@@ -19,12 +19,14 @@ if str(ROOT) not in sys.path:
 from scripts.evaluate_provisional_glacier_cohort import (  # noqa: E402
     METRIC_FIELDS,
     _label_for_geometry,
+    metrics_for_table,
     select_stratified_glaciers,
 )
 from src.benchmark_metrics import bootstrap_confidence_intervals, complete_segmentation_metrics  # noqa: E402
 from src.data_loader import _append_sentinel2_indices  # noqa: E402
 from src.model_security import verify_trusted_model  # noqa: E402
 from src.models import get_custom_objects, predict_full_image  # noqa: E402
+from src.provenance import sha256_directory, sha256_file  # noqa: E402
 
 RAW_DIR = ROOT / "data/external/provisional_zhetysu_2024"
 OUTPUT_DIR = ROOT / "benchmarks/v2/provisional"
@@ -70,11 +72,78 @@ def _download_composite(geometry, *, destination: Path, year: int, buffer_degree
             "format": "GEO_TIFF",
         }
     )
-    response = requests.get(url, timeout=240)
-    response.raise_for_status()
-    if response.headers.get("content-type", "").split(";", 1)[0] != "image/tiff":
-        raise ValueError(f"unexpected Earth Engine response for {destination.name}: {response.headers.get('content-type')}")
-    destination.write_bytes(response.content)
+    temporary = destination.with_suffix(destination.suffix + ".part")
+    try:
+        with requests.get(url, timeout=240, stream=True) as response:
+            response.raise_for_status()
+            if response.headers.get("content-type", "").split(";", 1)[0] != "image/tiff":
+                raise ValueError(
+                    f"unexpected Earth Engine response for {destination.name}: {response.headers.get('content-type')}"
+                )
+            with temporary.open("wb") as handle:
+                for chunk in response.iter_content(chunk_size=8 * 1024 * 1024):
+                    if chunk:
+                        handle.write(chunk)
+        _validate_raster(temporary)
+        temporary.replace(destination)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+
+
+def _scene_provenance(geometry, *, year: int, buffer_degrees: float) -> dict[str, object]:
+    import ee
+
+    minx, miny, maxx, maxy = geometry.bounds
+    region = ee.Geometry.Rectangle(
+        [minx - buffer_degrees, miny - buffer_degrees, maxx + buffer_degrees, maxy + buffer_degrees]
+    )
+    start, end = f"{year}-07-01", f"{year}-09-30"
+    collection = (
+        ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
+        .filterBounds(region)
+        .filterDate(start, end)
+        .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 30))
+    )
+    scene_ids = collection.aggregate_array("system:index").getInfo()
+    cloud_percentages = collection.aggregate_array("CLOUDY_PIXEL_PERCENTAGE").getInfo()
+    if not scene_ids:
+        raise ValueError("Earth Engine returned no eligible Sentinel-2 scenes")
+    return {
+        "collection": "COPERNICUS/S2_SR_HARMONIZED",
+        "date_start": start,
+        "date_end_exclusive": end,
+        "cloud_filter_percent_lt": 30,
+        "composite": "per-band median",
+        "scene_count": len(scene_ids),
+        "scene_ids": scene_ids,
+        "scene_cloud_percentages": cloud_percentages,
+        "terrain_source": "USGS/SRTMGL1_003",
+    }
+
+
+def _validate_raster(path: Path) -> dict[str, object]:
+    import rasterio
+
+    with rasterio.open(path) as dataset:
+        if dataset.count != 10:
+            raise ValueError(f"{path.name}: expected 10 bands, got {dataset.count}")
+        if dataset.crs is None or dataset.crs.to_epsg() != 32645:
+            raise ValueError(f"{path.name}: expected EPSG:32645")
+        if not np.allclose(dataset.res, (10.0, 10.0)):
+            raise ValueError(f"{path.name}: expected 10 m pixels, got {dataset.res}")
+        if dataset.width < 1 or dataset.height < 1:
+            raise ValueError(f"{path.name}: empty raster")
+        return {
+            "bytes": path.stat().st_size,
+            "bands": dataset.count,
+            "width": dataset.width,
+            "height": dataset.height,
+            "crs": dataset.crs.to_string(),
+            "pixel_size_m": list(dataset.res),
+            "bounds": list(dataset.bounds),
+            "dtypes": list(dataset.dtypes),
+        }
 
 
 def _features(path: Path) -> tuple[np.ndarray, object, object]:
@@ -123,11 +192,25 @@ def main() -> int:
         raw_path = RAW_DIR / f"{glacier_id}_{args.year}.tif"
         if args.refresh or not raw_path.exists():
             _download_composite(glacier.geometry, destination=raw_path, year=args.year, buffer_degrees=args.buffer_degrees)
+        scene_provenance = _scene_provenance(
+            glacier.geometry,
+            year=args.year,
+            buffer_degrees=args.buffer_degrees,
+        )
+        raster_metadata = _validate_raster(raw_path)
         features, transform, crs = _features(raw_path)
         geometry = gpd.GeoSeries([glacier.geometry], crs=rgi.crs).to_crs(crs).iloc[0]
         label = _label_for_geometry(geometry, shape=features.shape[:2], transform=transform)
         probabilities, _ = predict_full_image(features, model, threshold=threshold)
-        metrics = complete_segmentation_metrics(label, probabilities, threshold=threshold, pixel_area_m2=100.0, pixel_size=10.0)
+        metrics = metrics_for_table(
+            complete_segmentation_metrics(
+                label,
+                probabilities,
+                threshold=threshold,
+                pixel_area_m2=100.0,
+                pixel_size=10.0,
+            )
+        )
         records.append(
             {
                 "glacier_id": glacier_id,
@@ -146,6 +229,8 @@ def main() -> int:
                 "path": str(raw_path.relative_to(ROOT)),
                 "sha256": hashlib.sha256(raw_path.read_bytes()).hexdigest(),
                 "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003",
+                "scene_provenance": scene_provenance,
+                "raster_metadata": raster_metadata,
             }
         )
 
@@ -165,6 +250,9 @@ def main() -> int:
         "cohort_selection": {"per_area_class": args.per_area_class, "seed": args.seed, "n_glaciers": len(cohort)},
         "metrics_bootstrap": bootstrap_confidence_intervals(records, metrics=("hard_dice", "hard_iou", "recall", "area_error_percent"), seed=args.seed),
         "per_glacier_table": str(table.relative_to(ROOT)),
+        "per_glacier_table_sha256": sha256_file(table),
+        "model_directory_sha256": sha256_directory(model_path),
+        "rgi_sha256": sha256_file(ROOT / "data/rgi/RGI2000-v7.0-G-13_central_asia.shp"),
         "source_records": source_records,
     }
     (OUTPUT_DIR / f"zhetysu_candidate_rgi_{args.year}_summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")

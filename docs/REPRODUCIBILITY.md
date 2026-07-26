@@ -55,6 +55,8 @@ python scripts/evaluate_temporal_benchmark.py \
 
 python scripts/build_benchmark_v2_tables.py
 python scripts/validate_benchmark_v2.py --allow-incomplete
+python scripts/validate_provisional_cohorts.py
+python scripts/validate_claims_registry.py
 python scripts/run_quality_gates.py
 ```
 
@@ -90,13 +92,16 @@ exceptions for the strict local-data gate.
 
 ## Remaining evidence boundary
 
-The repository does not yet establish:
+The machine-readable `benchmarks/v2/claims_registry.json` is the source of
+truth for supported, provisional, refuted, and blocked claims. The repository
+does not yet establish:
 
 - independent expert-label accuracy;
-- glacier-level confidence intervals or boundary metrics;
 - cross-region generalisation;
 - field validation;
 - calibrated GLOF probability or operational warning performance.
 
+Automatic provisional cohorts now include glacier-level paired confidence
+intervals and boundary metrics, but remain non-independent RGI-silver evidence.
 The annotation queue and fail-closed builders in `benchmarks/v2/annotations/`
-make these gaps executable work rather than undocumented promises.
+make the remaining gaps executable work rather than undocumented promises.

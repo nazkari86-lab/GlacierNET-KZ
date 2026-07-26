@@ -13,7 +13,7 @@
     "seed": 42,
     "n_glaciers": 18
   },
-  "paired_bootstrap": {
+  "paired_analysis": {
     "pairing_key": "glacier_id",
     "n_paired_glaciers": 18,
     "candidate_minus_control": {
@@ -30,6 +30,15 @@
         "estimate": 0.025678975138649394,
         "ci_lower": 0.010858524982252447,
         "ci_upper": 0.040894461796680805,
+        "confidence": 0.95,
+        "n_glaciers": 18,
+        "n_resamples": 1000,
+        "seed": 42
+      },
+      "precision": {
+        "estimate": 0.029435859350573492,
+        "ci_lower": 0.012012714491764885,
+        "ci_upper": 0.04886469080658756,
         "confidence": 0.95,
         "n_glaciers": 18,
         "n_resamples": 1000,
@@ -53,7 +62,198 @@
         "n_resamples": 1000,
         "seed": 42
       }
+    },
+    "paired_tests": {
+      "hard_dice": {
+        "test": "paired_wilcoxon_two_sided",
+        "statistic": 15.0,
+        "p_value": 0.00104522705078125,
+        "n_nonzero_pairs": 18,
+        "candidate_win_rate": 0.8333333333333334
+      },
+      "hard_iou": {
+        "test": "paired_wilcoxon_two_sided",
+        "statistic": 15.0,
+        "p_value": 0.00104522705078125,
+        "n_nonzero_pairs": 18,
+        "candidate_win_rate": 0.8333333333333334
+      },
+      "precision": {
+        "test": "paired_wilcoxon_two_sided",
+        "statistic": 15.0,
+        "p_value": 0.00104522705078125,
+        "n_nonzero_pairs": 18,
+        "candidate_win_rate": 0.8333333333333334
+      },
+      "recall": {
+        "test": "paired_wilcoxon_two_sided",
+        "statistic": 1.0,
+        "p_value": 3.0517578125e-05,
+        "n_nonzero_pairs": 17,
+        "candidate_win_rate": 0.05555555555555555
+      },
+      "absolute_area_error_km2": {
+        "test": "paired_wilcoxon_two_sided",
+        "statistic": 0.0,
+        "p_value": 7.62939453125e-06,
+        "n_nonzero_pairs": 18,
+        "candidate_win_rate": 1.0
+      }
+    },
+    "area_class_subgroups": {
+      "small": {
+        "hard_dice": {
+          "estimate": 0.00720293399407132,
+          "ci_lower": -0.01009971954289353,
+          "ci_upper": 0.024400863644444975,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        },
+        "hard_iou": {
+          "estimate": 0.003918861040121693,
+          "ci_lower": -0.005330611664998622,
+          "ci_upper": 0.013106040270559213,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        },
+        "precision": {
+          "estimate": 0.004100957282207181,
+          "ci_lower": -0.0051328821320996065,
+          "ci_upper": 0.013273148448686508,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        },
+        "recall": {
+          "estimate": -0.18811780127055408,
+          "ci_lower": -0.34626753735136906,
+          "ci_upper": -0.031175478416005337,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        },
+        "absolute_area_error_km2": {
+          "estimate": -0.36791666666666667,
+          "ci_lower": -0.4819833333333334,
+          "ci_upper": -0.2574666666666666,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        }
+      },
+      "medium": {
+        "hard_dice": {
+          "estimate": 0.021407144463102417,
+          "ci_lower": 0.0016804156612570515,
+          "ci_upper": 0.03843683838630843,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        },
+        "hard_iou": {
+          "estimate": 0.012961534247699214,
+          "ci_lower": 0.0014180673270071473,
+          "ci_upper": 0.02340238254173848,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        },
+        "precision": {
+          "estimate": 0.01412251127072843,
+          "ci_lower": 0.0027314516519788526,
+          "ci_upper": 0.024154093975451162,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        },
+        "recall": {
+          "estimate": -0.19407912877219843,
+          "ci_lower": -0.3275921538481046,
+          "ci_upper": -0.07183105134199744,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        },
+        "absolute_area_error_km2": {
+          "estimate": -0.7713499999999999,
+          "ci_lower": -0.9083333333333332,
+          "ci_upper": -0.6483729166666664,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        }
+      },
+      "large": {
+        "hard_dice": {
+          "estimate": 0.07711176101916045,
+          "ci_lower": 0.048705664947087224,
+          "ci_upper": 0.11116541914676625,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        },
+        "hard_iou": {
+          "estimate": 0.06015653012812727,
+          "ci_lower": 0.035851585405564886,
+          "ci_upper": 0.09093706920472577,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        },
+        "precision": {
+          "estimate": 0.07008410949878487,
+          "ci_lower": 0.03818581570400427,
+          "ci_upper": 0.11362359106064983,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        },
+        "recall": {
+          "estimate": -0.04184259010353394,
+          "ci_lower": -0.06203553544536341,
+          "ci_upper": -0.018383441313738997,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        },
+        "absolute_area_error_km2": {
+          "estimate": -1.36955,
+          "ci_lower": -1.9640999999999995,
+          "ci_upper": -0.8803833333333335,
+          "confidence": 0.95,
+          "n_glaciers": 6,
+          "n_resamples": 1000,
+          "seed": 42
+        }
+      }
     }
   },
-  "per_glacier_table": "benchmarks/v2/provisional/ile_alatau_rgi_2024_per_glacier.csv"
+  "per_glacier_table": "benchmarks/v2/provisional/ile_alatau_rgi_2024_per_glacier.csv",
+  "per_glacier_table_sha256": "bf1d260a061a216cc9e378bf14c58d58b59813f35e3761c2bfeeb3ea0eb4f9f8",
+  "input_provenance": {
+    "rgi_sha256": "d4ba488aaea269028e7e852a66a0b84e46bc695721012903089d98b2e7297911",
+    "sentinel2_sha256": "40c670eedfa00c35caaed75b59f6a80518a0bf03b7326317d030fb162c13d5b1",
+    "terrain_sha256": "9469415ab63d67c571c7c3ce1c8dc922c2469ba07946f61c4e53cc8a9521860b",
+    "sentinel1_sha256": "00501893bf29bd5836c894f6677ebd1793b0a2faf8ce9a60fc908fb471f0a4b8",
+    "model_directory_sha256": {
+      "control": "ac313a80ae88f83bf9c2a48f0a1f1ad757dcd31ea5655f7473761c02993aff6b",
+      "s1": "c874443318bc7079b2580ef18e02782e6324d398459bfd55e20f63bc26b83997"
+    }
+  }
 }

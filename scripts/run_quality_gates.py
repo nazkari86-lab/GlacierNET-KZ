@@ -40,6 +40,7 @@ def main() -> int:
         ("benchmark v2 published tables", [python, "scripts/build_benchmark_v2_tables.py"]),
         ("benchmark v2 structure", [python, "scripts/validate_benchmark_v2.py", "--allow-incomplete"]),
         ("provisional glacier cohorts", [python, "scripts/validate_provisional_cohorts.py"]),
+        ("scientific claims registry", [python, "scripts/validate_claims_registry.py"]),
         ("cascade event review queue", [python, "scripts/build_cascade_review_queue.py"]),
         (
             "cascade benchmark structure",

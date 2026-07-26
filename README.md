@@ -82,6 +82,8 @@ It is not bypassed with placeholder scores.
 Automatic RGI pseudo-label cohorts now provide glacier-level paired confidence
 intervals and an external-geography stress test. They are deliberately kept
 outside the strict evidence gate; see [their limits and results](docs/PROVISIONAL_COHORTS.md).
+The machine-readable [scientific claims registry](benchmarks/v2/claims_registry.json)
+separates supported, refuted, provisional, and externally blocked statements.
 
 ## Active Cryosphere Risk Twin
 
