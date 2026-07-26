@@ -1,0 +1,2 @@
+glacier_id,region,year,scene_id,area_class,annotator_a,annotator_b,adjudicator,annotation_status,label_path,label_sha256,caveats
+RGI2000-v7.0-G-13-EXTERNAL,Zhetysu Alatau,2024,S2_SCENE_ID,medium,,,,pending,,,

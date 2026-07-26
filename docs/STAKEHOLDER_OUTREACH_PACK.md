@@ -4,7 +4,10 @@
 
 ## One-line pitch
 
-GlacierNET-KZ is an AI climate-risk intelligence platform that turns Sentinel-2/Landsat satellite imagery into annual glacier maps, water-risk indicators, forecasts, and decision reports for Kazakhstan.
+GlacierNET-KZ is an open glacier-segmentation benchmark and decision-oriented
+cryosphere research baseline for Kazakhstan. It produces auditable candidate
+maps, quality indicators, exploratory scenarios, and decision reports with
+explicit evidence limits.
 
 ## 8-week pilot proposal
 
@@ -71,12 +74,15 @@ Subject: AI climate-risk MVP for Kazakhstan: feedback before Astana Hub applicat
 
 Hello [Name],
 
-I am preparing GlacierNET-KZ for Astana Hub / AI startup programs. The product is an AI climate-risk intelligence platform that converts satellite imagery into glacier maps, trend forecasts, confidence scores, and decision reports for government and water-management stakeholders.
+I am preparing GlacierNET-KZ for Astana Hub / AI startup programs. The project
+converts satellite imagery into auditable glacier candidate maps, benchmark
+scores, data-quality evidence, exploratory scenarios, and decision reports. It
+does not present current trend forecasts as validated operational advice.
 
 The MVP is already working with real data:
 
 - Sentinel-2 2015-2024 and Landsat 2000-2013;
-- U-Net F1 0.876 and RF/NDSI baselines;
+- validation-calibrated U-Net hard Dice up to 0.9036 on a one-AOI silver holdout, plus RF/NDSI baselines;
 - Next.js dashboard, FastAPI backend, MCP/LLM interface;
 - reproducible data-quality and decision-readiness reports.
 

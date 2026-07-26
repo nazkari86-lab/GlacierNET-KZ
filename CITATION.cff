@@ -9,8 +9,8 @@ authors:
 repository-code: 'https://github.com/nazkari86-lab/GlacierNET-KZ'
 url: 'https://github.com/nazkari86-lab/GlacierNET-KZ'
 license: MIT
-version: 0.2.0
-date-released: '2026-06-28'
+version: 0.3.0
+date-released: '2026-07-26'
 keywords:
   - glacier
   - remote-sensing
@@ -19,11 +19,15 @@ keywords:
   - Sentinel-2
   - Kazakhstan
   - climate-change
+  - benchmark
+  - reproducibility
 abstract: >-
-  Deep-learning platform for monitoring glacier retreat in Kazakhstan's
-  Zailiysky and Junggar Alatau using Sentinel-2/Landsat imagery, U-Net
-  segmentation, temporal trend analysis, and forecast to 2050. Includes
-  FastAPI backend, Next.js dashboard (EN/RU/KK), and HuggingFace Spaces demo.
+  Open-source glacier-segmentation benchmark and decision-oriented cryosphere
+  research baseline for Kazakhstan. It combines Sentinel-2, Sentinel-1 and
+  terrain inputs with leakage-resistant temporal evaluation, hard metrics,
+  area error, provenance, explicit label-quality tiers and fail-closed
+  scientific claim gates. API and dashboard interfaces expose the validated
+  artifacts while keeping forecasts and hazard outputs exploratory.
 preferred-citation:
   type: software
   title: 'GlacierNET-KZ: Deep Learning Glacier Monitoring for Kazakhstan'

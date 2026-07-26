@@ -1,0 +1,42 @@
+{
+  "schema": "glaciernet-kz.model-release.v1",
+  "version": "0.3.0",
+  "artifacts": [
+    {
+      "model_id": "s2_terrain_14ch",
+      "local_path": "models/unet_best_sentinel2_terrain_year_holdout_2016_2024",
+      "format": "TensorFlow SavedModel",
+      "size_bytes": 95962581,
+      "sha256_directory": "c92f25958e2db9e1fc52d46bee9e207938cf7805ce4717237c0064fcfc09d304",
+      "evaluation_report": "results/temporal_benchmark_unet_sentinel2_terrain_2016_2024.json",
+      "evaluation_report_sha256": "6a33524fd139f914912a1cb059884f0918758e43e27f2084e234ce3476364a5b",
+      "release_asset": "glaciernet-kz-s2_terrain_14ch.tar.gz",
+      "publication_status": "local_verified_not_yet_release_asset"
+    },
+    {
+      "model_id": "compact_s2_terrain_control",
+      "local_path": "models/unet_best_sentinel2_terrain_control_year_holdout_2017_2024",
+      "format": "TensorFlow SavedModel",
+      "size_bytes": 95962582,
+      "sha256_directory": "ac313a80ae88f83bf9c2a48f0a1f1ad757dcd31ea5655f7473761c02993aff6b",
+      "evaluation_report": "results/ablation_unet_sentinel2_terrain_control_2017_2024.json",
+      "evaluation_report_sha256": "d53e0e84eb8224b1efd24f13bbbc0e3cc76fb9b2d60124e737747551ef5bdb5f",
+      "release_asset": "glaciernet-kz-compact_s2_terrain_control.tar.gz",
+      "publication_status": "local_verified_not_yet_release_asset"
+    },
+    {
+      "model_id": "compact_s2_terrain_s1",
+      "local_path": "models/unet_best_sentinel2_terrain_s1_year_holdout_2017_2024",
+      "format": "TensorFlow SavedModel",
+      "size_bytes": 95967224,
+      "sha256_directory": "c874443318bc7079b2580ef18e02782e6324d398459bfd55e20f63bc26b83997",
+      "evaluation_report": "results/ablation_unet_sentinel2_terrain_s1_2017_2024.json",
+      "evaluation_report_sha256": "bb57655dc598e9adcf7e09e8e806d8064b52d5ee21c6fd1012d13218d2f234dd",
+      "release_asset": "glaciernet-kz-compact_s2_terrain_s1.tar.gz",
+      "publication_status": "local_verified_not_yet_release_asset"
+    }
+  ],
+  "doi": null,
+  "doi_status": "not_minted",
+  "claim_boundary": "One-AOI RGI-derived silver benchmark; no gold or external-region claim."
+}
