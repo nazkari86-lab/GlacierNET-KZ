@@ -1,0 +1,26 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from scripts.evaluate_provisional_glacier_cohort import paired_bootstrap, project_relative_or_absolute
+
+
+def test_paired_bootstrap_uses_glacier_id_and_candidate_minus_control() -> None:
+    records = []
+    for glacier_id, offset in (("g1", 0.0), ("g2", 0.1)):
+        records.extend(
+            [
+                {"glacier_id": glacier_id, "model": "control", "hard_dice": 0.6 + offset, "hard_iou": 0.5 + offset, "recall": 0.5, "area_error_km2": -2.0},
+                {"glacier_id": glacier_id, "model": "s1", "hard_dice": 0.7 + offset, "hard_iou": 0.6 + offset, "recall": 0.7, "area_error_km2": -1.0},
+            ]
+        )
+    result = paired_bootstrap(records, seed=42)
+    assert result["n_paired_glaciers"] == 2
+    assert result["candidate_minus_control"]["hard_iou"]["estimate"] == pytest.approx(0.1)
+    assert result["candidate_minus_control"]["absolute_area_error_km2"]["estimate"] == -1.0
+
+
+def test_external_path_is_preserved_for_smoke_output() -> None:
+    assert project_relative_or_absolute(Path("/tmp/cohort.csv")) == "/tmp/cohort.csv"
