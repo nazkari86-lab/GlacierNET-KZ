@@ -1,6 +1,9 @@
 {
   "schema": "glaciernet-kz.model-release.v1",
   "version": "0.3.0",
+  "release_tag": "v0.3.0",
+  "release_url": "https://github.com/nazkari86-lab/GlacierNET-KZ/releases/tag/v0.3.0",
+  "release_commit": "8a2ff4c30156eed14dc4bb2b30ee6813a5316883",
   "artifacts": [
     {
       "model_id": "s2_terrain_14ch",
@@ -11,7 +14,10 @@
       "evaluation_report": "results/temporal_benchmark_unet_sentinel2_terrain_2016_2024.json",
       "evaluation_report_sha256": "6a33524fd139f914912a1cb059884f0918758e43e27f2084e234ce3476364a5b",
       "release_asset": "glaciernet-kz-s2_terrain_14ch.tar.gz",
-      "publication_status": "local_verified_not_yet_release_asset"
+      "release_asset_url": "https://github.com/nazkari86-lab/GlacierNET-KZ/releases/download/v0.3.0/glaciernet-kz-s2_terrain_14ch.tar.gz",
+      "release_asset_size_bytes": 87129304,
+      "release_asset_sha256": "7045bf4c9f436a4fefc922c916a2135135d3593af8c3b8bac173a6b405173fda",
+      "publication_status": "github_release_verified"
     },
     {
       "model_id": "compact_s2_terrain_control",
@@ -22,7 +28,10 @@
       "evaluation_report": "results/ablation_unet_sentinel2_terrain_control_2017_2024.json",
       "evaluation_report_sha256": "d53e0e84eb8224b1efd24f13bbbc0e3cc76fb9b2d60124e737747551ef5bdb5f",
       "release_asset": "glaciernet-kz-compact_s2_terrain_control.tar.gz",
-      "publication_status": "local_verified_not_yet_release_asset"
+      "release_asset_url": "https://github.com/nazkari86-lab/GlacierNET-KZ/releases/download/v0.3.0/glaciernet-kz-compact_s2_terrain_control.tar.gz",
+      "release_asset_size_bytes": 86530971,
+      "release_asset_sha256": "cf52e0b1060bc364f6badfa40cb3dc66f19e52e3d54285f78a8021804dab051f",
+      "publication_status": "github_release_verified"
     },
     {
       "model_id": "compact_s2_terrain_s1",
@@ -33,7 +42,10 @@
       "evaluation_report": "results/ablation_unet_sentinel2_terrain_s1_2017_2024.json",
       "evaluation_report_sha256": "bb57655dc598e9adcf7e09e8e806d8064b52d5ee21c6fd1012d13218d2f234dd",
       "release_asset": "glaciernet-kz-compact_s2_terrain_s1.tar.gz",
-      "publication_status": "local_verified_not_yet_release_asset"
+      "release_asset_url": "https://github.com/nazkari86-lab/GlacierNET-KZ/releases/download/v0.3.0/glaciernet-kz-compact_s2_terrain_s1.tar.gz",
+      "release_asset_size_bytes": 86779400,
+      "release_asset_sha256": "ead222a776494605f663f1eedacc1bf126efd13af21b5f18abad6c62d0148ca8",
+      "publication_status": "github_release_verified"
     }
   ],
   "doi": null,
