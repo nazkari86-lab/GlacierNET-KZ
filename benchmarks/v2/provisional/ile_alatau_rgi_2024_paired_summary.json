@@ -1,0 +1,59 @@
+{
+  "schema": "glaciernet-kz.provisional-glacier-cohort.v1",
+  "year": 2024,
+  "label_quality_tier": "provisional_silver_rgi",
+  "evaluation_status": "post_hoc_non_independent_not_a_holdout",
+  "claims_not_allowed": [
+    "gold-label accuracy",
+    "independent generalisation",
+    "operational accuracy"
+  ],
+  "cohort_selection": {
+    "per_area_class": 6,
+    "seed": 42,
+    "n_glaciers": 18
+  },
+  "paired_bootstrap": {
+    "pairing_key": "glacier_id",
+    "n_paired_glaciers": 18,
+    "candidate_minus_control": {
+      "hard_dice": {
+        "estimate": 0.03524061315877806,
+        "ci_lower": 0.01609407003873389,
+        "ci_upper": 0.05405722656718271,
+        "confidence": 0.95,
+        "n_glaciers": 18,
+        "n_resamples": 1000,
+        "seed": 42
+      },
+      "hard_iou": {
+        "estimate": 0.025678975138649394,
+        "ci_lower": 0.010858524982252447,
+        "ci_upper": 0.040894461796680805,
+        "confidence": 0.95,
+        "n_glaciers": 18,
+        "n_resamples": 1000,
+        "seed": 42
+      },
+      "recall": {
+        "estimate": -0.1413465067154288,
+        "ci_lower": -0.22713159824787857,
+        "ci_upper": -0.07076583352808853,
+        "confidence": 0.95,
+        "n_glaciers": 18,
+        "n_resamples": 1000,
+        "seed": 42
+      },
+      "absolute_area_error_km2": {
+        "estimate": -0.8362722222222222,
+        "ci_lower": -1.1252015277777772,
+        "ci_upper": -0.583485138888889,
+        "confidence": 0.95,
+        "n_glaciers": 18,
+        "n_resamples": 1000,
+        "seed": 42
+      }
+    }
+  },
+  "per_glacier_table": "benchmarks/v2/provisional/ile_alatau_rgi_2024_per_glacier.csv"
+}

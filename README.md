@@ -79,6 +79,10 @@ python scripts/validate_benchmark_v2.py                     # strict evidence ga
 The strict command exits non-zero until both real-data blockers are resolved.
 It is not bypassed with placeholder scores.
 
+Automatic RGI pseudo-label cohorts now provide glacier-level paired confidence
+intervals and an external-geography stress test. They are deliberately kept
+outside the strict evidence gate; see [their limits and results](docs/PROVISIONAL_COHORTS.md).
+
 ## Active Cryosphere Risk Twin
 
 The repository now includes a safety-bounded research baseline that turns

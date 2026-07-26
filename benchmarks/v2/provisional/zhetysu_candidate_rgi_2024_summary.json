@@ -1,0 +1,118 @@
+{
+  "schema": "glaciernet-kz.provisional-external-cohort.v1",
+  "year": 2024,
+  "geographic_candidate_bbox_wgs84": [
+    79.0,
+    43.0,
+    84.1,
+    45.37
+  ],
+  "boundary_definition": "broad provisional geographic filter; not an authoritative Zhetysu boundary",
+  "label_quality_tier": "provisional_silver_rgi",
+  "evaluation_status": "external_geography_but_non_independent_rgi_pseudolabel",
+  "claims_not_allowed": [
+    "gold-label accuracy",
+    "independent external validation",
+    "operational accuracy"
+  ],
+  "cohort_selection": {
+    "per_area_class": 3,
+    "seed": 142,
+    "n_glaciers": 9
+  },
+  "metrics_bootstrap": {
+    "hard_dice": {
+      "estimate": 0.1814780396465812,
+      "ci_lower": 0.06919732570424922,
+      "ci_upper": 0.3304947303894808,
+      "confidence": 0.95,
+      "n_glaciers": 9,
+      "n_resamples": 1000,
+      "seed": 142
+    },
+    "hard_iou": {
+      "estimate": 0.11609456963964308,
+      "ci_lower": 0.037847577302366535,
+      "ci_upper": 0.22829755540853872,
+      "confidence": 0.95,
+      "n_glaciers": 9,
+      "n_resamples": 1000,
+      "seed": 142
+    },
+    "recall": {
+      "estimate": 0.5472483201257706,
+      "ci_lower": 0.33049172264121296,
+      "ci_upper": 0.7402394975674252,
+      "confidence": 0.95,
+      "n_glaciers": 9,
+      "n_resamples": 1000,
+      "seed": 142
+    },
+    "area_error_percent": {
+      "estimate": 1373.0398589983147,
+      "ci_lower": 601.9724633310027,
+      "ci_upper": 2322.01163345978,
+      "confidence": 0.95,
+      "n_glaciers": 9,
+      "n_resamples": 1000,
+      "seed": 142
+    }
+  },
+  "per_glacier_table": "benchmarks/v2/provisional/zhetysu_candidate_rgi_2024_per_glacier.csv",
+  "source_records": [
+    {
+      "glacier_id": "RGI2000-v7.0-G-13-36006",
+      "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-36006_2024.tif",
+      "sha256": "ab18fc36de25d1cfded2520cf89770f06b9fd99b87cf42fcb06cef27e7b5bf01",
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+    },
+    {
+      "glacier_id": "RGI2000-v7.0-G-13-37015",
+      "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-37015_2024.tif",
+      "sha256": "67a977518fb9e37db537070a2abe09014f130c1c4d5abcd26c0de22c01a63c66",
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+    },
+    {
+      "glacier_id": "RGI2000-v7.0-G-13-37740",
+      "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-37740_2024.tif",
+      "sha256": "4b063d0e48f643528e13749f5da118c23b166ed49ef36d9c6295586c540eb53c",
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+    },
+    {
+      "glacier_id": "RGI2000-v7.0-G-13-37493",
+      "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-37493_2024.tif",
+      "sha256": "11f5a837611d4dec3e26b5cdc6b9f18c3577091bbfc19e6848e910b40b726b2d",
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+    },
+    {
+      "glacier_id": "RGI2000-v7.0-G-13-37610",
+      "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-37610_2024.tif",
+      "sha256": "671048801b1050ee6dba88c042a9acfd2a3f1250eeb6a114d3cccaa5f2bea978",
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+    },
+    {
+      "glacier_id": "RGI2000-v7.0-G-13-39203",
+      "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-39203_2024.tif",
+      "sha256": "26089b724ab0b58f0575d35475e110b200229a97c48e030416971e4775cab9eb",
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+    },
+    {
+      "glacier_id": "RGI2000-v7.0-G-13-36594",
+      "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-36594_2024.tif",
+      "sha256": "15b52c15e6e5503bb959deb08b72500b1241e1bcded6479117cd0f0731769017",
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+    },
+    {
+      "glacier_id": "RGI2000-v7.0-G-13-37260",
+      "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-37260_2024.tif",
+      "sha256": "805451b6db2447cf1745cc5eb0c94829a1017eac6901a349810ec9a1331a22a7",
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+    },
+    {
+      "glacier_id": "RGI2000-v7.0-G-13-39187",
+      "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-39187_2024.tif",
+      "sha256": "c48b767ea844ff6cb458ddf964c6755595e00911735614fb946a8fa8780ba1a7",
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+    }
+  ]
+}
