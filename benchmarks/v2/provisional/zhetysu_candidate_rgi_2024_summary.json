@@ -59,60 +59,707 @@
     }
   },
   "per_glacier_table": "benchmarks/v2/provisional/zhetysu_candidate_rgi_2024_per_glacier.csv",
+  "per_glacier_table_sha256": "06d47dbf19786dd2b5f23b4d4c21319da49cd1e463820824128a3d28e4633119",
+  "model_directory_sha256": "c92f25958e2db9e1fc52d46bee9e207938cf7805ce4717237c0064fcfc09d304",
+  "rgi_sha256": "84e42030dc25e4ccc385e28a684951e7b545aeb7cd06a6664d22526795e0b2ba",
   "source_records": [
     {
       "glacier_id": "RGI2000-v7.0-G-13-36006",
       "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-36006_2024.tif",
       "sha256": "ab18fc36de25d1cfded2520cf89770f06b9fd99b87cf42fcb06cef27e7b5bf01",
-      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003",
+      "scene_provenance": {
+        "collection": "COPERNICUS/S2_SR_HARMONIZED",
+        "date_start": "2024-07-01",
+        "date_end_exclusive": "2024-09-30",
+        "cloud_filter_percent_lt": 30,
+        "composite": "per-band median",
+        "scene_count": 8,
+        "scene_ids": [
+          "20240725T053641_20240725T053835_T44TMQ",
+          "20240804T053641_20240804T054526_T44TMQ",
+          "20240809T053649_20240809T053645_T44TMQ",
+          "20240809T053649_20240809T054626_T44TMQ",
+          "20240903T053641_20240903T054014_T44TMQ",
+          "20240908T053649_20240908T053904_T44TMQ",
+          "20240918T053639_20240918T053836_T44TMQ",
+          "20240928T053639_20240928T054010_T44TMQ"
+        ],
+        "scene_cloud_percentages": [
+          11.200882,
+          4.93504,
+          0.300397,
+          0.264215,
+          2.752033,
+          0.679784,
+          4.043771,
+          13.268322
+        ],
+        "terrain_source": "USGS/SRTMGL1_003"
+      },
+      "raster_metadata": {
+        "bytes": 596909,
+        "bands": 10,
+        "width": 201,
+        "height": 254,
+        "crs": "EPSG:32645",
+        "pixel_size_m": [
+          10.0,
+          10.0
+        ],
+        "bounds": [
+          -62810.0,
+          5007010.0,
+          -60800.0,
+          5009550.0
+        ],
+        "dtypes": [
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32"
+        ]
+      }
     },
     {
       "glacier_id": "RGI2000-v7.0-G-13-37015",
       "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-37015_2024.tif",
       "sha256": "67a977518fb9e37db537070a2abe09014f130c1c4d5abcd26c0de22c01a63c66",
-      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003",
+      "scene_provenance": {
+        "collection": "COPERNICUS/S2_SR_HARMONIZED",
+        "date_start": "2024-07-01",
+        "date_end_exclusive": "2024-09-30",
+        "cloud_filter_percent_lt": 30,
+        "composite": "per-band median",
+        "scene_count": 11,
+        "scene_ids": [
+          "20240720T053649_20240720T054201_T44TLQ",
+          "20240725T053641_20240725T053835_T44TLQ",
+          "20240804T053641_20240804T054526_T44TLQ",
+          "20240809T053649_20240809T054626_T44TLQ",
+          "20240819T053639_20240819T054500_T44TLQ",
+          "20240829T053649_20240829T054537_T44TLQ",
+          "20240903T053641_20240903T054014_T44TLQ",
+          "20240908T053649_20240908T053904_T44TLQ",
+          "20240913T053641_20240913T053639_T44TLQ",
+          "20240918T053639_20240918T053836_T44TLQ",
+          "20240928T053639_20240928T054010_T44TLQ"
+        ],
+        "scene_cloud_percentages": [
+          26.135939,
+          4.637353,
+          11.251675,
+          10.343815,
+          23.293127,
+          26.574665,
+          0.011281,
+          0,
+          15.671109,
+          5.215049,
+          1.700004
+        ],
+        "terrain_source": "USGS/SRTMGL1_003"
+      },
+      "raster_metadata": {
+        "bytes": 627213,
+        "bands": 10,
+        "width": 209,
+        "height": 276,
+        "crs": "EPSG:32645",
+        "pixel_size_m": [
+          10.0,
+          10.0
+        ],
+        "bounds": [
+          -120670.0,
+          4973470.0,
+          -118580.0,
+          4976230.0
+        ],
+        "dtypes": [
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32"
+        ]
+      }
     },
     {
       "glacier_id": "RGI2000-v7.0-G-13-37740",
       "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-37740_2024.tif",
       "sha256": "4b063d0e48f643528e13749f5da118c23b166ed49ef36d9c6295586c540eb53c",
-      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003",
+      "scene_provenance": {
+        "collection": "COPERNICUS/S2_SR_HARMONIZED",
+        "date_start": "2024-07-01",
+        "date_end_exclusive": "2024-09-30",
+        "cloud_filter_percent_lt": 30,
+        "composite": "per-band median",
+        "scene_count": 37,
+        "scene_ids": [
+          "20240704T051659_20240704T051935_T44TPP",
+          "20240704T051659_20240704T051935_T44TPQ",
+          "20240707T052649_20240707T053238_T44TPP",
+          "20240707T052649_20240707T053238_T44TPQ",
+          "20240712T052651_20240712T053023_T44TPP",
+          "20240712T052651_20240712T053023_T44TPQ",
+          "20240714T051649_20240714T051753_T44TPP",
+          "20240717T052649_20240717T053111_T44TPP",
+          "20240717T052649_20240717T053111_T44TPQ",
+          "20240722T052651_20240722T052722_T44TPQ",
+          "20240727T052649_20240727T053114_T44TPQ",
+          "20240729T051651_20240729T052217_T44TPP",
+          "20240729T051651_20240729T052217_T44TPQ",
+          "20240801T052651_20240801T052832_T44TPP",
+          "20240801T052651_20240801T052832_T44TPQ",
+          "20240803T051649_20240803T051749_T44TPP",
+          "20240803T051649_20240803T051749_T44TPQ",
+          "20240808T051651_20240808T052204_T44TPP",
+          "20240808T051651_20240808T052204_T44TPQ",
+          "20240813T051659_20240813T052002_T44TPP",
+          "20240813T051659_20240813T052002_T44TPQ",
+          "20240816T052649_20240816T052648_T44TPP",
+          "20240816T052649_20240816T052648_T44TPQ",
+          "20240821T052641_20240821T053551_T44TPP",
+          "20240821T052641_20240821T053551_T44TPQ",
+          "20240826T052649_20240826T052646_T44TPP",
+          "20240828T051651_20240828T051647_T44TPP",
+          "20240828T051651_20240828T051647_T44TPQ",
+          "20240831T052641_20240831T052723_T44TPP",
+          "20240831T052641_20240831T052723_T44TPQ",
+          "20240905T052649_20240905T052647_T44TPP",
+          "20240912T051649_20240912T051705_T44TPP",
+          "20240915T052649_20240915T052716_T44TPP",
+          "20240915T052649_20240915T052716_T44TPQ",
+          "20240917T051651_20240917T051718_T44TPP",
+          "20240920T052651_20240920T053347_T44TPP",
+          "20240920T052651_20240920T053347_T44TPQ"
+        ],
+        "scene_cloud_percentages": [
+          24.544831,
+          14.718547,
+          5.435804,
+          0.645766,
+          17.743635,
+          3.996718,
+          28.768644,
+          4.047018,
+          2.235918,
+          4.964436,
+          11.399414,
+          13.222034,
+          7.154174,
+          10.747772,
+          1.600374,
+          15.212607,
+          6.395309,
+          9.243074,
+          2.296694,
+          12.168255,
+          4.696187,
+          4.455014,
+          26.977018,
+          4.497841,
+          0.686059,
+          23.442809,
+          1.340718,
+          2.709628,
+          0.004989,
+          0.293603,
+          8.85964,
+          28.792274,
+          16.330819,
+          0.401544,
+          17.167631,
+          0.651811,
+          17.585668
+        ],
+        "terrain_source": "USGS/SRTMGL1_003"
+      },
+      "raster_metadata": {
+        "bytes": 685131,
+        "bands": 10,
+        "width": 211,
+        "height": 278,
+        "crs": "EPSG:32645",
+        "pixel_size_m": [
+          10.0,
+          10.0
+        ],
+        "bounds": [
+          198530.0,
+          4898810.0,
+          200640.0,
+          4901590.0
+        ],
+        "dtypes": [
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32"
+        ]
+      }
     },
     {
       "glacier_id": "RGI2000-v7.0-G-13-37493",
       "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-37493_2024.tif",
       "sha256": "11f5a837611d4dec3e26b5cdc6b9f18c3577091bbfc19e6848e910b40b726b2d",
-      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003",
+      "scene_provenance": {
+        "collection": "COPERNICUS/S2_SR_HARMONIZED",
+        "date_start": "2024-07-01",
+        "date_end_exclusive": "2024-09-30",
+        "cloud_filter_percent_lt": 30,
+        "composite": "per-band median",
+        "scene_count": 3,
+        "scene_ids": [
+          "20240714T051649_20240714T051753_T44TQP",
+          "20240808T051651_20240808T052204_T44TQP",
+          "20240828T051651_20240828T051647_T44TQP"
+        ],
+        "scene_cloud_percentages": [
+          20.031019,
+          14.765741,
+          1.6245
+        ],
+        "terrain_source": "USGS/SRTMGL1_003"
+      },
+      "raster_metadata": {
+        "bytes": 751055,
+        "bands": 10,
+        "width": 221,
+        "height": 283,
+        "crs": "EPSG:32645",
+        "pixel_size_m": [
+          10.0,
+          10.0
+        ],
+        "bounds": [
+          236200.0,
+          4864180.0,
+          238410.0,
+          4867010.0
+        ],
+        "dtypes": [
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32"
+        ]
+      }
     },
     {
       "glacier_id": "RGI2000-v7.0-G-13-37610",
       "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-37610_2024.tif",
       "sha256": "671048801b1050ee6dba88c042a9acfd2a3f1250eeb6a114d3cccaa5f2bea978",
-      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003",
+      "scene_provenance": {
+        "collection": "COPERNICUS/S2_SR_HARMONIZED",
+        "date_start": "2024-07-01",
+        "date_end_exclusive": "2024-09-30",
+        "cloud_filter_percent_lt": 30,
+        "composite": "per-band median",
+        "scene_count": 33,
+        "scene_ids": [
+          "20240704T051659_20240704T051935_T44TPP",
+          "20240707T052649_20240707T053238_T44TPP",
+          "20240707T052649_20240707T053238_T44TQP",
+          "20240712T052651_20240712T053023_T44TPP",
+          "20240712T052651_20240712T053023_T44TQP",
+          "20240714T051649_20240714T051753_T44TPP",
+          "20240714T051649_20240714T051753_T44TQP",
+          "20240717T052649_20240717T053111_T44TPP",
+          "20240717T052649_20240717T053111_T44TQP",
+          "20240729T051651_20240729T052217_T44TPP",
+          "20240801T052651_20240801T052832_T44TPP",
+          "20240801T052651_20240801T052832_T44TQP",
+          "20240803T051649_20240803T051749_T44TPP",
+          "20240808T051651_20240808T052204_T44TPP",
+          "20240808T051651_20240808T052204_T44TQP",
+          "20240813T051659_20240813T052002_T44TPP",
+          "20240816T052649_20240816T052648_T44TPP",
+          "20240816T052649_20240816T052648_T44TQP",
+          "20240821T052641_20240821T053551_T44TPP",
+          "20240821T052641_20240821T053551_T44TQP",
+          "20240826T052649_20240826T052646_T44TPP",
+          "20240828T051651_20240828T051647_T44TPP",
+          "20240828T051651_20240828T051647_T44TQP",
+          "20240831T052641_20240831T052723_T44TPP",
+          "20240831T052641_20240831T052723_T44TQP",
+          "20240905T052649_20240905T052647_T44TPP",
+          "20240905T052649_20240905T052647_T44TQP",
+          "20240912T051649_20240912T051705_T44TPP",
+          "20240915T052649_20240915T052716_T44TPP",
+          "20240915T052649_20240915T052716_T44TQP",
+          "20240917T051651_20240917T051718_T44TPP",
+          "20240920T052651_20240920T053347_T44TPP",
+          "20240920T052651_20240920T053347_T44TQP"
+        ],
+        "scene_cloud_percentages": [
+          24.544831,
+          5.435804,
+          9.228035,
+          17.743635,
+          8.736318,
+          28.768644,
+          20.031019,
+          4.047018,
+          9.13942,
+          13.222034,
+          10.747772,
+          14.722399,
+          15.212607,
+          9.243074,
+          14.765741,
+          12.168255,
+          4.455014,
+          17.283042,
+          4.497841,
+          3.022199,
+          23.442809,
+          1.340718,
+          1.6245,
+          0.004989,
+          0.056756,
+          8.85964,
+          18.968065,
+          28.792274,
+          16.330819,
+          0.485587,
+          17.167631,
+          0.651811,
+          0.464289
+        ],
+        "terrain_source": "USGS/SRTMGL1_003"
+      },
+      "raster_metadata": {
+        "bytes": 769230,
+        "bands": 10,
+        "width": 225,
+        "height": 270,
+        "crs": "EPSG:32645",
+        "pixel_size_m": [
+          10.0,
+          10.0
+        ],
+        "bounds": [
+          225780.0,
+          4884910.0,
+          228030.0,
+          4887610.0
+        ],
+        "dtypes": [
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32"
+        ]
+      }
     },
     {
       "glacier_id": "RGI2000-v7.0-G-13-39203",
       "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-39203_2024.tif",
       "sha256": "26089b724ab0b58f0575d35475e110b200229a97c48e030416971e4775cab9eb",
-      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003",
+      "scene_provenance": {
+        "collection": "COPERNICUS/S2_SR_HARMONIZED",
+        "date_start": "2024-07-01",
+        "date_end_exclusive": "2024-09-30",
+        "cloud_filter_percent_lt": 30,
+        "composite": "per-band median",
+        "scene_count": 3,
+        "scene_ids": [
+          "20240714T051649_20240714T051753_T44TQP",
+          "20240808T051651_20240808T052204_T44TQP",
+          "20240828T051651_20240828T051647_T44TQP"
+        ],
+        "scene_cloud_percentages": [
+          20.031019,
+          14.765741,
+          1.6245
+        ],
+        "terrain_source": "USGS/SRTMGL1_003"
+      },
+      "raster_metadata": {
+        "bytes": 734480,
+        "bands": 10,
+        "width": 230,
+        "height": 265,
+        "crs": "EPSG:32645",
+        "pixel_size_m": [
+          10.0,
+          10.0
+        ],
+        "bounds": [
+          255160.0,
+          4881140.0,
+          257460.0,
+          4883790.0
+        ],
+        "dtypes": [
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32"
+        ]
+      }
     },
     {
       "glacier_id": "RGI2000-v7.0-G-13-36594",
       "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-36594_2024.tif",
       "sha256": "15b52c15e6e5503bb959deb08b72500b1241e1bcded6479117cd0f0731769017",
-      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003",
+      "scene_provenance": {
+        "collection": "COPERNICUS/S2_SR_HARMONIZED",
+        "date_start": "2024-07-01",
+        "date_end_exclusive": "2024-09-30",
+        "cloud_filter_percent_lt": 30,
+        "composite": "per-band median",
+        "scene_count": 15,
+        "scene_ids": [
+          "20240712T052651_20240712T053023_T44TMQ",
+          "20240722T052651_20240722T052722_T44TMQ",
+          "20240725T053641_20240725T053835_T44TMQ",
+          "20240727T052649_20240727T053114_T44TMQ",
+          "20240801T052651_20240801T052832_T44TMQ",
+          "20240804T053641_20240804T054526_T44TMQ",
+          "20240809T053649_20240809T054626_T44TMQ",
+          "20240831T052641_20240831T052723_T44TMQ",
+          "20240903T053641_20240903T054014_T44TMQ",
+          "20240905T052649_20240905T052647_T44TMQ",
+          "20240908T053649_20240908T053904_T44TMQ",
+          "20240915T052649_20240915T052716_T44TMQ",
+          "20240918T053639_20240918T053836_T44TMQ",
+          "20240920T052651_20240920T053347_T44TMQ",
+          "20240928T053639_20240928T054010_T44TMQ"
+        ],
+        "scene_cloud_percentages": [
+          19.312286,
+          9.009534,
+          11.200882,
+          18.37019,
+          3.319383,
+          4.93504,
+          0.264215,
+          2.295537,
+          2.752033,
+          20.713273,
+          0.679784,
+          2.182033,
+          4.043771,
+          5.672417,
+          13.268322
+        ],
+        "terrain_source": "USGS/SRTMGL1_003"
+      },
+      "raster_metadata": {
+        "bytes": 1284067,
+        "bands": 10,
+        "width": 280,
+        "height": 422,
+        "crs": "EPSG:32645",
+        "pixel_size_m": [
+          10.0,
+          10.0
+        ],
+        "bounds": [
+          -33980.0,
+          4956030.0,
+          -31180.0,
+          4960250.0
+        ],
+        "dtypes": [
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32"
+        ]
+      }
     },
     {
       "glacier_id": "RGI2000-v7.0-G-13-37260",
       "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-37260_2024.tif",
       "sha256": "805451b6db2447cf1745cc5eb0c94829a1017eac6901a349810ec9a1331a22a7",
-      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003",
+      "scene_provenance": {
+        "collection": "COPERNICUS/S2_SR_HARMONIZED",
+        "date_start": "2024-07-01",
+        "date_end_exclusive": "2024-09-30",
+        "cloud_filter_percent_lt": 30,
+        "composite": "per-band median",
+        "scene_count": 20,
+        "scene_ids": [
+          "20240704T051659_20240704T051935_T44TPP",
+          "20240707T052649_20240707T053238_T44TPP",
+          "20240712T052651_20240712T053023_T44TPP",
+          "20240714T051649_20240714T051753_T44TPP",
+          "20240717T052649_20240717T053111_T44TPP",
+          "20240729T051651_20240729T052217_T44TPP",
+          "20240801T052651_20240801T052832_T44TPP",
+          "20240803T051649_20240803T051749_T44TPP",
+          "20240808T051651_20240808T052204_T44TPP",
+          "20240813T051659_20240813T052002_T44TPP",
+          "20240816T052649_20240816T052648_T44TPP",
+          "20240821T052641_20240821T053551_T44TPP",
+          "20240826T052649_20240826T052646_T44TPP",
+          "20240828T051651_20240828T051647_T44TPP",
+          "20240831T052641_20240831T052723_T44TPP",
+          "20240905T052649_20240905T052647_T44TPP",
+          "20240912T051649_20240912T051705_T44TPP",
+          "20240915T052649_20240915T052716_T44TPP",
+          "20240917T051651_20240917T051718_T44TPP",
+          "20240920T052651_20240920T053347_T44TPP"
+        ],
+        "scene_cloud_percentages": [
+          24.544831,
+          5.435804,
+          17.743635,
+          28.768644,
+          4.047018,
+          13.222034,
+          10.747772,
+          15.212607,
+          9.243074,
+          12.168255,
+          4.455014,
+          4.497841,
+          23.442809,
+          1.340718,
+          0.004989,
+          8.85964,
+          28.792274,
+          16.330819,
+          17.167631,
+          0.651811
+        ],
+        "terrain_source": "USGS/SRTMGL1_003"
+      },
+      "raster_metadata": {
+        "bytes": 1327814,
+        "bands": 10,
+        "width": 321,
+        "height": 328,
+        "crs": "EPSG:32645",
+        "pixel_size_m": [
+          10.0,
+          10.0
+        ],
+        "bounds": [
+          196110.0,
+          4876730.0,
+          199320.0,
+          4880010.0
+        ],
+        "dtypes": [
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32"
+        ]
+      }
     },
     {
       "glacier_id": "RGI2000-v7.0-G-13-39187",
       "path": "data/external/provisional_zhetysu_2024/RGI2000-v7.0-G-13-39187_2024.tif",
       "sha256": "c48b767ea844ff6cb458ddf964c6755595e00911735614fb946a8fa8780ba1a7",
-      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003"
+      "source": "Google Earth Engine COPERNICUS/S2_SR_HARMONIZED + USGS/SRTMGL1_003",
+      "scene_provenance": {
+        "collection": "COPERNICUS/S2_SR_HARMONIZED",
+        "date_start": "2024-07-01",
+        "date_end_exclusive": "2024-09-30",
+        "cloud_filter_percent_lt": 30,
+        "composite": "per-band median",
+        "scene_count": 3,
+        "scene_ids": [
+          "20240714T051649_20240714T051753_T44TQP",
+          "20240808T051651_20240808T052204_T44TQP",
+          "20240828T051651_20240828T051647_T44TQP"
+        ],
+        "scene_cloud_percentages": [
+          20.031019,
+          14.765741,
+          1.6245
+        ],
+        "terrain_source": "USGS/SRTMGL1_003"
+      },
+      "raster_metadata": {
+        "bytes": 1111115,
+        "bands": 10,
+        "width": 279,
+        "height": 329,
+        "crs": "EPSG:32645",
+        "pixel_size_m": [
+          10.0,
+          10.0
+        ],
+        "bounds": [
+          246890.0,
+          4885560.0,
+          249680.0,
+          4888850.0
+        ],
+        "dtypes": [
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32",
+          "float32"
+        ]
+      }
     }
   ]
 }

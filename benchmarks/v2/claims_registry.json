@@ -1,0 +1,80 @@
+{
+  "schema": "glaciernet-kz.claims-registry.v1",
+  "updated": "2026-07-27",
+  "policy": "A claim is publishable only at its declared evidence tier and scope. Provisional evidence never upgrades a blocked strict claim.",
+  "allowed_statuses": [
+    "supported_silver",
+    "supported_provisional",
+    "refuted_for_current_model",
+    "blocked_external_evidence"
+  ],
+  "claims": [
+    {
+      "id": "C1",
+      "status": "supported_silver",
+      "claim": "The validation-calibrated compact Sentinel-1 model has hard Dice 0.9036 and hard IoU 0.8242 on the 2024 one-AOI RGI-derived silver test.",
+      "scope": "Ile Alatau one-AOI temporal test; patch-level aggregate",
+      "evidence": [
+        "results/ablation_unet_sentinel2_terrain_s1_2017_2024.json",
+        "benchmarks/v2/tables/metrics_summary.csv"
+      ]
+    },
+    {
+      "id": "C2",
+      "status": "supported_provisional",
+      "claim": "In an 18-glacier post-hoc RGI pseudo-label diagnostic, Sentinel-1 improves mean hard IoU by 0.0257 while reducing mean recall by 0.1413.",
+      "scope": "Non-independent provisional paired diagnostic; not a holdout",
+      "evidence": [
+        "benchmarks/v2/provisional/ile_alatau_rgi_2024_paired_summary.json",
+        "benchmarks/v2/provisional/ile_alatau_rgi_2024_per_glacier.csv"
+      ]
+    },
+    {
+      "id": "C3",
+      "status": "refuted_for_current_model",
+      "claim": "The current S2+terrain model does not demonstrate external-geography generalisation in the automatic 2024 stress test.",
+      "scope": "Nine-glacier broad candidate region; RGI pseudo-label stress test",
+      "evidence": [
+        "benchmarks/v2/provisional/zhetysu_candidate_rgi_2024_summary.json",
+        "benchmarks/v2/provisional/zhetysu_candidate_rgi_2024_per_glacier.csv"
+      ]
+    },
+    {
+      "id": "C4",
+      "status": "blocked_external_evidence",
+      "claim": "Independent expert gold-label accuracy",
+      "scope": "Requires two independent annotators and adjudication",
+      "evidence": [
+        "benchmarks/v2/manifests/glacier_holdout.json"
+      ]
+    },
+    {
+      "id": "C5",
+      "status": "blocked_external_evidence",
+      "claim": "Independent Zhetysu Alatau generalisation",
+      "scope": "Requires an authoritative regional boundary and adjudicated external labels",
+      "evidence": [
+        "benchmarks/v2/manifests/cross_region.json"
+      ]
+    },
+    {
+      "id": "C6",
+      "status": "blocked_external_evidence",
+      "claim": "Operational GLOF warning or calibrated event probability",
+      "scope": "Requires source-reviewed event/control cohorts and operational validation",
+      "evidence": [
+        "benchmarks/central_asia_cascade/manifests/event_replay.json"
+      ]
+    },
+    {
+      "id": "C7",
+      "status": "blocked_external_evidence",
+      "claim": "A validated 2000-2020 glacier-loss trend or 2050 area forecast",
+      "scope": "Current strict trend is statistically insignificant and historical methods are not uniform",
+      "evidence": [
+        "results/decision_readiness_summary.json",
+        "docs/REPRODUCIBILITY.md"
+      ]
+    }
+  ]
+}

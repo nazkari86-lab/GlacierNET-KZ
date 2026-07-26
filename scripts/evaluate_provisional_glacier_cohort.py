@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -20,6 +21,7 @@ from src.benchmark_metrics import bootstrap_confidence_intervals, complete_segme
 from src.data_loader import _append_sentinel2_indices  # noqa: E402
 from src.model_security import verify_trusted_model  # noqa: E402
 from src.models import get_custom_objects, predict_full_image  # noqa: E402
+from src.provenance import sha256_directory, sha256_file  # noqa: E402
 
 DEFAULT_OUTPUT = ROOT / "benchmarks/v2/provisional"
 METRIC_FIELDS = (
@@ -35,8 +37,16 @@ METRIC_FIELDS = (
     "boundary_f1",
     "hausdorff95_m",
     "assd_m",
+    "boundary_distance_status",
+    "true_area_km2",
+    "predicted_area_km2",
     "area_error_km2",
+    "absolute_area_error_km2",
     "area_error_percent",
+    "tp",
+    "fp",
+    "fn",
+    "tn",
     "label_quality_tier",
     "evaluation_status",
 )
@@ -117,8 +127,17 @@ def _label_for_geometry(geometry, *, shape: tuple[int, int], transform) -> np.nd
     return rasterize([(geometry, 1)], out_shape=shape, transform=transform, fill=0, dtype="uint8")
 
 
-def paired_bootstrap(records: list[dict[str, object]], *, seed: int) -> dict[str, object]:
-    """Return paired candidate-minus-control CIs at the glacier sample unit."""
+def metrics_for_table(metrics: dict[str, object]) -> dict[str, object]:
+    """Map library metric names to explicit physical-unit table columns."""
+    output = dict(metrics)
+    output["hausdorff95_m"] = output.pop("hausdorff95")
+    output["assd_m"] = output.pop("assd")
+    distances = (float(output["hausdorff95_m"]), float(output["assd_m"]))
+    output["boundary_distance_status"] = "finite" if all(math.isfinite(value) for value in distances) else "unbounded"
+    return output
+
+
+def _paired_deltas(records: list[dict[str, object]]) -> list[dict[str, object]]:
     pairs: dict[str, dict[str, dict[str, object]]] = {}
     for record in records:
         pairs.setdefault(str(record["glacier_id"]), {})[str(record["model"])] = record
@@ -126,25 +145,60 @@ def paired_bootstrap(records: list[dict[str, object]], *, seed: int) -> dict[str
     matched = [pair for pair in pairs.values() if required <= set(pair)]
     if not matched:
         raise ValueError("no paired control/S1 glacier records")
-    deltas = []
-    for pair in matched:
+    deltas: list[dict[str, object]] = []
+    for glacier_id, pair in ((key, value) for key, value in pairs.items() if required <= set(value)):
         control, candidate = pair["control"], pair["s1"]
         deltas.append(
             {
+                "glacier_id": glacier_id,
+                "area_class": str(control["area_class"]),
                 "hard_dice": float(candidate["hard_dice"]) - float(control["hard_dice"]),
                 "hard_iou": float(candidate["hard_iou"]) - float(control["hard_iou"]),
+                "precision": float(candidate["precision"]) - float(control["precision"]),
                 "recall": float(candidate["recall"]) - float(control["recall"]),
                 "absolute_area_error_km2": abs(float(candidate["area_error_km2"])) - abs(float(control["area_error_km2"])),
             }
         )
+    return deltas
+
+
+def paired_analysis(records: list[dict[str, object]], *, seed: int) -> dict[str, object]:
+    """Return paired CIs, Wilcoxon tests, win rates, and area-class diagnostics."""
+    from scipy.stats import wilcoxon
+
+    deltas = _paired_deltas(records)
+    metrics = ("hard_dice", "hard_iou", "precision", "recall", "absolute_area_error_km2")
+    tests: dict[str, dict[str, float | int | str]] = {}
+    for metric in metrics:
+        values = np.asarray([float(row[metric]) for row in deltas], dtype=np.float64)
+        nonzero = values[values != 0]
+        if len(nonzero):
+            statistic, p_value = wilcoxon(nonzero, alternative="two-sided", method="auto")
+        else:
+            statistic, p_value = 0.0, 1.0
+        improvement = values < 0 if metric == "absolute_area_error_km2" else values > 0
+        tests[metric] = {
+            "test": "paired_wilcoxon_two_sided",
+            "statistic": float(statistic),
+            "p_value": float(p_value),
+            "n_nonzero_pairs": int(len(nonzero)),
+            "candidate_win_rate": float(improvement.mean()),
+        }
+    subgroups: dict[str, object] = {}
+    for area_class in ("small", "medium", "large"):
+        rows = [row for row in deltas if row["area_class"] == area_class]
+        if rows:
+            subgroups[area_class] = bootstrap_confidence_intervals(rows, metrics=metrics, seed=seed)
     return {
         "pairing_key": "glacier_id",
         "n_paired_glaciers": len(deltas),
         "candidate_minus_control": bootstrap_confidence_intervals(
             deltas,
-            metrics=("hard_dice", "hard_iou", "recall", "absolute_area_error_km2"),
+            metrics=metrics,
             seed=seed,
         ),
+        "paired_tests": tests,
+        "area_class_subgroups": subgroups,
     }
 
 
@@ -195,7 +249,15 @@ def main() -> int:
             for name, (_, threshold, uses_s1) in models.items():
                 features = np.concatenate([s2, terrain, s1] if uses_s1 else [s2, terrain], axis=-1)
                 probabilities, _ = predict_full_image(features, loaded_models[name], threshold=threshold)
-                metrics = complete_segmentation_metrics(label, probabilities, threshold=threshold, pixel_area_m2=100.0, pixel_size=10.0)
+                metrics = metrics_for_table(
+                    complete_segmentation_metrics(
+                        label,
+                        probabilities,
+                        threshold=threshold,
+                        pixel_area_m2=100.0,
+                        pixel_size=10.0,
+                    )
+                )
                 records.append(
                     {
                         "glacier_id": str(glacier["rgi_id"]),
@@ -222,8 +284,18 @@ def main() -> int:
         "evaluation_status": "post_hoc_non_independent_not_a_holdout",
         "claims_not_allowed": ["gold-label accuracy", "independent generalisation", "operational accuracy"],
         "cohort_selection": {"per_area_class": args.per_area_class, "seed": args.seed, "n_glaciers": len(cohort)},
-        "paired_bootstrap": paired_bootstrap(records, seed=args.seed),
+        "paired_analysis": paired_analysis(records, seed=args.seed),
         "per_glacier_table": project_relative_or_absolute(csv_path),
+        "per_glacier_table_sha256": sha256_file(csv_path),
+        "input_provenance": {
+            "rgi_sha256": sha256_file(rgi_path),
+            "sentinel2_sha256": sha256_file(image_path),
+            "terrain_sha256": sha256_file(terrain_path),
+            "sentinel1_sha256": sha256_file(s1_path),
+            "model_directory_sha256": {
+                name: sha256_directory(path) for name, (path, _, _) in models.items()
+            },
+        },
     }
     summary_path = args.output_dir / f"ile_alatau_rgi_{args.year}_paired_summary.json"
     summary_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
