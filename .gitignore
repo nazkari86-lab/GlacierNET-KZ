@@ -27,6 +27,7 @@ history.db*
 
 # Results & predictions
 .coverage
+coverage.xml
 .pytest_cache/
 .ruff_cache/
 .run/
@@ -74,6 +75,12 @@ data/processed/patches/**/*.npy
 data/processed/masks/*.tif
 data/ancillary/**/*.tif
 data/external/glathida/**
+# Third-party source archives stay local. Compact derived GeoPackages and
+# machine-readable provenance manifests remain publishable.
+data/events/**/source/
+data/events/**/*.zip
+data/lakes/**/source/
+data/lakes/**/*.zip
 models/*.h5
 models/*.pkl
 models/*

@@ -31,6 +31,9 @@ def test_build_decision_readiness_tables_adds_provenance_columns():
     row_2015 = next(row for row in rows if row["year"] == "2015")
     assert row_2015["source_flag"] == "sentinel2_toa_fallback"
     assert row_2015["include_in_strict_trend"] == "False"
+    row_2018 = next(row for row in rows if row["year"] == "2018")
+    assert row_2018["include_in_strict_trend"] == "False"
+    assert int(row_2018["quality_score"]) < 100
     assert all(row["source_flag"] != "sentinel2_sr_or_harmonized" for row in rows)
 
 

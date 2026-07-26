@@ -30,6 +30,7 @@ from app.routers import (
     models,
     monitoring,
     pipeline,
+    risk_twin,
     segmentation,
     tasks,
     training,
@@ -91,6 +92,10 @@ app = FastAPI(
         {"name": "analysis", "description": "LLM-powered glacier analysis"},
         {"name": "admin", "description": "Administrative endpoints (authenticated)"},
         {"name": "monitoring", "description": "Health checks, metrics, and system status"},
+        {
+            "name": "risk-twin",
+            "description": "Research-only active evidence acquisition and cascade screening",
+        },
     ],
     lifespan=lifespan,
 )
@@ -154,6 +159,7 @@ app.include_router(monitoring.router)
 app.include_router(dashboard.router)
 app.include_router(data.router)
 app.include_router(pipeline.router)
+app.include_router(risk_twin.router)
 app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(mcp_router)

@@ -37,6 +37,11 @@ def main() -> int:
         ("training masks", [python, "scripts/validate_training_masks.py", "--years", "2016-2024"]),
         ("ancillary alignment", [python, "scripts/validate_ancillary_features.py"]),
         ("decision readiness", [python, "scripts/validate_decision_readiness.py"]),
+        ("benchmark v2 structure", [python, "scripts/validate_benchmark_v2.py", "--allow-incomplete"]),
+        (
+            "cascade benchmark structure",
+            [python, "scripts/validate_cascade_benchmark.py", "--allow-incomplete"],
+        ),
         ("trusted model artifacts", [python, "scripts/validate_trusted_models.py"]),
         ("local release package", [python, "scripts/verify_local_release_package.py"]),
     ]
@@ -102,7 +107,9 @@ def main() -> int:
             checks.append((label, [python, "scripts/validate_year_holdout.py", str(holdout)]))
     ablation = ROOT / "results/ablation_sentinel1_2017_2024.json"
     if ablation.is_file():
-        checks.append(("controlled Sentinel-1 ablation evidence", [python, "scripts/validate_ablation_report.py", str(ablation)]))
+        checks.append(
+            ("controlled Sentinel-1 ablation evidence", [python, "scripts/validate_ablation_report.py", str(ablation)])
+        )
     checks.append(("prediction coverage and georeferencing", [python, "scripts/validate_predictions.py"]))
     if not args.skip_tests:
         checks.append(("unit and integration tests", [python, "-m", "pytest", "-q", "--no-cov"]))

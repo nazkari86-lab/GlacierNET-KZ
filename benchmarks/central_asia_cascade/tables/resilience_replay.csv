@@ -1,0 +1,1 @@
+snapshot_id,basin_id,event_id,split,cutoff_time,baseline_area_rank,static_susceptibility_rank,risk_twin_rank,resilience_twin_rank,model_margin,margin_right_censored,failure_genome,lead_time_days,false_alert,abstained,model_version

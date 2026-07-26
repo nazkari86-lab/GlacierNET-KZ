@@ -1,0 +1,1 @@
+experiment,model,glacier_id,region,year,ice_type,threshold,hard_dice,hard_iou,precision,recall,boundary_f1,hausdorff95_m,assd_m,true_area_km2,predicted_area_km2,area_error_km2,area_error_percent

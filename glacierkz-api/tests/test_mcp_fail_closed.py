@@ -28,7 +28,7 @@ def test_verified_local_year_tools_use_real_tables():
 
     assert result["status"] == "success"
     assert result["data"]["year"] == 2024
-    assert result["data"]["quality_score"] == 100
+    assert result["data"]["quality_score"] < 100
     assert result["data"]["primary_area_km2"] == 450.47
 
 

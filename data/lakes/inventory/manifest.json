@@ -1,0 +1,60 @@
+{
+  "dataset": "High Mountain Asia Near-Global Multi-Decadal Glacial Lake Inventory V001",
+  "short_name": "HMA_GLI",
+  "version": "1",
+  "period": "2015-2018",
+  "source": "https://nsidc.org/data/hma_gli/versions/1",
+  "doi": "10.5067/UO20NYM3YQB4",
+  "downloaded_at": "2026-07-26T15:52:42.130385+00:00",
+  "subset_bbox_wgs84": [
+    75.5,
+    42.2,
+    78.2,
+    43.8
+  ],
+  "feature_count": 22,
+  "total_area_m2": 2597864.5,
+  "output": {
+    "path": "data/lakes/inventory/hma_gli_2015_2018_ile_alatau.gpkg",
+    "bytes": 491520,
+    "sha256": "fc4939a7cb9d9f1d054e2624f73a111f20f419242e2bbca4addad71ecd9639c9"
+  },
+  "source_files": [
+    {
+      "name": "HMA_GLI_glacial_lakes_LatLonWGS84_2015_18.cpg",
+      "bytes": 5,
+      "sha256": "3ad3031f5503a4404af825262ee8232cc04d4ea6683d42c5dd0a2f2a27ac9824"
+    },
+    {
+      "name": "HMA_GLI_glacial_lakes_LatLonWGS84_2015_18.dbf",
+      "bytes": 24197212,
+      "sha256": "f9b2c51e974a65cf0d6c396a64487a596988c284bc226efcef28ce1b39d4f61b"
+    },
+    {
+      "name": "HMA_GLI_glacial_lakes_LatLonWGS84_2015_18.prj",
+      "bytes": 145,
+      "sha256": "a02a27b1d1982c8516d83398e85a3c8b1aef1713c13ef4d84d7bde17430c07c4"
+    },
+    {
+      "name": "HMA_GLI_glacial_lakes_LatLonWGS84_2015_18.sbn",
+      "bytes": 132748,
+      "sha256": "c2a94e3622a3220fac0825aa27c35741bb4fed2ec29d6e77a1b78052af52b028"
+    },
+    {
+      "name": "HMA_GLI_glacial_lakes_LatLonWGS84_2015_18.sbx",
+      "bytes": 2244,
+      "sha256": "842a06d491c4fc4950f267f09696749681dc8b833e4953bf3f305cfaa54ad595"
+    },
+    {
+      "name": "HMA_GLI_glacial_lakes_LatLonWGS84_2015_18.shp",
+      "bytes": 596766992,
+      "sha256": "a3243b984f3e7bb53627f748cd2ae51a5b61a4c7d8d56670f94a2c73768f7a6d"
+    },
+    {
+      "name": "HMA_GLI_glacial_lakes_LatLonWGS84_2015_18.shx",
+      "bytes": 115252,
+      "sha256": "5054544feacaa816407309f6fd7a70e3203fa2ad64f6dea9884bc3d5ab46572b"
+    }
+  ],
+  "claim_limit": "inventory screening baseline; not current lake state or hazard classification"
+}

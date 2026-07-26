@@ -16,7 +16,7 @@ def test_list_years_uses_verified_tables():
     assert 2000 in years
     assert 2024 in years
     assert years[2015]["include_in_strict_trend"] is False
-    assert years[2024]["quality_score"] == 100
+    assert years[2024]["quality_score"] < 100
 
 
 def test_strict_years_exclude_low_quality_2015():
@@ -32,7 +32,7 @@ def test_compare_years_returns_caveated_change():
     assert body["from"]["year"] == 2000
     assert body["to"]["year"] == 2024
     assert body["change_km2"] == -128.61
-    assert body["comparable_in_strict_trend"] is True
+    assert body["comparable_in_strict_trend"] is False
     assert body["warnings"]
 
 

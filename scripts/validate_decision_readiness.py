@@ -104,8 +104,13 @@ def main() -> int:
             errors.append(f"{year}: source_flag={row['source_flag']} expected {expected_flag}")
         if year == 2015 and row["include_in_strict_trend"] != "False":
             errors.append("2015 Sentinel-2 TOA fallback must be excluded from strict trend")
-        if year != 2015 and row["include_in_strict_trend"] != "True":
-            errors.append(f"{year}: expected include_in_strict_trend=True")
+        temporal_status = quality_by_year.get(year, {}).get("temporal_status")
+        expected_strict = row["source_flag"] == "sentinel2_sr" and temporal_status != "reject"
+        if row["include_in_strict_trend"] != str(expected_strict):
+            errors.append(
+                f"{year}: include_in_strict_trend={row['include_in_strict_trend']} "
+                f"expected {expected_strict} for temporal_status={temporal_status}"
+            )
         if not model_reference_ok(row["model_file"]):
             errors.append(f"{year}: model_file is not resolvable: {row['model_file']}")
         if not row["git_or_snapshot_id"]:
