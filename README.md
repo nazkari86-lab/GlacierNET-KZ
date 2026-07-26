@@ -29,18 +29,16 @@ expose the verified artifacts; they are not substitutes for benchmark evidence.
 
 ## Current verified evidence
 
-| Evaluation | Framework Dice (soft) | Binary IoU (hard) | Precision | Recall | Scope |
-|---|---:|---:|---:|---:|---|
-| 14-channel U-Net, 2024 year holdout | 0.7802 | 0.7382 | 0.9712 | 0.7547 | One AOI, RGI-derived silver labels |
-| Compact S2 + terrain control, 2024 holdout | 0.6942 | 0.7938 | 0.9507 | 0.8279 | Same-patch ablation control |
-| Compact control + Sentinel-1 VV/VH | 0.7092 | 0.8242 | 0.9252 | 0.8830 | Same patches, labels, splits, and training setup |
+| Evaluation | Hard Dice | Hard IoU | Precision | Recall | Threshold | Scope |
+|---|---:|---:|---:|---:|---:|---|
+| 14-channel U-Net, 2024 year holdout | 0.8746 | 0.7771 | 0.9508 | 0.8097 | 0.2 | One AOI, RGI-derived silver labels |
+| Compact S2 + terrain control, 2024 holdout | 0.8937 | 0.8078 | 0.9224 | 0.8668 | 0.3 | Same-patch ablation control |
+| Compact control + Sentinel-1 VV/VH | **0.9036** | **0.8242** | 0.9252 | **0.8830** | 0.5 | Same patches, labels, splits, and training setup |
 
-In the controlled experiment, Sentinel-1 increased Dice by **0.0150**, IoU by
-**0.0304**, and recall by **0.0551**, while precision decreased by **0.0255**.
-The legacy reports mix a soft framework Dice with thresholded BinaryIoU, so
-those two columns must not be treated as one internally comparable hard metric
-set. Benchmark v2 fixes this by calculating hard Dice, hard IoU, precision,
-recall and area error from exactly the same validation-calibrated threshold.
+In the controlled experiment, Sentinel-1 increased hard Dice by **0.0099**,
+hard IoU by **0.0164**, recall by **0.0163**, and reduced absolute area error
+from 4.7873 to 3.6214 km². Precision increased by **0.0028**. Each model used
+its own validation-calibrated threshold, frozen before test evaluation.
 
 The evidence supports a one-AOI feature-ablation result only. It does not
 establish cross-region generalisation, independent expert-label accuracy,

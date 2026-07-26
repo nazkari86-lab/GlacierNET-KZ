@@ -38,8 +38,11 @@ def validate(*, allow_incomplete: bool) -> tuple[list[str], list[str]]:
             errors.append(f"missing benchmark table: {path.relative_to(ROOT)}")
             continue
         with path.open(newline="", encoding="utf-8") as handle:
-            if not next(csv.reader(handle), []):
+            rows = list(csv.reader(handle))
+            if not rows or not rows[0]:
                 errors.append(f"benchmark table has no header: {path.relative_to(ROOT)}")
+            if name == "metrics_summary.csv" and len(rows) < 2:
+                errors.append("metrics_summary.csv must contain the completed one-AOI silver evidence rows")
 
     temporal_path = BENCHMARK / "manifests/temporal_holdout.json"
     try:

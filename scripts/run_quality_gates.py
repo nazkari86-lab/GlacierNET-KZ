@@ -37,12 +37,15 @@ def main() -> int:
         ("training masks", [python, "scripts/validate_training_masks.py", "--years", "2016-2024"]),
         ("ancillary alignment", [python, "scripts/validate_ancillary_features.py"]),
         ("decision readiness", [python, "scripts/validate_decision_readiness.py"]),
+        ("benchmark v2 published tables", [python, "scripts/build_benchmark_v2_tables.py"]),
         ("benchmark v2 structure", [python, "scripts/validate_benchmark_v2.py", "--allow-incomplete"]),
+        ("cascade event review queue", [python, "scripts/build_cascade_review_queue.py"]),
         (
             "cascade benchmark structure",
             [python, "scripts/validate_cascade_benchmark.py", "--allow-incomplete"],
         ),
         ("trusted model artifacts", [python, "scripts/validate_trusted_models.py"]),
+        ("model release manifest", [python, "scripts/build_model_release_manifest.py"]),
         ("local release package", [python, "scripts/verify_local_release_package.py"]),
     ]
     patch_manifests = [

@@ -1,0 +1,10 @@
+{
+  "schema": "glaciernet-kz.cascade-review-queue.v1",
+  "source": "data/events/hmaglofdb/hmaglofdb_ile_alatau.gpkg",
+  "source_sha256": "3eb6a19b529086255472c4f39b38e9cd54ad35502add40ff03cb8f38892db6eb",
+  "records": 58,
+  "strict_eligible_records": 0,
+  "non_event_controls": 0,
+  "status": "source_review_required",
+  "warning": "Database inclusion is not primary-source verification; absence is not a non-event control."
+}
