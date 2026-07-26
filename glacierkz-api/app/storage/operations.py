@@ -249,8 +249,9 @@ def insert_record(
         raise ValueError(f"Unsupported operations table: {table}")
     columns = list(record)
     placeholders = ", ".join("?" for _ in columns)
+    # Safe dynamic identifiers: table is allowlisted and columns come from typed records.
     connection.execute(
-        f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({placeholders})",  # noqa: S608
+        f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({placeholders})",  # nosec B608
         [record[column] for column in columns],
     )
     append_audit(
@@ -271,8 +272,9 @@ def row_by_id(
 ) -> dict[str, Any] | None:
     if table not in MUTABLE_TABLES:
         raise ValueError(f"Unsupported operations table: {table}")
+    # Safe dynamic identifier: table is allowlisted above.
     row = connection.execute(
-        f"SELECT * FROM {table} WHERE id = ?",  # noqa: S608
+        f"SELECT * FROM {table} WHERE id = ?",  # nosec B608
         (record_id,),
     ).fetchone()
     return dict(row) if row else None
@@ -287,8 +289,9 @@ def list_rows(
     if table not in TABLE_ORDER:
         raise ValueError(f"Unsupported operations table: {table}")
     order_by = TABLE_ORDER[table]
+    # Safe dynamic identifiers: table and ordering come from TABLE_ORDER.
     rows = connection.execute(
-        f"SELECT * FROM {table} ORDER BY {order_by} LIMIT ?",  # noqa: S608
+        f"SELECT * FROM {table} ORDER BY {order_by} LIMIT ?",  # nosec B608
         (limit,),
     ).fetchall()
     return [dict(row) for row in rows]
@@ -362,7 +365,8 @@ def overview(connection: sqlite3.Connection) -> dict[str, Any]:
         "evidence_cases",
         "decisions",
     ):
-        query = f"SELECT COUNT(*) FROM {table}"  # noqa: S608
+        # Safe dynamic identifier: table comes only from the fixed tuple above.
+        query = f"SELECT COUNT(*) FROM {table}"  # nosec B608
         counts[table] = connection.execute(query).fetchone()[0]
     return {
         "counts": counts,

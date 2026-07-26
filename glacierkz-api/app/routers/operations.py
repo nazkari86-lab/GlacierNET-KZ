@@ -431,8 +431,9 @@ def export_evidence_case(case_id: str) -> Response:
             "inspection_tasks",
             "field_reports",
         ):
+            # Safe dynamic identifier: table comes only from the fixed tuple above.
             rows = connection.execute(
-                f"SELECT * FROM {table} WHERE asset_id = ? ORDER BY created_at",  # noqa: S608
+                f"SELECT * FROM {table} WHERE asset_id = ? ORDER BY created_at",  # nosec B608
                 (evidence_case["asset_id"],),
             ).fetchall()
             related[table] = [dict(row) for row in rows]
