@@ -37,7 +37,8 @@ services:
     expose:
       - "8000"
     env_file:
-      - ./glacierkz-api/.env
+      - path: ./glacierkz-api/.env
+        required: false
     environment:
       - DATA_DIR=/app/data
       - CORE_DIR=/app
