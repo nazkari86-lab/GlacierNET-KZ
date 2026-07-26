@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import csv
-import json
 import os
 from functools import lru_cache
 from pathlib import Path
@@ -161,9 +160,7 @@ def _available_years(method: str) -> list[int]:
     return sorted(
         int(directory.name)
         for directory in PREDICTIONS_DIR.iterdir()
-        if directory.is_dir()
-        and directory.name.isdigit()
-        and (directory / f"{method}_mask.tif").is_file()
+        if directory.is_dir() and directory.name.isdigit() and (directory / f"{method}_mask.tif").is_file()
     )
 
 
@@ -202,17 +199,13 @@ def glacier_timeseries(rgi_id: str, method: str = "ndsi") -> dict[str, Any]:
             transformed = transform_geom("EPSG:4326", src.crs, geometry)
             data, _ = mask(src, [transformed], crop=True, filled=True, indexes=1)
             glacier_pixels = int(np.count_nonzero(data > 0))
-            pixel_area_km2 = abs(
-                src.transform.a * src.transform.e - src.transform.b * src.transform.d
-            ) / 1_000_000
+            pixel_area_km2 = abs(src.transform.a * src.transform.e - src.transform.b * src.transform.d) / 1_000_000
             area_km2 = glacier_pixels * pixel_area_km2
         points.append(
             {
                 "year": year,
                 "area_km2": round(area_km2, 4),
-                "coverage_of_rgi_percent": round(
-                    area_km2 / glacier["rgi_area_km2"] * 100, 2
-                )
+                "coverage_of_rgi_percent": round(area_km2 / glacier["rgi_area_km2"] * 100, 2)
                 if glacier["rgi_area_km2"]
                 else None,
                 "method": method,

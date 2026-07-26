@@ -95,9 +95,7 @@ def _build_year_records() -> list[dict[str, Any]]:
             }
 
         reported_methods = [
-            method.strip()
-            for method in quality.get("methods_available", "").split(",")
-            if method.strip()
+            method.strip() for method in quality.get("methods_available", "").split(",") if method.strip()
         ]
         source_path = CORE_DIR / quality.get("source_file", "")
         overlay_url = _artifact_url(year, "overlay.png")
@@ -110,9 +108,7 @@ def _build_year_records() -> list[dict[str, Any]]:
                 "source_flag": quality.get("source_flag") or area.get("source_flag", ""),
                 "source_file": quality.get("source_file") or area.get("source_file", ""),
                 "source_available": source_path.is_file(),
-                "source_size_mb": round(source_path.stat().st_size / 1024**2, 1)
-                if source_path.is_file()
-                else None,
+                "source_size_mb": round(source_path.stat().st_size / 1024**2, 1) if source_path.is_file() else None,
                 "quality_score": int(_as_float(quality.get("quality_score"))),
                 "confidence": quality.get("confidence", "unknown"),
                 "include_in_strict_trend": _as_bool(quality.get("include_in_strict_trend")),
@@ -153,21 +149,11 @@ def compare_years(from_year: int = Query(...), to_year: int = Query(...)) -> dic
     before = records[from_year]
     after = records[to_year]
     change = after["primary_area_km2"] - before["primary_area_km2"]
-    change_percent = (
-        change / before["primary_area_km2"] * 100 if before["primary_area_km2"] else None
-    )
-    comparable = bool(
-        before["include_in_strict_trend"] and after["include_in_strict_trend"]
-    )
-    warnings = [
-        record["caveat"]
-        for record in (before, after)
-        if record["caveat"]
-    ]
+    change_percent = change / before["primary_area_km2"] * 100 if before["primary_area_km2"] else None
+    comparable = bool(before["include_in_strict_trend"] and after["include_in_strict_trend"])
+    warnings = [record["caveat"] for record in (before, after) if record["caveat"]]
     if before["sensor"] != after["sensor"]:
-        warnings.append(
-            f"Cross-sensor comparison: {before['sensor']} versus {after['sensor']}."
-        )
+        warnings.append(f"Cross-sensor comparison: {before['sensor']} versus {after['sensor']}.")
     return {
         "from": before,
         "to": after,

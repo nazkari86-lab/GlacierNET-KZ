@@ -301,11 +301,7 @@ async def validate_dataset(dataset_id: str) -> ValidationReport:
 
         with rasterio.open(path) as src:
             structurally_valid = bool(
-                src.count > 0
-                and src.width > 0
-                and src.height > 0
-                and src.crs is not None
-                and src.transform is not None
+                src.count > 0 and src.width > 0 and src.height > 0 and src.crs is not None and src.transform is not None
             )
     except Exception as exc:
         return ValidationReport(
