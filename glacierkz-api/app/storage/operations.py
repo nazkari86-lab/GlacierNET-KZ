@@ -203,9 +203,7 @@ def append_audit(
 ) -> dict[str, Any]:
     created_at = utc_now()
     payload_sha256 = hashlib.sha256(_canonical(payload).encode()).hexdigest()
-    previous = connection.execute(
-        "SELECT event_sha256 FROM audit_events ORDER BY sequence DESC LIMIT 1"
-    ).fetchone()
+    previous = connection.execute("SELECT event_sha256 FROM audit_events ORDER BY sequence DESC LIMIT 1").fetchone()
     previous_hash = previous["event_sha256"] if previous else None
     event = {
         "entity_type": entity_type,
@@ -374,16 +372,13 @@ def overview(connection: sqlite3.Connection) -> dict[str, Any]:
         "evidence_cases": list_rows(connection, "evidence_cases", limit=50),
         "audit_chain": verify_audit_chain(connection),
         "safety_statement": (
-            "Priorities select the next observation; they are not hazard "
-            "probabilities or official warnings."
+            "Priorities select the next observation; they are not hazard probabilities or official warnings."
         ),
     }
 
 
 def seed_demo(connection: sqlite3.Connection) -> dict[str, Any]:
-    existing = connection.execute(
-        "SELECT id FROM basins WHERE id = 'demo_basin_talgar'"
-    ).fetchone()
+    existing = connection.execute("SELECT id FROM basins WHERE id = 'demo_basin_talgar'").fetchone()
     if existing:
         result = overview(connection)
         result["status"] = "already_seeded"

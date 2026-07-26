@@ -67,8 +67,7 @@ def next_best_observation(
         "staleness": 0.20 * _unit(staleness, "staleness"),
         "data_quality_gap": 0.20 * _unit(data_quality_gap, "data_quality_gap"),
         "model_disagreement": 0.15 * _unit(model_disagreement, "model_disagreement"),
-        "expected_information_gain": 0.20
-        * _unit(expected_information_gain, "expected_information_gain"),
+        "expected_information_gain": 0.20 * _unit(expected_information_gain, "expected_information_gain"),
     }
     score = sum(components.values())
     if domain_shift_status == "abstain_local_validation_required":

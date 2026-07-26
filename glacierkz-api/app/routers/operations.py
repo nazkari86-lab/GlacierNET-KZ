@@ -53,9 +53,7 @@ class BasinCreate(BaseModel):
     name: str = Field(min_length=2, max_length=160)
     region: str = Field(min_length=2, max_length=240)
     status: Literal["shadow_mode", "active", "archived"] = "shadow_mode"
-    evidence_tier: Literal["operational_unverified", "customer_verified", "synthetic_demo"] = (
-        "operational_unverified"
-    )
+    evidence_tier: Literal["operational_unverified", "customer_verified", "synthetic_demo"] = "operational_unverified"
 
 
 class AssetCreate(BaseModel):
@@ -65,9 +63,7 @@ class AssetCreate(BaseModel):
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     status: str = "monitoring"
-    evidence_tier: Literal["operational_unverified", "customer_verified", "synthetic_demo"] = (
-        "operational_unverified"
-    )
+    evidence_tier: Literal["operational_unverified", "customer_verified", "synthetic_demo"] = "operational_unverified"
     model_version: str | None = None
     data_version: str | None = None
     allowed_use: str = "screening and evidence management with human review"
@@ -80,9 +76,7 @@ class ObservationCreate(BaseModel):
     observed_at: str
     source: str = Field(min_length=2, max_length=240)
     values: dict[str, Any] = Field(default_factory=dict)
-    quality_status: Literal[
-        "usable", "review_required", "poor_quality", "incompatible"
-    ] = "review_required"
+    quality_status: Literal["usable", "review_required", "poor_quality", "incompatible"] = "review_required"
     uncertainty: float = Field(ge=0, le=1)
     artifact_sha256: str | None = Field(default=None, pattern=r"^[a-fA-F0-9]{64}$")
 
@@ -103,9 +97,7 @@ class CandidateCreate(DomainShiftRequest):
     staleness: float = Field(ge=0, le=1)
     data_quality_gap: float = Field(ge=0, le=1)
     expected_information_gain: float = Field(ge=0, le=1)
-    evidence_tier: Literal["operational_unverified", "customer_verified", "synthetic_demo"] = (
-        "operational_unverified"
-    )
+    evidence_tier: Literal["operational_unverified", "customer_verified", "synthetic_demo"] = "operational_unverified"
     detected_at: str
 
 
@@ -225,10 +217,7 @@ def domain_shift(request: DomainShiftRequest) -> dict[str, Any]:
 
 @router.get("/domain-shift/current-model")
 def current_model_domain_shift() -> dict[str, Any]:
-    report_path = (
-        REPO_ROOT
-        / "benchmarks/v2/provisional/zhetysu_candidate_rgi_2024_summary.json"
-    )
+    report_path = REPO_ROOT / "benchmarks/v2/provisional/zhetysu_candidate_rgi_2024_summary.json"
     if not report_path.is_file():
         raise HTTPException(status_code=503, detail="External stress evidence unavailable")
     report = json.loads(report_path.read_text(encoding="utf-8"))
@@ -240,9 +229,7 @@ def current_model_domain_shift() -> dict[str, Any]:
         "area_error_percent": metrics["area_error_percent"],
         "status": "abstain_local_validation_required",
         "allowed_use": "data-quality triage and local calibration planning",
-        "forbidden_use": (
-            "external-region accuracy claim, event probability, or official warning"
-        ),
+        "forbidden_use": ("external-region accuracy claim, event probability, or official warning"),
         "evidence_path": str(report_path.relative_to(REPO_ROOT)),
     }
 
@@ -465,8 +452,7 @@ def export_evidence_case(case_id: str) -> Response:
             "allowed_use": evidence_case["allowed_use"],
             "forbidden_use": evidence_case["forbidden_use"],
             "safety_statement": (
-                "This evidence bundle documents a human-reviewed workflow; "
-                "it is not an official warning."
+                "This evidence bundle documents a human-reviewed workflow; it is not an official warning."
             ),
         }
     canonical = _json(bundle)
