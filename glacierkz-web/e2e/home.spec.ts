@@ -11,14 +11,21 @@ test.describe("Home page", () => {
     await page.goto("/");
     await page.getByRole("radio", { name: "RU" }).click();
     await expect(page.locator("html")).toHaveAttribute("lang", "ru");
-    await expect(page.getByLabel("Main navigation").getByRole("link", { name: "Предсказание" })).toBeVisible();
+    const navigation = page.getByLabel("Main navigation");
+    await expect(navigation.getByRole("link", { name: "Обзор" })).toBeVisible();
+    await expect(navigation.getByRole("link", { name: "Карта" })).toBeVisible();
+    await expect(navigation.getByRole("link", { name: "Объекты" })).toBeVisible();
+    await expect(navigation.getByRole("link", { name: "Проверки" })).toBeVisible();
+    await expect(navigation.getByRole("link", { name: "Отчёты" })).toBeVisible();
   });
 
-  test("navigates to predict page", async ({ page }) => {
+  test("navigates to the decision-first Operations workspace", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: "Predict" }).first().click();
-    await expect(page).toHaveURL(/\/predict/);
-    await expect(page.getByRole("heading", { name: /Predict/i })).toBeVisible();
+    await page.getByRole("link", { name: "Open Operations" }).click();
+    await expect(page).toHaveURL(/\/operations/);
+    await expect(
+      page.getByRole("heading", { name: "What needs attention today" })
+    ).toBeVisible();
   });
 
   test("skip link targets main content", async ({ page }) => {

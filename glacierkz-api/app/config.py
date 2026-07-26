@@ -10,12 +10,19 @@ DATA_DIR = Path(os.getenv("DATA_DIR", str(API_ROOT)))
 UPLOAD_DIR = DATA_DIR / "uploads"
 RESULTS_DIR = DATA_DIR / "results"
 HISTORY_DB_PATH = DATA_DIR / "history.db"
+OPERATIONS_DB_PATH = Path(os.getenv("OPERATIONS_DB_PATH", str(DATA_DIR / "operations.db")))
 
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")]
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",")
+]
 MAX_FILE_SIZE_MB = int(os.getenv("MAX_FILE_SIZE_MB", "200"))
 MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 TASK_TIMEOUT = int(os.getenv("TASK_TIMEOUT", "600"))

@@ -104,6 +104,8 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install chromium --with-deps
       - name: Build frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://127.0.0.1:8000
         run: npm run build
       - name: Start API server
         working-directory: ${{ github.workspace }}

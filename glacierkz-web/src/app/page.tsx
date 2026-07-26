@@ -1,32 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { Mountain, GitCompareArrows, TrendingUp, Clock, Bot, BarChart3, Database, Cog, FileText, Settings, Network, CalendarRange, MapPinned } from "lucide-react";
+import { Mountain, FileText, Map, Database, ClipboardCheck, Eye } from "lucide-react";
 import GlacierHero from "@/components/GlacierHero";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useI18n } from "@/lib/I18nProvider";
 
 const NAV_ITEMS = [
-  { href: "/hub", key: "nav.hub" as const, icon: Network },
-  { href: "/dashboard", key: "nav.dashboard" as const, icon: BarChart3 },
-  { href: "/explore", key: "nav.explore" as const, icon: CalendarRange },
-  { href: "/glaciers", key: "nav.glaciers" as const, icon: MapPinned },
-  { href: "/predict", key: "nav.predict" as const, icon: Mountain },
-  { href: "/compare", key: "nav.compare" as const, icon: GitCompareArrows },
-  { href: "/trend", key: "nav.trend" as const, icon: TrendingUp },
-  { href: "/datasets", key: "nav.datasets" as const, icon: Database },
-  { href: "/training", key: "nav.training" as const, icon: Cog },
+  { href: "/operations#overview", key: "nav.overview" as const, icon: Eye },
+  { href: "/operations#monitor", key: "nav.monitor" as const, icon: Map },
+  { href: "/operations#assets", key: "nav.assets" as const, icon: Database },
+  { href: "/operations#inspections", key: "nav.inspections" as const, icon: ClipboardCheck },
   { href: "/reports", key: "nav.reports" as const, icon: FileText },
-  { href: "/history", key: "nav.history" as const, icon: Clock },
-  { href: "/analysis", key: "nav.analysis" as const, icon: Bot },
-  { href: "/settings", key: "nav.settings" as const, icon: Settings },
 ];
 
 const PRIMARY_ACTIONS = [
-  { href: "/explore", key: "home.action_years" as const, desc: "home.action_years_desc" as const, icon: CalendarRange },
-  { href: "/glaciers", key: "home.action_glacier" as const, desc: "home.action_glacier_desc" as const, icon: MapPinned },
+  { href: "/operations", key: "home.action_operations" as const, desc: "home.action_operations_desc" as const, icon: ClipboardCheck },
+  { href: "/operations#monitor", key: "home.action_years" as const, desc: "home.action_years_desc" as const, icon: Map },
+  { href: "/operations#assets", key: "home.action_glacier" as const, desc: "home.action_glacier_desc" as const, icon: Database },
   { href: "/reports", key: "home.action_report" as const, desc: "home.action_report_desc" as const, icon: FileText },
-  { href: "/analysis", key: "home.action_ai" as const, desc: "home.action_ai_desc" as const, icon: Bot },
 ];
 
 export default function HomePage() {
@@ -37,7 +29,7 @@ export default function HomePage() {
       <GlacierHero />
 
       <header className="border-b border-zinc-200">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <Link href="/" className="flex items-center gap-2">
             <Mountain className="h-6 w-6 text-blue-600" />
             <span className="text-lg font-bold">{t("home.title")}</span>

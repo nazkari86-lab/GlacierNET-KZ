@@ -1,4 +1,5 @@
 import { apiUrl } from "./utils";
+import { authFetch } from "./auth";
 
 export interface ModelInfo {
   name: string;
@@ -726,4 +727,171 @@ export async function exportAdminAuditCsv(params?: {
   if (params?.to) search.set("to", params.to);
   const res = checkResponse(await fetch(apiUrl(`/api/admin/audit?${search}`)));
   return res.blob();
+}
+
+// --- Cryosphere Operations ---
+export interface OperationsAsset {
+  id: string;
+  basin_id: string;
+  asset_type: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  status: string;
+  evidence_tier: string;
+  model_version?: string | null;
+  data_version?: string | null;
+  allowed_use: string;
+  forbidden_use: string;
+}
+
+export interface ChangeCandidate {
+  id: string;
+  asset_id: string;
+  change_type: string;
+  magnitude: number;
+  uncertainty: number;
+  data_quality_gap: number;
+  model_disagreement: number;
+  expected_information_gain: number;
+  domain_shift_status: string;
+  priority_score: number;
+  next_action: string;
+  rationale: string;
+  status: string;
+  evidence_tier: string;
+  detected_at: string;
+}
+
+export interface InspectionTask {
+  id: string;
+  asset_id: string;
+  candidate_id?: string | null;
+  action_type: string;
+  priority_score: number;
+  rationale: string;
+  status: string;
+  assigned_to?: string | null;
+  due_at?: string | null;
+  offline_package_status: string;
+}
+
+export interface EvidenceCase {
+  id: string;
+  asset_id: string;
+  title: string;
+  status: string;
+  summary: string;
+  limitations: string;
+  allowed_use: string;
+  forbidden_use: string;
+  reviewer?: string | null;
+  updated_at: string;
+}
+
+export interface OperationsObservation {
+  id: string;
+  asset_id: string;
+  observation_type: string;
+  observed_at: string;
+  source: string;
+  values_json: string;
+  quality_status: string;
+  uncertainty: number;
+  artifact_sha256?: string | null;
+  created_by: string;
+  created_at: string;
+}
+
+export interface OperationsFieldReport {
+  id: string;
+  task_id: string;
+  asset_id: string;
+  observer: string;
+  observed_at: string;
+  notes: string;
+  signature: string;
+  sync_status: string;
+  created_at: string;
+}
+
+export interface OperationsDecision {
+  id: string;
+  evidence_case_id: string;
+  decision: string;
+  rationale: string;
+  decided_by: string;
+  decided_at: string;
+  outcome?: string | null;
+  status: string;
+}
+
+export interface OperationsAuditEvent {
+  sequence: number;
+  entity_type: string;
+  entity_id: string;
+  action: string;
+  actor: string;
+  payload_sha256: string;
+  previous_event_sha256?: string | null;
+  event_sha256: string;
+  created_at: string;
+}
+
+export interface OperationsOverview {
+  counts: Record<string, number>;
+  observation_queue: ChangeCandidate[];
+  inspection_tasks: InspectionTask[];
+  assets: OperationsAsset[];
+  observations: OperationsObservation[];
+  field_reports: OperationsFieldReport[];
+  evidence_cases: EvidenceCase[];
+  decisions: OperationsDecision[];
+  audit_events: OperationsAuditEvent[];
+  audit_chain: {
+    valid: boolean;
+    events: number;
+    head_sha256?: string | null;
+  };
+  safety_statement: string;
+  demo_only?: boolean;
+  persistence?: string;
+}
+
+export interface FieldReportInput {
+  task_id: string;
+  asset_id: string;
+  observer: string;
+  observed_at: string;
+  latitude: number;
+  longitude: number;
+  measurements: Record<string, unknown>;
+  checklist: Record<string, boolean | string | null>;
+  notes: string;
+  attachment_manifest: Array<Record<string, unknown>>;
+  signature: string;
+  sync_status: "offline_draft" | "synced";
+}
+
+export async function fetchOperationsOverview(): Promise<OperationsOverview> {
+  const res = checkResponse(await fetch(apiUrl("/api/operations/overview")));
+  return res.json();
+}
+
+export async function fetchOperationsDemo(): Promise<OperationsOverview> {
+  const res = checkResponse(await fetch(apiUrl("/api/operations/demo")));
+  return res.json();
+}
+
+export async function createFieldReport(
+  input: FieldReportInput
+): Promise<Record<string, unknown>> {
+  const res = checkResponse(
+    await authFetch(apiUrl("/api/operations/field-reports"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    })
+  );
+  return res.json();
 }

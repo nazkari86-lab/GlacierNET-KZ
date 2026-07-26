@@ -29,6 +29,7 @@ from app.routers import (
     history,
     models,
     monitoring,
+    operations,
     pipeline,
     risk_twin,
     segmentation,
@@ -96,6 +97,10 @@ app = FastAPI(
             "name": "risk-twin",
             "description": "Research-only active evidence acquisition and cascade screening",
         },
+        {
+            "name": "operations",
+            "description": "Shadow-mode observation planning, field work, and evidence cases",
+        },
     ],
     lifespan=lifespan,
 )
@@ -119,7 +124,7 @@ app.add_middleware(
     CacheMiddleware,
     config=CacheConfig(
         default_ttl=60,
-        exempt_paths=["/health", "/metrics", "/ws", "/docs"],
+        exempt_paths=["/health", "/metrics", "/ws", "/docs", "/api/operations"],
     ),
 )
 app.add_middleware(
@@ -160,6 +165,7 @@ app.include_router(dashboard.router)
 app.include_router(data.router)
 app.include_router(pipeline.router)
 app.include_router(risk_twin.router)
+app.include_router(operations.router)
 app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(mcp_router)

@@ -8,14 +8,14 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "GlacierNET-KZ — Glacier Segmentation",
-  description: "Geospatial AI glacier segmentation and monitoring for Zailiysky Alatau, Kazakhstan. Sentinel-2 + Landsat + U-Net.",
-  keywords: ["glacier", "segmentation", "remote sensing", "Sentinel-2", "Landsat", "U-Net", "Kazakhstan", "Zailiysky Alatau", "climate change"],
+  title: "GlacierNET-KZ — Cryosphere Observation and Evidence OS",
+  description: "Auditable observation planning, field inspections, and evidence management for glaciers and mountain lakes.",
+  keywords: ["cryosphere", "observation planning", "field inspection", "evidence management", "glacier", "mountain lake", "Kazakhstan"],
   authors: [{ name: "GlacierNET-KZ Team" }],
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://github.com/nazkari86-lab/GlacierNET-KZ"),
   openGraph: {
-    title: "GlacierNET-KZ — AI Glacier Monitoring",
-    description: "Geospatial AI glacier segmentation and monitoring for Zailiysky Alatau, Kazakhstan",
+    title: "GlacierNET-KZ — Cryosphere Observation and Evidence OS",
+    description: "Observation prioritisation and auditable evidence workflows for cryosphere monitoring teams",
     type: "website",
     locale: "en_US",
     alternateLocale: ["ru_RU", "kk_KZ"],
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "GlacierNET-KZ",
-    description: "AI-powered glacier monitoring for Kazakhstan using U-Net on Sentinel-2 imagery",
+    description: "Auditable cryosphere observation planning and evidence management",
   },
   alternates: {
     canonical: "/",

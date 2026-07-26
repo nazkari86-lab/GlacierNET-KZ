@@ -3,6 +3,7 @@
 | Document | Audience | Description |
 |----------|----------|-------------|
 | [BEGINNER_GUIDE.md](./BEGINNER_GUIDE.md) | **Newcomers** | Plain-language full project tour (start here) |
+| [OPERATIONS_MVP.md](./OPERATIONS_MVP.md) | Monitoring teams / developers | Shadow-mode observation, field, evidence, and decision workflow |
 | [PROJECT_FULL_REFERENCE.md](./PROJECT_FULL_REFERENCE.md) | Developers | Every file described in detail (RU) |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Developers | System design, API layers, ML pipeline |
 | [API_REFERENCE.md](./API_REFERENCE.md) | Developers | REST, WebSocket, MCP endpoints |
