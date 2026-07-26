@@ -94,4 +94,5 @@ asyncio_mode = "auto"
 markers = [
     "experimental: Phase 10 scaffold modules — excluded from CI until production-ready",
     "integration: Requires external services or large data downloads",
+    "local_data: Requires physical datasets or model artifacts intentionally excluded from Git",
 ]

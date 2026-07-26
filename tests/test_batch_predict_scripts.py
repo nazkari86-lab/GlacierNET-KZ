@@ -7,6 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -35,6 +37,7 @@ def test_rebuild_areas_table_writes_csv():
     assert "source_file" in text
 
 
+@pytest.mark.local_data
 def test_pipeline_status_includes_all_sentinel_years():
     rc = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "pipeline_status.py")],

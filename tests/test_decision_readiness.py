@@ -7,6 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -32,6 +34,7 @@ def test_build_decision_readiness_tables_adds_provenance_columns():
     assert all(row["source_flag"] != "sentinel2_sr_or_harmonized" for row in rows)
 
 
+@pytest.mark.local_data
 def test_validate_decision_readiness_passes():
     rc = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "validate_decision_readiness.py")],

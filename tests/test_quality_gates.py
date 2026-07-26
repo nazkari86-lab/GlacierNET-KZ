@@ -5,9 +5,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
+@pytest.mark.local_data
 def test_current_temporal_benchmark_has_claim_provenance():
     report = ROOT / "results" / "temporal_benchmark_unet_sentinel2_terrain_2016_2024.json"
     if not report.is_file():

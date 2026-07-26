@@ -1,11 +1,13 @@
 """Tests for the physical RGI glacier registry and per-glacier series."""
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
 
 client = TestClient(app)
 TUYUKSU = "RGI2000-v7.0-G-13-33843"
+pytestmark = pytest.mark.local_data
 
 
 def test_glacier_registry_lists_real_rgi_features():

@@ -6,9 +6,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
+@pytest.mark.local_data
 def test_existing_2021_training_mask_is_valid_without_manifest():
     rc = subprocess.run(
         [

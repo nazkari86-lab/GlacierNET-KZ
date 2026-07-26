@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from app import mcp_tools
 
 
@@ -41,6 +43,7 @@ def test_verified_year_comparison_preserves_caveats():
     assert result["data"]["warnings"]
 
 
+@pytest.mark.local_data
 def test_glacier_tool_uses_physical_registry_and_masks():
     result = mcp_tools.execute_tool(
         "inspect_glacier_timeseries",

@@ -6,9 +6,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
+@pytest.mark.local_data
 def test_existing_multiyear_sample_manifest_is_valid():
     manifest = ROOT / "data" / "processed" / "patches" / "sentinel2_multiyear_sample" / "manifest.json"
     rc = subprocess.run(
@@ -27,6 +30,7 @@ def test_existing_multiyear_sample_manifest_is_valid():
     assert "Patch manifest validation passed" in rc.stdout
 
 
+@pytest.mark.local_data
 def test_existing_2016_2024_capped_sample_manifest_is_valid():
     manifest = ROOT / "data" / "processed" / "patches" / "sentinel2_multiyear_sample_2016_2024" / "manifest.json"
     rc = subprocess.run(
@@ -45,6 +49,7 @@ def test_existing_2016_2024_capped_sample_manifest_is_valid():
     assert "Patch manifest validation passed" in rc.stdout
 
 
+@pytest.mark.local_data
 def test_year_holdout_manifest_is_valid():
     manifest = ROOT / "data" / "processed" / "patches" / "sentinel2_year_holdout_2016_2024" / "manifest.json"
     rc = subprocess.run(

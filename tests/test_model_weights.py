@@ -15,6 +15,8 @@ MODELS = {
     "random_forest": "random_forest.pkl",
 }
 
+pytestmark = pytest.mark.local_data
+
 
 @pytest.mark.parametrize("name,filename", list(MODELS.items()))
 def test_production_model_weights(name: str, filename: str):

@@ -38,7 +38,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           python -m pytest tests/ glacierkz-api/tests/ -v \
-            -m "not experimental" \
+            -m "not experimental and not local_data" \
             --cov=src --cov=glacierkz-api/app \
             --cov-report=xml --cov-report=term-missing \
             --cov-fail-under=35
