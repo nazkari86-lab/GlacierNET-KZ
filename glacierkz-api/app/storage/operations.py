@@ -373,7 +373,11 @@ def overview(connection: sqlite3.Connection) -> dict[str, Any]:
         "observation_queue": list_rows(connection, "change_candidates", limit=50),
         "inspection_tasks": list_rows(connection, "inspection_tasks", limit=50),
         "assets": list_rows(connection, "assets", limit=100),
+        "observations": list_rows(connection, "observations", limit=100),
+        "field_reports": list_rows(connection, "field_reports", limit=50),
         "evidence_cases": list_rows(connection, "evidence_cases", limit=50),
+        "decisions": list_rows(connection, "decisions", limit=50),
+        "audit_events": list_rows(connection, "audit_events", limit=100),
         "audit_chain": verify_audit_chain(connection),
         "safety_statement": (
             "Priorities select the next observation; they are not hazard probabilities or official warnings."
@@ -432,7 +436,7 @@ def seed_demo(connection: sqlite3.Connection) -> dict[str, Any]:
             }
         )
         insert_record(connection, "assets", record, actor="demo_seed")
-    observation = {
+    lake_observation = {
         "id": "demo_obs_lake_a",
         "asset_id": "demo_lake_a",
         "observation_type": "satellite_change_screen",
@@ -445,7 +449,28 @@ def seed_demo(connection: sqlite3.Connection) -> dict[str, Any]:
         "created_by": "demo_seed",
         "created_at": now,
     }
-    insert_record(connection, "observations", observation, actor="demo_seed")
+    glacier_observation = {
+        "id": "demo_obs_glacier_b",
+        "asset_id": "demo_glacier_b",
+        "observation_type": "satellite_quality_screen",
+        "observed_at": now,
+        "source": "synthetic Sentinel-1 demonstration",
+        "values_json": _canonical(
+            {
+                "area_change_percent": -1.8,
+                "cloud_percent": 0,
+                "seasonal_snow_score": 38,
+                "comparable_observation": False,
+            }
+        ),
+        "quality_status": "poor_quality",
+        "uncertainty": 0.78,
+        "artifact_sha256": hashlib.sha256(b"synthetic-demo-glacier-observation").hexdigest(),
+        "created_by": "demo_seed",
+        "created_at": now,
+    }
+    insert_record(connection, "observations", lake_observation, actor="demo_seed")
+    insert_record(connection, "observations", glacier_observation, actor="demo_seed")
     domain = assess_domain_shift(
         out_of_distribution_score=0.28,
         model_disagreement=0.66,
@@ -463,7 +488,7 @@ def seed_demo(connection: sqlite3.Connection) -> dict[str, Any]:
     candidate = {
         "id": "demo_candidate_lake_a",
         "asset_id": "demo_lake_a",
-        "observation_id": observation["id"],
+        "observation_id": lake_observation["id"],
         "change_type": "candidate_area_change",
         "magnitude": 0.082,
         "uncertainty": 0.62,
@@ -480,6 +505,40 @@ def seed_demo(connection: sqlite3.Connection) -> dict[str, Any]:
         "created_at": now,
     }
     insert_record(connection, "change_candidates", candidate, actor="demo_seed")
+    glacier_domain = assess_domain_shift(
+        out_of_distribution_score=0.31,
+        model_disagreement=0.24,
+        preprocessing_compatible=True,
+        region_in_validation_scope=True,
+    )
+    glacier_recommendation = next_best_observation(
+        uncertainty=0.78,
+        staleness=0.92,
+        data_quality_gap=0.72,
+        model_disagreement=0.24,
+        expected_information_gain=0.74,
+        domain_shift_status=str(glacier_domain["status"]),
+    )
+    glacier_candidate = {
+        "id": "demo_candidate_glacier_b",
+        "asset_id": "demo_glacier_b",
+        "observation_id": glacier_observation["id"],
+        "change_type": "stale_incomparable_observation",
+        "magnitude": -0.018,
+        "uncertainty": 0.78,
+        "data_quality_gap": 0.72,
+        "model_disagreement": 0.24,
+        "expected_information_gain": 0.74,
+        "domain_shift_status": glacier_domain["status"],
+        "priority_score": glacier_recommendation["score"],
+        "next_action": glacier_recommendation["action"],
+        "rationale": "The latest scene is not comparable because seasonal snow obscures the boundary.",
+        "status": "insufficient_data",
+        "evidence_tier": "synthetic_demo",
+        "detected_at": now,
+        "created_at": now,
+    }
+    insert_record(connection, "change_candidates", glacier_candidate, actor="demo_seed")
     task = {
         "id": "demo_task_lake_a",
         "asset_id": "demo_lake_a",
@@ -495,6 +554,32 @@ def seed_demo(connection: sqlite3.Connection) -> dict[str, Any]:
         "updated_at": now,
     }
     insert_record(connection, "inspection_tasks", task, actor="demo_seed")
+    evidence_case = {
+        "id": "demo_case_lake_a",
+        "asset_id": "demo_lake_a",
+        "title": "Demo Lake A screening review",
+        "status": "under_review",
+        "summary": "Synthetic multi-sensor evidence supports requesting a clearer follow-up observation.",
+        "limitations": "Synthetic workflow evidence only; no field confirmation or hazard inference.",
+        "allowed_use": "product demonstration and reviewer training",
+        "forbidden_use": "official warning, event probability, or emergency action",
+        "reviewer": "Demo Analyst",
+        "created_at": now,
+        "updated_at": now,
+    }
+    insert_record(connection, "evidence_cases", evidence_case, actor="demo_seed")
+    decision = {
+        "id": "demo_decision_lake_a",
+        "evidence_case_id": evidence_case["id"],
+        "decision": "Request a clearer follow-up observation",
+        "rationale": "The observation can reduce model disagreement without making a hazard claim.",
+        "decided_by": "Demo Analyst",
+        "decided_at": now,
+        "outcome": "Awaiting new observation",
+        "status": "provisional",
+        "created_at": now,
+    }
+    insert_record(connection, "decisions", decision, actor="demo_seed")
     result = overview(connection)
     result["status"] = "seeded"
     return result

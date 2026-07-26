@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import OperationsPage from "@/app/operations/page";
 import { I18nProvider, LOCALE_STORAGE_KEY } from "@/lib/I18nProvider";
@@ -45,6 +45,22 @@ const overview = vi.hoisted(() => ({
       offline_package_status: "not_built",
     },
   ],
+  observations: [
+    {
+      id: "observation-1",
+      asset_id: "lake-1",
+      observation_type: "satellite_change_screen",
+      observed_at: "2026-07-20T00:00:00Z",
+      source: "synthetic Sentinel-2 demonstration",
+      values_json: JSON.stringify({ area_change_percent: 8, cloud_percent: 18 }),
+      quality_status: "review_required",
+      uncertainty: 0.6,
+      artifact_sha256: "b".repeat(64),
+      created_by: "demo_seed",
+      created_at: "2026-07-20T00:00:00Z",
+    },
+  ],
+  field_reports: [],
   assets: [
     {
       id: "lake-1",
@@ -59,7 +75,34 @@ const overview = vi.hoisted(() => ({
       forbidden_use: "hazard inference",
     },
   ],
-  evidence_cases: [],
+  evidence_cases: [
+    {
+      id: "case-1",
+      asset_id: "lake-1",
+      title: "Synthetic review",
+      status: "under_review",
+      summary: "Synthetic review.",
+      limitations: "No hazard inference.",
+      allowed_use: "demonstration",
+      forbidden_use: "warning",
+      reviewer: "Demo Analyst",
+      updated_at: "2026-07-21T00:00:00Z",
+    },
+  ],
+  decisions: [],
+  audit_events: [
+    {
+      sequence: 1,
+      entity_type: "assets",
+      entity_id: "lake-1",
+      action: "created",
+      actor: "demo_seed",
+      payload_sha256: "c".repeat(64),
+      previous_event_sha256: null,
+      event_sha256: "d".repeat(64),
+      created_at: "2026-07-20T00:00:00Z",
+    },
+  ],
   audit_chain: { valid: true, events: 5, head_sha256: "a".repeat(64) },
   safety_statement: "Priorities are not hazard probabilities.",
   demo_only: true,
@@ -100,7 +143,19 @@ describe("OperationsPage", () => {
     expect(
       screen.getByText(/Synthetic shadow-mode demo/)
     ).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Operations navigation" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "What needs attention today" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Schematic map of monitored objects" })).toBeInTheDocument();
+    expect(screen.getByText("What changed")).toBeInTheDocument();
+    expect(screen.getByText("Can this be trusted?")).toBeInTheDocument();
     expect(screen.getAllByText(/observation priority/i).length).toBeGreaterThan(0);
     expect(screen.getByText("SHA-256 chain valid")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: "Before / after" }));
+    expect(screen.getByRole("img", { name: /Synthetic difference map/ })).toBeInTheDocument();
+    expect(screen.getByText("Model agreement")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: "Evidence timeline" }));
+    expect(screen.getByText("Human review recorded")).toBeInTheDocument();
   });
 });

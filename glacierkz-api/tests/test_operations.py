@@ -36,11 +36,24 @@ def test_operations_demo_is_non_persistent_and_fail_closed() -> None:
     assert body["demo_only"] is True
     assert body["persistence"] == "none"
     assert body["counts"]["inspection_tasks"] == 1
+    assert body["counts"]["observations"] == 2
+    assert body["counts"]["change_candidates"] == 2
+    assert body["counts"]["evidence_cases"] == 1
+    assert body["counts"]["decisions"] == 1
+    assert len(body["observation_queue"]) == 2
+    assert body["observations"][0]["quality_status"] in {
+        "poor_quality",
+        "review_required",
+    }
+    assert body["evidence_cases"][0]["reviewer"] == "Demo Analyst"
+    assert body["audit_events"]
     assert body["audit_chain"]["valid"] is True
     assert "not hazard probabilities" in body["safety_statement"]
 
     overview = client.get("/api/operations/overview").json()
     assert overview["counts"]["assets"] == 0
+    assert overview["observations"] == []
+    assert overview["audit_events"] == []
 
 
 def test_operations_writes_require_analyst() -> None:

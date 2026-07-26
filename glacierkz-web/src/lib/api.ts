@@ -789,12 +789,65 @@ export interface EvidenceCase {
   updated_at: string;
 }
 
+export interface OperationsObservation {
+  id: string;
+  asset_id: string;
+  observation_type: string;
+  observed_at: string;
+  source: string;
+  values_json: string;
+  quality_status: string;
+  uncertainty: number;
+  artifact_sha256?: string | null;
+  created_by: string;
+  created_at: string;
+}
+
+export interface OperationsFieldReport {
+  id: string;
+  task_id: string;
+  asset_id: string;
+  observer: string;
+  observed_at: string;
+  notes: string;
+  signature: string;
+  sync_status: string;
+  created_at: string;
+}
+
+export interface OperationsDecision {
+  id: string;
+  evidence_case_id: string;
+  decision: string;
+  rationale: string;
+  decided_by: string;
+  decided_at: string;
+  outcome?: string | null;
+  status: string;
+}
+
+export interface OperationsAuditEvent {
+  sequence: number;
+  entity_type: string;
+  entity_id: string;
+  action: string;
+  actor: string;
+  payload_sha256: string;
+  previous_event_sha256?: string | null;
+  event_sha256: string;
+  created_at: string;
+}
+
 export interface OperationsOverview {
   counts: Record<string, number>;
   observation_queue: ChangeCandidate[];
   inspection_tasks: InspectionTask[];
   assets: OperationsAsset[];
+  observations: OperationsObservation[];
+  field_reports: OperationsFieldReport[];
   evidence_cases: EvidenceCase[];
+  decisions: OperationsDecision[];
+  audit_events: OperationsAuditEvent[];
   audit_chain: {
     valid: boolean;
     events: number;

@@ -1,23 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { Mountain, FileText, Network, CalendarRange, MapPinned, ClipboardCheck } from "lucide-react";
+import { Mountain, FileText, Map, Database, ClipboardCheck, Eye } from "lucide-react";
 import GlacierHero from "@/components/GlacierHero";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useI18n } from "@/lib/I18nProvider";
 
 const NAV_ITEMS = [
-  { href: "/operations", key: "nav.operations" as const, icon: ClipboardCheck },
-  { href: "/hub", key: "nav.hub" as const, icon: Network },
-  { href: "/explore", key: "nav.explore" as const, icon: CalendarRange },
-  { href: "/glaciers", key: "nav.glaciers" as const, icon: MapPinned },
+  { href: "/operations#overview", key: "nav.overview" as const, icon: Eye },
+  { href: "/operations#monitor", key: "nav.monitor" as const, icon: Map },
+  { href: "/operations#assets", key: "nav.assets" as const, icon: Database },
+  { href: "/operations#inspections", key: "nav.inspections" as const, icon: ClipboardCheck },
   { href: "/reports", key: "nav.reports" as const, icon: FileText },
 ];
 
 const PRIMARY_ACTIONS = [
   { href: "/operations", key: "home.action_operations" as const, desc: "home.action_operations_desc" as const, icon: ClipboardCheck },
-  { href: "/explore", key: "home.action_years" as const, desc: "home.action_years_desc" as const, icon: CalendarRange },
-  { href: "/glaciers", key: "home.action_glacier" as const, desc: "home.action_glacier_desc" as const, icon: MapPinned },
+  { href: "/operations#monitor", key: "home.action_years" as const, desc: "home.action_years_desc" as const, icon: Map },
+  { href: "/operations#assets", key: "home.action_glacier" as const, desc: "home.action_glacier_desc" as const, icon: Database },
   { href: "/reports", key: "home.action_report" as const, desc: "home.action_report_desc" as const, icon: FileText },
 ];
 

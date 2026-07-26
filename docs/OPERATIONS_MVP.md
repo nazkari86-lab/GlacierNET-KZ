@@ -103,6 +103,31 @@ preview. It is visibly marked as shadow mode. The field form saves an offline
 draft in browser storage; synchronisation is offered only for a persisted task
 and an authenticated analyst.
 
+### Decision-first interface
+
+The primary interface uses five operational sections: **Overview, Monitor,
+Objects, Inspections, and Reports**. Research tools remain available through a
+secondary disclosure menu and do not compete with the duty workflow.
+
+Every selected object answers four questions before exposing technical detail:
+
+1. what changed;
+2. whether the observation can be trusted;
+3. why the object was flagged;
+4. which observation or review is most useful next.
+
+The object workspace progressively reveals a decision brief, synthetic
+before/after UI preview, texture-coded difference map, comparable-observation
+timeline, model disagreement, evidence timeline, and scientific provenance.
+Blue denotes observed change, orange denotes disappeared area, violet denotes
+action required, and green outlines human-confirmed records. Diagonal hatching
+and a grid represent uncertainty and missing data so meaning never depends on
+colour alone.
+
+The built-in comparison graphics are explicitly synthetic workflow previews.
+A production pilot must replace them with linked, versioned imagery artifacts;
+the UI does not present fabricated imagery as evidence.
+
 ## Production boundary
 
 Implemented:

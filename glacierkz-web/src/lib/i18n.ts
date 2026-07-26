@@ -7,6 +7,10 @@ const translations = {
     // Nav
     "nav.dashboard": "Dashboard",
     "nav.operations": "Operations",
+    "nav.overview": "Overview",
+    "nav.monitor": "Monitor",
+    "nav.assets": "Objects",
+    "nav.inspections": "Inspections",
     "nav.explore": "Explore years",
     "nav.glaciers": "Glacier registry",
     "nav.hub": "Hub",
@@ -474,6 +478,10 @@ const translations = {
     // Nav
     "nav.dashboard": "Панель мониторинга",
     "nav.operations": "Операции",
+    "nav.overview": "Обзор",
+    "nav.monitor": "Карта",
+    "nav.assets": "Объекты",
+    "nav.inspections": "Проверки",
     "nav.explore": "Анализ по годам",
     "nav.glaciers": "Реестр ледников",
     "nav.hub": "Хаб",
@@ -940,6 +948,10 @@ const translations = {
     // Nav
     "nav.dashboard": "Басқару тақтасы",
     "nav.operations": "Операциялар",
+    "nav.overview": "Шолу",
+    "nav.monitor": "Карта",
+    "nav.assets": "Нысандар",
+    "nav.inspections": "Тексерулер",
     "nav.explore": "Жылдар бойынша талдау",
     "nav.glaciers": "Мұздықтар тізілімі",
     "nav.hub": "Хаб",
