@@ -1,0 +1,13 @@
+{
+  "manifest_version": "2.0",
+  "split_strategy": "year_holdout",
+  "grouping_key": "year",
+  "train_years": [2016, 2017, 2018, 2019, 2020, 2021, 2022],
+  "validation_years": [2023],
+  "test_years": [2024],
+  "label_quality_tier": "silver",
+  "region_scope": ["Ile Alatau AOI"],
+  "ready": true,
+  "claims_allowed": ["one-AOI temporal holdout"],
+  "claims_not_allowed": ["gold-label accuracy", "cross-region generalisation"]
+}

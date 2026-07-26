@@ -14,21 +14,21 @@ test.describe("Local year explorer", () => {
     await expect(page.getByRole("heading", { name: "Local Year Explorer" })).toBeVisible();
     await expect(page.getByText("450.47 km²").first()).toBeVisible();
     await expect(page.getByTestId("selected-sensor")).toHaveText("Sentinel-2");
-    await expect(page.getByText("100/100 · high")).toBeVisible();
+    await expect(page.getByText("70/100 · medium")).toBeVisible();
 
     await page.getByLabel("Compare with").selectOption("2000");
     await page.getByRole("button", { name: "Compare years" }).click();
 
     await expect(page.getByRole("heading", { name: "2000 → 2024" })).toBeVisible();
     await expect(page.getByText("-128.61 km²")).toBeVisible();
-    await expect(page.getByText("Comparable")).toBeVisible();
+    await expect(page.getByText("Not comparable")).toBeVisible();
   });
 
   test("labels the 2015 result as excluded from strict comparison", async ({ page }) => {
     await page.goto("/explore");
     await page.getByLabel("View year").selectOption("2015");
 
-    await expect(page.getByText("57/100 · low")).toBeVisible();
+    await expect(page.getByText("47/100 · low")).toBeVisible();
     await expect(page.getByText(/Late-2015 annual TOA fallback/)).toBeVisible();
   });
 

@@ -1,0 +1,59 @@
+{
+  "dataset": "Tien Shan glacial lakes, 1990-2023",
+  "source": "Zenodo",
+  "license": "CC-BY-4.0",
+  "zenodo_record": 13208655,
+  "doi": "10.5281/zenodo.13208655",
+  "source_url": "https://zenodo.org/records/13208655",
+  "aoi_bbox_epsg4326": [
+    75.5,
+    42.2,
+    78.2,
+    43.8
+  ],
+  "processing": "Reprojected to EPSG:4326, make_valid, spatially clipped; originals retained.",
+  "layers": {
+    "1990": {
+      "source_features": 1837,
+      "source_invalid_geometries": 0,
+      "aoi_features": 103,
+      "aoi_invalid_geometries": 0
+    },
+    "2000": {
+      "source_features": 2387,
+      "source_invalid_geometries": 21,
+      "aoi_features": 144,
+      "aoi_invalid_geometries": 0
+    },
+    "2010": {
+      "source_features": 2964,
+      "source_invalid_geometries": 45,
+      "aoi_features": 273,
+      "aoi_invalid_geometries": 0
+    },
+    "2020": {
+      "source_features": 3810,
+      "source_invalid_geometries": 115,
+      "aoi_features": 305,
+      "aoi_invalid_geometries": 0
+    },
+    "2023": {
+      "source_features": 4557,
+      "source_invalid_geometries": 128,
+      "aoi_features": 317,
+      "aoi_invalid_geometries": 0
+    }
+  },
+  "artifacts": {
+    "data/lakes/tien_shan_1990_2023/tien_shan_glacial_lakes_and_glof_1990_2023.zip": {
+      "bytes": 7952524,
+      "published_md5": "7e047083d3903f1625c3a4c62578fe15",
+      "sha256": "3e309bc47f2bd0c08e90220392e688aed6b8c5da66763f89308159967d53594c"
+    },
+    "data/lakes/tien_shan_1990_2023/tien_shan_lakes_ile_alatau_1990_2023.gpkg": {
+      "bytes": 1105920,
+      "sha256": "d2eedfbf778155916fe5ddf55fb981eee7ebefbb35327e66d0c5580dd4c64241"
+    }
+  },
+  "claim_limit": "Inventory polygons are observations, not forecasts or validated hazard classes."
+}

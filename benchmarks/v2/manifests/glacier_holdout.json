@@ -1,0 +1,11 @@
+{
+  "manifest_version": "2.0",
+  "split_strategy": "glacier_holdout",
+  "grouping_key": "glacier_id",
+  "train_glaciers": [],
+  "validation_glaciers": [],
+  "test_glaciers": [],
+  "label_quality_tier": "gold",
+  "ready": false,
+  "blocked_reason": "Gold glacier_id metadata has not yet been collected. Build this manifest with scripts/build_glacier_holdout_manifest.py."
+}

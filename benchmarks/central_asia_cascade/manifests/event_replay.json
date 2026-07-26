@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "benchmark": "Central Asia Cascade Benchmark",
+  "status": "evidence_incomplete",
+  "ready_for_scientific_claims": false,
+  "created_at": "2026-07-26T00:00:00+06:00",
+  "lead_time_days": [30, 90, 180, 365],
+  "events": [],
+  "non_event_controls": [],
+  "split_policy": {
+    "group_key": "basin_id",
+    "development": "model and decision-rule development only",
+    "temporal_test": "later snapshots from basins excluded from threshold fitting",
+    "external_test": "geographic region excluded from all development"
+  },
+  "blocked_reasons": [
+    "no source-reviewed historical event records",
+    "no verified non-event basin-period controls",
+    "no immutable observation snapshots with SHA-256",
+    "no disjoint external-region test cohort"
+  ],
+  "claims_allowed": [
+    "benchmark protocol implemented",
+    "schema and leakage gates implemented",
+    "risk-twin research baseline available"
+  ],
+  "claims_not_allowed": [
+    "calibrated event probability",
+    "validated early warning",
+    "Central Asia generalisation",
+    "operational authority readiness"
+  ]
+}

@@ -8,22 +8,28 @@
 [![FAIR](https://img.shields.io/badge/FAIR-Reproducible-green)](docs/REPRODUCIBILITY.md)
 [![STAC 1.0](https://img.shields.io/badge/STAC-1.0-orange)](scripts/export_stac_catalog.py)
 
-**GlacierNET-KZ** is an open-source geospatial AI platform for monitoring glacier retreat in Kazakhstan. It combines Sentinel-2 and Landsat imagery, RGI/WGMS glacier references, spectral indices, Random Forest baselines, U-Net models, a FastAPI backend, a Next.js dashboard, STAC metadata, and reproducible notebooks.
+**GlacierNET-KZ** is an open-source benchmark and geospatial workflow for
+measuring glacier segmentation quality in Kazakhstan. Its validated core uses
+Sentinel-2/Landsat imagery, Sentinel-1 and terrain ablations, RGI/WGMS
+references, NDSI and Random Forest baselines, and U-Net segmentation.
 
-The project is designed for researchers, climate analysts, GIS teams, educators, and public-sector users who need a transparent workflow from raw satellite imagery to glacier masks, area-change tables, trend analysis, and decision-ready reports.
+The project prioritises comparable acquisitions, leakage-resistant splits,
+hard segmentation metrics, area error, temporal anomaly rejection, provenance,
+and explicit limits on scientific claims. API, dashboard, Gradio and MCP tools
+expose the verified artifacts; they are not substitutes for benchmark evidence.
 
 ## What It Does
 
 - Builds glacier segmentation datasets from Sentinel-2, Landsat, and RGI data.
-- Trains and compares NDSI, Random Forest, U-Net, Attention U-Net, and U-Net++ models.
-- Estimates annual glacier area and long-term retreat trends.
+- Trains and compares the validated NDSI, Random Forest and U-Net core.
+- Estimates annual glacier area with scene-QA and temporal-consistency gates.
 - Produces confidence-aware reports with caveats, p-values, confidence intervals, and data-quality metadata.
 - Exposes results through notebooks, REST API, dashboard, Gradio demo, and MCP-compatible tools.
 - Exports reproducibility artifacts: STAC catalog, inventory tables, figures, metrics, and data citations.
 
 ## Current verified evidence
 
-| Evaluation | Dice | IoU | Precision | Recall | Scope |
+| Evaluation | Framework Dice (soft) | Binary IoU (hard) | Precision | Recall | Scope |
 |---|---:|---:|---:|---:|---|
 | 14-channel U-Net, 2024 year holdout | 0.7802 | 0.7382 | 0.9712 | 0.7547 | One AOI, RGI-derived silver labels |
 | Compact S2 + terrain control, 2024 holdout | 0.6942 | 0.7938 | 0.9507 | 0.8279 | Same-patch ablation control |
@@ -31,6 +37,11 @@ The project is designed for researchers, climate analysts, GIS teams, educators,
 
 In the controlled experiment, Sentinel-1 increased Dice by **0.0150**, IoU by
 **0.0304**, and recall by **0.0551**, while precision decreased by **0.0255**.
+The legacy reports mix a soft framework Dice with thresholded BinaryIoU, so
+those two columns must not be treated as one internally comparable hard metric
+set. Benchmark v2 fixes this by calculating hard Dice, hard IoU, precision,
+recall and area error from exactly the same validation-calibrated threshold.
+
 The evidence supports a one-AOI feature-ablation result only. It does not
 establish cross-region generalisation, independent expert-label accuracy,
 field accuracy, or operational readiness.
@@ -41,6 +52,107 @@ is not yet uniform across all years. See the
 [validation protocol](docs/VALIDATION_PROTOCOL.md), the machine-validated
 [benchmark report](results/temporal_benchmark_unet_sentinel2_terrain_2016_2024.json),
 and the [controlled ablation report](results/ablation_sentinel1_2017_2024.json).
+
+## Benchmark v2
+
+The [benchmark v2 protocol](benchmarks/v2/protocol.md) freezes acquisition
+rules, hard/boundary/area metrics, glacier-level bootstrap intervals, threshold
+calibration and temporal rejection thresholds. The
+[dataset card](benchmarks/v2/dataset_card.md) and
+[annotation guidelines](benchmarks/v2/annotation_guidelines.md) define the
+double-annotation gold workflow.
+
+Current status is intentionally fail-closed:
+
+- temporal one-AOI silver holdout: available;
+- gold glacier-held-out benchmark: blocked until glacier-level annotations exist;
+- Ile Alatau → Zhetysu Alatau external test: blocked until the external gold set exists.
+
+Run the reproducible checks:
+
+```bash
+python scripts/assess_annual_scene_quality.py
+python scripts/build_decision_readiness_tables.py
+python scripts/validate_temporal_consistency.py
+python scripts/validate_benchmark_v2.py --allow-incomplete  # structure
+python scripts/validate_benchmark_v2.py                     # strict evidence gate
+```
+
+The strict command exits non-zero until both real-data blockers are resolved.
+It is not bypassed with placeholder scores.
+
+## Active Cryosphere Risk Twin
+
+The repository now includes a safety-bounded research baseline that turns
+partial basin observations into an auditable latent state, screens glacier →
+lake/slope → dam → channel → exposed-asset cascades, ranks the next observation
+by model-based Value of Information, and abstains when evidence is missing,
+uncertain or uncalibrated.
+
+It deliberately does **not** output a GLOF probability or official warning.
+The [Central Asia Cascade protocol](benchmarks/central_asia_cascade/protocol.md)
+and [dataset card](benchmarks/central_asia_cascade/dataset_card.md) define the
+retrospective evidence needed before those claims can be evaluated.
+
+Run a JSON evidence payload locally:
+
+```bash
+python scripts/run_risk_twin.py evidence.json --output risk_twin_result.json
+python scripts/validate_cascade_benchmark.py --allow-incomplete  # structure
+python scripts/validate_cascade_benchmark.py                     # strict evidence gate
+```
+
+With the API running, inspect `GET /api/risk-twin/readiness` and submit evidence
+to `POST /api/risk-twin/evaluate`. Output includes state uncertainty,
+provenance, cascade coverage, abstention reasons, a next-observation ranking,
+counterfactual screening and a Daily Decision Brief.
+
+The resilience-aware extension adds virtual stress surfaces, observed recovery
+diagnostics, model-defined resilience margins, Failure Genome hypotheses and
+separate potential-hazard versus observation priorities. See the
+[stress-test contract](docs/RESILIENCE_STRESS_TEST.md). An uncalibrated model
+never produces a physical resilience claim.
+
+Run the explicitly synthetic example:
+
+```bash
+python scripts/run_risk_twin.py \
+  examples/risk_twin/resilience_screening.synthetic.json \
+  --output /tmp/glaciernet-resilience-demo.json
+```
+
+The example verifies software behaviour only; its coefficients and outputs are
+not scientific evidence.
+
+## Lake and GLOF evidence
+
+The local evidence layer now includes three independently sourced datasets:
+
+- NASA HMA_GLI 2015–2018: 22 lake polygons in the extended Ile Alatau AOI;
+- Tien Shan inventories for 1990, 2000, 2010, 2020 and 2023: 103–317 AOI
+  polygons per epoch after geometry repair;
+- HMAGLOFDB v1.3.0: 58 geolocated historical events in the AOI.
+
+Original Zenodo archives are retained with their published MD5 values and
+locally computed SHA-256 hashes. Derived GeoPackages are EPSG:4326, spatially
+clipped and have valid geometries. Machine-readable provenance and claim limits
+live beside each artifact under `data/lakes/` and `data/events/`.
+
+NASA CMR also reports candidate SWOT LakeSP and ICESat-2 ATL13 granules for the
+AOI. These are metadata intersections, not yet confirmed lake observations, so
+the project stores the lightweight query result rather than downloading about
+77 GB of unfiltered granules.
+
+Rebuild the derived layers and refresh the online coverage probe:
+
+```bash
+python scripts/build_lake_event_subsets.py
+python scripts/probe_altimetry_coverage.py
+```
+
+These inventories and events support retrospective screening and benchmark
+construction. They do not by themselves validate a present-day hazard,
+forecast, GLOF probability or warning.
 
 ## Quick Start
 
@@ -206,17 +318,21 @@ Sentinel-2 / Landsat / RGI / WGMS
 Preprocessing and spectral indices
         |
         v
-NDSI, Random Forest, U-Net, Attention U-Net, U-Net++
+NDSI, Random Forest, U-Net
         |
         v
-Sliding-window inference, TTA, uncertainty estimates
+Hard/boundary/area metrics and calibrated threshold
         |
         v
-Temporal analysis, trend, forecast, validation
+Scene QA, temporal gate, holdout and bootstrap validation
         |
         v
 FastAPI, Next.js dashboard, Gradio demo, STAC catalog, MCP tools
 ```
+
+Additional model families remain experimental and are tracked separately in
+[module maturity](docs/MODULE_MATURITY.md); they are not part of the validated
+benchmark claim.
 
 ## Repository Layout
 

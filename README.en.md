@@ -65,6 +65,46 @@ is not yet uniform across all years. See the
 [benchmark report](results/temporal_benchmark_unet_sentinel2_terrain_2016_2024.json),
 and the [controlled ablation report](results/ablation_sentinel1_2017_2024.json).
 
+## Benchmark v2 and Active Cryosphere Risk Twin
+
+Benchmark v2 freezes acquisition rules, hard and boundary metrics,
+glacier-level bootstrap intervals, threshold calibration, and
+leakage-resistant temporal/glacier/region splits. Its strict evidence gate
+remains fail-closed until expert gold annotations and an external-region cohort
+exist. See [the protocol](benchmarks/v2/protocol.md).
+
+The tested Active Cryosphere Risk Twin research baseline assimilates partial
+basin observations, screens glacier-to-asset cascades, ranks the next
+observation by model-based Value of Information, and abstains when evidence is
+missing or uncalibrated. It does not output an operational GLOF probability or
+official warning. See the
+[Central Asia Cascade protocol](benchmarks/central_asia_cascade/protocol.md)
+and [module maturity inventory](docs/MODULE_MATURITY.md).
+
+```bash
+python scripts/validate_benchmark_v2.py --allow-incomplete
+python scripts/validate_cascade_benchmark.py --allow-incomplete
+python scripts/run_risk_twin.py evidence.json --output risk_twin_result.json
+```
+
+## Lake and GLOF evidence
+
+The local evidence layer includes NASA HMA_GLI 2015–2018, five Tien Shan lake
+inventory epochs from 1990–2023, and HMAGLOFDB v1.3.0 historical events.
+Published checksums, local SHA-256 hashes, licences, processing details and
+claim limits are stored in adjacent manifests under `data/lakes/` and
+`data/events/`.
+
+Compact AOI GeoPackages are published; third-party source archives remain
+local. NASA CMR candidate metadata for SWOT LakeSP and ICESat-2 ATL13 is kept
+under `data/online_coverage/`. Candidate intersections are not presented as
+confirmed lake observations.
+
+```bash
+python scripts/build_lake_event_subsets.py
+python scripts/probe_altimetry_coverage.py
+```
+
 ## Full Workflow
 
 1. Authenticate Google Earth Engine:

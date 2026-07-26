@@ -1,0 +1,1 @@
+experiment,model,glacier_id,region,year,true_area_km2,predicted_area_km2,area_error_km2,absolute_area_error_km2,area_bias_percent,area_error_percent

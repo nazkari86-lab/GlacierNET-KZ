@@ -1,0 +1,30 @@
+{
+  "dataset": "High Mountain Asia Glacial Lake Outburst Flood Database",
+  "version": "1.3.0",
+  "source": "Zenodo",
+  "license": "CC0-1.0",
+  "zenodo_record": 18257243,
+  "doi": "10.5281/zenodo.18257243",
+  "source_url": "https://zenodo.org/records/18257243",
+  "aoi_bbox_epsg4326": [
+    75.5,
+    42.2,
+    78.2,
+    43.8
+  ],
+  "source_events": 768,
+  "events_with_valid_lake_coordinates": 768,
+  "aoi_events": 58,
+  "artifacts": {
+    "data/events/hmaglofdb/HMAGLOFDB-v1.3.0.zip": {
+      "bytes": 107879,
+      "published_md5": "b6af9657ed28d793b058789835dd4ac8",
+      "sha256": "7903cd5abf95265705824f7e1f54e7e52bf514b2d300b828718e781fbe2622ca"
+    },
+    "data/events/hmaglofdb/hmaglofdb_ile_alatau.gpkg": {
+      "bytes": 135168,
+      "sha256": "3eb6a19b529086255472c4f39b38e9cd54ad35502add40ff03cb8f38892db6eb"
+    }
+  },
+  "claim_limit": "Historical event evidence only; absence from the database is not evidence of no hazard."
+}

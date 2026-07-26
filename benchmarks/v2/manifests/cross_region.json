@@ -1,0 +1,13 @@
+{
+  "manifest_version": "2.0",
+  "split_strategy": "cross_region",
+  "grouping_key": "glacier_id",
+  "train_region": "Ile Alatau",
+  "test_region": "Zhetysu Alatau",
+  "train_glaciers": [],
+  "validation_glaciers": [],
+  "test_glaciers": [],
+  "label_quality_tier": "gold",
+  "ready": false,
+  "blocked_reason": "No annotated external Zhetysu Alatau glacier set is available yet."
+}

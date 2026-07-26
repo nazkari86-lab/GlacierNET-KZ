@@ -43,3 +43,38 @@ coverage report.
 
 No module is omitted from the repository-wide metric solely to make the total
 look better.
+
+## Active Cryosphere Risk Twin
+
+`src/risk_twin` is a tested **research baseline**, separate from both the
+validated segmentation core and the older unvalidated scaffolds. It currently
+provides typed partial observations, scalar Gaussian/Kalman assimilation,
+auditable provenance, a directed acyclic cascade graph, model-based Value of
+Information ranking, fail-closed abstention, counterfactual screening, event
+replay truncation, finite-sample split-conformal scalar intervals, declared
+ensemble uncertainty propagation and decision-focused evaluation metrics.
+
+The resilience-aware extension adds observed recovery-time diagnostics,
+response gain, lag-1/variance diagnostics with gap auditing, local-model
+spectral radius, state-dependent virtual stress surfaces, model-defined
+resilience margins, Failure Genome hypotheses and separate potential-hazard
+and observation priorities. Its contract is documented in
+[RESILIENCE_STRESS_TEST.md](RESILIENCE_STRESS_TEST.md).
+
+The conformal helper currently covers scalar quantities such as area or water
+level. It is not yet a calibrated morphological inner/outer boundary set.
+Ensemble propagation executes explicitly supplied stage models; it does not
+pretend that an unvalidated transform is a physical flood simulator.
+Likewise, an uncalibrated stress threshold produces
+`unvalidated_model_screening`, not a physical resilience class.
+
+The cascade `evidence_strength` value measures variable coverage penalised by
+relative uncertainty. It is not an event probability. The module does not
+currently provide calibrated GLOF probabilities, field-validated engineering
+states, an official warning, or an intervention recommendation.
+
+The [Central Asia Cascade Benchmark](../benchmarks/central_asia_cascade/protocol.md)
+defines the evidence required to upgrade these claims. Its structural validator
+passes with `--allow-incomplete`; the strict gate intentionally fails until
+source-reviewed events, non-event controls, immutable pre-event snapshots and
+an external-region cohort are present.
