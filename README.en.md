@@ -8,7 +8,10 @@
 [![FAIR](https://img.shields.io/badge/FAIR-Reproducible-green)](docs/REPRODUCIBILITY.md)
 [![STAC 1.0](https://img.shields.io/badge/STAC-1.0-orange)](scripts/export_stac_catalog.py)
 
-**GlacierNET-KZ** is an open-source geospatial AI platform for monitoring glacier retreat in Kazakhstan. It combines Sentinel-2 and Landsat imagery, RGI/WGMS glacier references, spectral indices, Random Forest baselines, U-Net models, a FastAPI backend, a Next.js dashboard, STAC metadata, and reproducible notebooks.
+**GlacierNET-KZ** is an open-source Cryosphere Observation and Evidence OS.
+It helps monitoring teams choose the next useful observation, coordinate field
+checks, and preserve an auditable chain from source data to human decision. Its
+scientific core remains an open, fail-closed glacier segmentation benchmark.
 
 ## Quick Start
 
@@ -37,6 +40,7 @@ pytest tests/ -q
 | Service | URL |
 |---------|-----|
 | Hub | http://localhost:8080/hub |
+| Operations workspace | http://localhost:8080/operations |
 | Dashboard | http://localhost:8080/dashboard |
 | Segmentation UI | http://localhost:8080/predict |
 | Gradio demo | http://localhost:8080/demo |
@@ -44,16 +48,25 @@ pytest tests/ -q
 | MCP tools | http://localhost:8080/mcp/tools |
 | Health check | http://localhost:8080/health |
 
+## GlacierNET Operations
+
+The [Operations MVP](docs/OPERATIONS_MVP.md) provides an observation inbox,
+change candidates, Domain Shift Detector, Next Best Observation, inspection
+tasks, offline field drafts, signed reports, evidence cases, decisions, and an
+append-only SHA-256 audit chain. It runs in shadow mode and does not issue an
+official warning or GLOF probability.
+
 ## Current verified evidence
 
 | Evaluation | Dice | IoU | Precision | Recall | Scope |
 |---|---:|---:|---:|---:|---|
-| 14-channel U-Net, 2024 year holdout | 0.7802 | 0.7382 | 0.9712 | 0.7547 | One AOI, RGI-derived silver labels |
-| Compact S2 + terrain control, 2024 holdout | 0.6942 | 0.7938 | 0.9507 | 0.8279 | Same-patch ablation control |
-| Compact control + Sentinel-1 VV/VH | 0.7092 | 0.8242 | 0.9252 | 0.8830 | Same patches, labels, splits, and training setup |
+| 14-channel U-Net, 2024 year holdout | 0.8746 | 0.7771 | 0.9508 | 0.8097 | One AOI, RGI-derived silver labels |
+| Compact S2 + terrain control, 2024 holdout | 0.8937 | 0.8078 | 0.9224 | 0.8668 | Same-patch ablation control |
+| Compact control + Sentinel-1 VV/VH | 0.9036 | 0.8242 | 0.9252 | 0.8830 | Same patches, labels, splits, and training setup |
 
-In the controlled experiment, Sentinel-1 increased Dice by **0.0150**, IoU by
-**0.0304**, and recall by **0.0551**, while precision decreased by **0.0255**.
+In the controlled experiment, Sentinel-1 increased hard Dice by **0.0099**,
+hard IoU by **0.0164**, recall by **0.0163**, and reduced absolute area error
+from 4.7873 to 3.6214 km². Precision increased by **0.0028**.
 The evidence supports a one-AOI feature-ablation result only. It does not
 establish cross-region generalisation, independent expert-label accuracy,
 field accuracy, or operational readiness.

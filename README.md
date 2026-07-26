@@ -8,15 +8,26 @@
 [![FAIR](https://img.shields.io/badge/FAIR-Reproducible-green)](docs/REPRODUCIBILITY.md)
 [![STAC 1.0](https://img.shields.io/badge/STAC-1.0-orange)](scripts/export_stac_catalog.py)
 
-**GlacierNET-KZ** is an open-source benchmark and geospatial workflow for
-measuring glacier segmentation quality in Kazakhstan. Its validated core uses
-Sentinel-2/Landsat imagery, Sentinel-1 and terrain ablations, RGI/WGMS
-references, NDSI and Random Forest baselines, and U-Net segmentation.
+**GlacierNET-KZ** is an open-source Cryosphere Observation and Evidence OS for
+planning what to observe next, coordinating field checks, and preserving an
+auditable chain from data to human decision. Its scientific core remains an
+open benchmark for glacier segmentation quality in Kazakhstan.
 
 The project prioritises comparable acquisitions, leakage-resistant splits,
 hard segmentation metrics, area error, temporal anomaly rejection, provenance,
 and explicit limits on scientific claims. API, dashboard, Gradio and MCP tools
 expose the verified artifacts; they are not substitutes for benchmark evidence.
+
+## GlacierNET Operations
+
+The [Operations MVP](docs/OPERATIONS_MVP.md) connects monitored assets,
+observations, change candidates, Domain Shift Detector, Next Best Observation,
+inspection tasks, signed field reports, evidence cases, human decisions, and a
+SHA-256 audit chain.
+
+It is deliberately a shadow-mode monitoring workspace—not an automatic warning
+system. Open `http://localhost:8080/operations` after `./scripts/start.sh`. An
+empty registry displays a clearly labelled, non-persistent synthetic workflow.
 
 ## What It Does
 

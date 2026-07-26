@@ -6,6 +6,7 @@ const translations = {
   en: {
     // Nav
     "nav.dashboard": "Dashboard",
+    "nav.operations": "Operations",
     "nav.explore": "Explore years",
     "nav.glaciers": "Glacier registry",
     "nav.hub": "Hub",
@@ -24,8 +25,10 @@ const translations = {
     // Home
     "home.title": "GlacierNET-KZ",
     "home.description":
-      "Deep learning glacier segmentation for the Zailiysky Alatau mountains, Kazakhstan. Upload satellite imagery and get instant ice-covered area estimates.",
+      "Plan the next useful observation, coordinate field checks, and preserve an auditable evidence trail for glaciers and mountain lakes.",
     "home.upload": "Upload satellite imagery and get instant ice-covered area estimates.",
+    "home.action_operations": "Open Operations",
+    "home.action_operations_desc": "Prioritise inspections and document evidence from observation to decision.",
     "home.action_years": "Analyze a year",
     "home.action_years_desc": "Open verified local results without preparing an image.",
     "home.action_glacier": "Find a glacier",
@@ -470,6 +473,7 @@ const translations = {
   ru: {
     // Nav
     "nav.dashboard": "Панель мониторинга",
+    "nav.operations": "Операции",
     "nav.explore": "Анализ по годам",
     "nav.glaciers": "Реестр ледников",
     "nav.hub": "Хаб",
@@ -488,8 +492,10 @@ const translations = {
     // Home
     "home.title": "GlacierNET-KZ",
     "home.description":
-      "Сегментация ледников с помощью глубокого обучения для гор Заилийский Алатау, Казахстан. Загружайте спутниковые снимки и мгновенно получайте оценки площади ледников.",
+      "Планируйте следующее полезное наблюдение, координируйте полевые проверки и сохраняйте аудируемую цепочку доказательств для ледников и горных озёр.",
     "home.upload": "Загружайте спутниковые снимки и мгновенно получайте оценки площади ледников.",
+    "home.action_operations": "Открыть Operations",
+    "home.action_operations_desc": "Приоритизация проверок и документирование пути от наблюдения до решения.",
     "home.action_years": "Проанализировать год",
     "home.action_years_desc": "Открыть проверенные локальные результаты без подготовки снимка.",
     "home.action_glacier": "Найти конкретный ледник",
@@ -933,6 +939,7 @@ const translations = {
   kk: {
     // Nav
     "nav.dashboard": "Басқару тақтасы",
+    "nav.operations": "Операциялар",
     "nav.explore": "Жылдар бойынша талдау",
     "nav.glaciers": "Мұздықтар тізілімі",
     "nav.hub": "Хаб",
@@ -951,8 +958,10 @@ const translations = {
     // Home
     "home.title": "GlacierNET-KZ",
     "home.description":
-      "Қазақстанның Заилийский Алатау тауларындағы мұздықтардың сегментациясы — терең оқыту әдісімен. Спутниктен түсірілген суреттерді жүктеп, мұздықтың ауданын бірден есептеңіз.",
+      "Мұздықтар мен тау көлдері үшін келесі пайдалы бақылауды жоспарлап, далалық тексерулерді үйлестіріп, аудиттелетін дәлелдер тізбегін сақтаңыз.",
     "home.upload": "Спутниктен түсірілген суреттерді жүктеп, мұздықтың ауданын бірден есептеңіз.",
+    "home.action_operations": "Operations ашу",
+    "home.action_operations_desc": "Тексерулерді басымдыққа қойып, бақылаудан шешімге дейінгі дәлелдерді құжаттау.",
     "home.action_years": "Жылды талдау",
     "home.action_years_desc": "Суретті дайындамай тексерілген жергілікті нәтижелерді ашу.",
     "home.action_glacier": "Мұздықты табу",
