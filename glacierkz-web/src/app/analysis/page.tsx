@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, MessageSquare, Loader2, Bot, RefreshCw, Key, Filter, Wrench, Play, Check } from "lucide-react";
-import { fetchAnalysisModels, fetchProviderModels, analyzeWithLLM, LLMProviderInfo, LLMModelInfo, LLMAnalyzeResponse, fetchMCPTools, callMCPTool, MCPTool, MCPToolCallResult } from "@/lib/api";
+import { fetchAnalysisModels, fetchProviderModels, analyzeWithLLM, LLMProviderInfo, LLMModelInfo, LLMAnalyzeResponse, fetchMCPTools, callMCPTool, MCPTool, MCPToolCallResult, fetchYears, compareLocalYears, fetchGlacierSeries } from "@/lib/api";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useI18n } from "@/lib/I18nProvider";
 
@@ -39,6 +39,53 @@ export default function AnalysisPage() {
       setProviders(p);
       if (p.length > 0) setSelectedProvider(p[0].provider);
     });
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const year = Number(params.get("year"));
+    const fromYear = Number(params.get("from"));
+    const toYear = Number(params.get("to"));
+    const glacierId = params.get("glacier");
+    const glacierMethod = params.get("method") || "ndsi";
+
+    if (year) {
+      fetchYears()
+        .then((records) => records.find((record) => record.year === year))
+        .then((record) => {
+          if (!record) return;
+          setMcpContext([`inspect_local_year: ${JSON.stringify(record, null, 2)}`]);
+          setPrompt(
+            `Проанализируй локальные проверенные данные GlacierNET-KZ за ${year} год. ` +
+            "Объясни площадь, качество, доступные методы и ограничения. Не делай выводов за пределами переданного контекста."
+          );
+          setMode("describe");
+        })
+        .catch((cause) => setError(String(cause)));
+    } else if (fromYear && toYear) {
+      compareLocalYears(fromYear, toYear)
+        .then((record) => {
+          setMcpContext([`compare_local_years: ${JSON.stringify(record, null, 2)}`]);
+          setPrompt(
+            `Проанализируй проверенное сравнение GlacierNET-KZ ${fromYear}–${toYear}. ` +
+            "Объясни изменение площади, строгую сравнимость и все предупреждения. Не добавляй внешние числа."
+          );
+          setMode("trend");
+        })
+        .catch((cause) => setError(String(cause)));
+    } else if (glacierId) {
+      fetchGlacierSeries(glacierId, glacierMethod)
+        .then((record) => {
+          setMcpContext([`inspect_glacier_timeseries: ${JSON.stringify(record, null, 2)}`]);
+          setPrompt(
+            `Разбери проверенную карточку ледника ${record.glacier.name_ru} (${glacierId}). ` +
+            "Опиши RGI-характеристики, временной ряд, изменение, WGMS-контекст и ограничения. " +
+            "Не интерпретируй площадь как объём воды и не добавляй внешние числа."
+          );
+          setMode("trend");
+        })
+        .catch((cause) => setError(String(cause)));
+    }
   }, []);
 
   // Fetch models when API key changes (debounced)
@@ -326,23 +373,23 @@ export default function AnalysisPage() {
                   })}
                 </div>
                 
-                {mcpContext.length > 0 && (
-                  <div className="rounded-lg border border-green-200 bg-green-50 p-3">
-                    <p className="mb-2 text-xs font-medium text-green-700">
-                      Загружено контекстов: {mcpContext.length}
-                    </p>
-                    <button
-                      onClick={() => {
-                        setMcpContext([]);
-                        setMcpResults({});
-                      }}
-                      className="text-xs text-green-600 underline hover:text-green-800"
-                    >
-                      Очистить контекст
-                    </button>
-                  </div>
-                )}
               </>
+            )}
+            {mcpContext.length > 0 && (
+              <div className="mt-3 rounded-lg border border-green-200 bg-green-50 p-3">
+                <p className="mb-2 text-xs font-medium text-green-700">
+                  Загружено проверенных контекстов: {mcpContext.length}
+                </p>
+                <button
+                  onClick={() => {
+                    setMcpContext([]);
+                    setMcpResults({});
+                  }}
+                  className="text-xs text-green-600 underline hover:text-green-800"
+                >
+                  Очистить контекст
+                </button>
+              </div>
             )}
           </section>
 

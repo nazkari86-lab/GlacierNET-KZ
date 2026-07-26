@@ -1,4 +1,17 @@
-# Results — Заполненный шаблон реальными данными
+# ARCHIVAL DRAFT — DO NOT CITE
+
+This file contains historical exploratory numbers produced before the current
+temporal-holdout, provenance, and claim-boundary gates. It is retained only to
+show earlier analysis structure. It is **not** a publication-ready results
+section and its trend, forecast, water-supply, and model-superiority statements
+must not be reused as validated findings.
+
+Current citable local evidence is limited to
+`results/temporal_benchmark_unet_sentinel2_terrain_2016_2024.json` and
+`results/ablation_sentinel1_2017_2024.json`, with the restrictions in
+`docs/VALIDATION_PROTOCOL.md`.
+
+# Results — Historical exploratory template
 
 Источники: `results/tables/model_comparison.csv`, `predictions/{year}/results.json`, `results/training_log.csv`
 

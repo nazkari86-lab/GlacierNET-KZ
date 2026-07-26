@@ -55,6 +55,8 @@ stop_native
 pick_python() {
   if [[ -x "$ROOT/.venv/bin/python" ]]; then
     echo "$ROOT/.venv/bin/python"
+  elif [[ -x "/Users/dulatnurlanuly/miniforge3/envs/glaciers/bin/python" ]]; then
+    echo "/Users/dulatnurlanuly/miniforge3/envs/glaciers/bin/python"
   else
     command -v python3
   fi

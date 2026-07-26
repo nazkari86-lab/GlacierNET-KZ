@@ -1,3 +1,4 @@
+import os
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -25,6 +26,7 @@ from app.routers import (
     datasets,
     export,
     history,
+    glaciers,
     models,
     monitoring,
     pipeline,
@@ -33,6 +35,7 @@ from app.routers import (
     training,
     trend,
     uncertainty,
+    years,
 )
 from app.routers.admin import router as admin_router
 from app.routers.auth import router as auth_router
@@ -78,7 +81,10 @@ app = FastAPI(
     },
     tags_metadata=[
         {"name": "segmentation", "description": "Glacier mask inference from satellite imagery"},
-        {"name": "trend", "description": "Multi-year area trend and forecast to 2050"},
+        {
+            "name": "trend",
+            "description": "Exploratory multi-year area summaries with explicit quality and method caveats",
+        },
         {"name": "models", "description": "Registered ML model registry and metadata"},
         {"name": "datasets", "description": "Training data and patch management"},
         {"name": "training", "description": "Model training job control"},
@@ -122,8 +128,17 @@ app.add_middleware(AdminAuthMiddleware)
 
 app.mount("/static/results", StaticFiles(directory=str(RESULTS_DIR)), name="results")
 app.mount("/static/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+PREDICTIONS_DIR = Path(os.environ.get("CORE_DIR", BASE_DIR.parents[1])) / "predictions"
+if PREDICTIONS_DIR.is_dir():
+    app.mount(
+        "/static/predictions",
+        StaticFiles(directory=str(PREDICTIONS_DIR)),
+        name="predictions",
+    )
 
 app.include_router(models.router)
+app.include_router(years.router)
+app.include_router(glaciers.router)
 app.include_router(segmentation.router)
 app.include_router(compare.router)
 app.include_router(area.router)

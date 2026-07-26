@@ -1,11 +1,14 @@
 from typing import Optional
 
+import pydantic
 from pydantic import BaseModel, Field
+
+_MIN_TWO_ITEMS = {"min_length": 2} if int(pydantic.VERSION.split(".", 1)[0]) >= 2 else {"min_items": 2}
 
 
 class TrendRequest(BaseModel):
-    file_ids: list[str] = Field(..., min_items=2, description="List of result IDs for different years")
-    years: list[int] = Field(..., min_items=2)
+    file_ids: list[str] = Field(..., description="List of result IDs for different years", **_MIN_TWO_ITEMS)
+    years: list[int] = Field(..., **_MIN_TWO_ITEMS)
     forecast_until: int = 2050
 
 

@@ -47,6 +47,11 @@ services:
       - results_data:/app/data/results
       - ./models:/app/models:ro
       - ./results:/app/results:ro
+      - ./predictions:/app/predictions:ro
+      - ./data/raw:/app/data/raw:ro
+      - ./data/processed:/app/data/processed:ro
+      - ./data/rgi:/app/data/rgi:ro
+      - ./data/wgms:/app/data/wgms:ro
     depends_on:
       redis:
         condition: service_healthy

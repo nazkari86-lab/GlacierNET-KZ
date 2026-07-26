@@ -1,8 +1,12 @@
 {
-  "created_at": "2026-06-27T22:51:28+00:00",
+  "created_at": "2026-07-26T09:15:09+00:00",
   "years_requested": [
     2021
   ],
+  "excluded_years": [
+    2015
+  ],
+  "dataset_role": "patch_generation",
   "notes": [
     "Sentinel-2 rasters are loaded through src.data_loader.load_image().",
     "Compact 7-band rasters are expanded to 11 channels by deriving NDSI/NDWI/BSI/EVI locally.",
@@ -20,16 +24,12 @@
       "stride": 128,
       "patches_total": 128,
       "limited_by_max_patches": true,
+      "split_strategy": "random_patch_split",
+      "split_leakage_warning": "Overlapping patches are split randomly. Use year-held-out or spatial split before reporting scientific generalization metrics.",
       "train_patches": 89,
       "val_patches": 19,
       "test_patches": 20,
-      "glacier_pixel_fraction": 0.25338292121887207,
-      "split_strategy": "random_patch_split",
-      "split_leakage_warning": "Overlapping patches are split randomly. Use year-held-out or spatial split before reporting scientific generalization metrics."
+      "glacier_pixel_fraction": 0.18746232986450195
     }
-  ],
-  "excluded_years": [
-    2015
-  ],
-  "dataset_role": "patch_generation_sample"
+  ]
 }

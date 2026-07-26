@@ -42,6 +42,9 @@ results/tables/*
 !results/pipeline_status.json
 !results/wgms_validation_report.json
 !results/temporal_benchmark_unet_sentinel2_terrain_2016_2024.json
+!results/ablation_unet_sentinel2_terrain_control_2017_2024.json
+!results/ablation_unet_sentinel2_terrain_s1_2017_2024.json
+!results/ablation_sentinel1_2017_2024.json
 predictions/
 glacierkz-api/results/
 **/build/
@@ -75,6 +78,7 @@ models/*.h5
 models/*.pkl
 models/*
 !models/.gitkeep
+!models/trusted_artifacts.json
 
 # OS
 .DS_Store

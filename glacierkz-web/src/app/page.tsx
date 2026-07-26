@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Mountain, GitCompareArrows, TrendingUp, Clock, Bot, BarChart3, Database, Cog, FileText, Settings, Network } from "lucide-react";
+import { Mountain, GitCompareArrows, TrendingUp, Clock, Bot, BarChart3, Database, Cog, FileText, Settings, Network, CalendarRange, MapPinned } from "lucide-react";
 import GlacierHero from "@/components/GlacierHero";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useI18n } from "@/lib/I18nProvider";
@@ -9,6 +9,8 @@ import { useI18n } from "@/lib/I18nProvider";
 const NAV_ITEMS = [
   { href: "/hub", key: "nav.hub" as const, icon: Network },
   { href: "/dashboard", key: "nav.dashboard" as const, icon: BarChart3 },
+  { href: "/explore", key: "nav.explore" as const, icon: CalendarRange },
+  { href: "/glaciers", key: "nav.glaciers" as const, icon: MapPinned },
   { href: "/predict", key: "nav.predict" as const, icon: Mountain },
   { href: "/compare", key: "nav.compare" as const, icon: GitCompareArrows },
   { href: "/trend", key: "nav.trend" as const, icon: TrendingUp },
@@ -18,6 +20,13 @@ const NAV_ITEMS = [
   { href: "/history", key: "nav.history" as const, icon: Clock },
   { href: "/analysis", key: "nav.analysis" as const, icon: Bot },
   { href: "/settings", key: "nav.settings" as const, icon: Settings },
+];
+
+const PRIMARY_ACTIONS = [
+  { href: "/explore", key: "home.action_years" as const, desc: "home.action_years_desc" as const, icon: CalendarRange },
+  { href: "/glaciers", key: "home.action_glacier" as const, desc: "home.action_glacier_desc" as const, icon: MapPinned },
+  { href: "/reports", key: "home.action_report" as const, desc: "home.action_report_desc" as const, icon: FileText },
+  { href: "/analysis", key: "home.action_ai" as const, desc: "home.action_ai_desc" as const, icon: Bot },
 ];
 
 export default function HomePage() {
@@ -57,18 +66,22 @@ export default function HomePage() {
         <p className="mb-8 max-w-lg text-lg text-zinc-500">
           {t("home.description")}
         </p>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {NAV_ITEMS.map(({ href, key, icon: Icon }) => (
+        <div className="grid w-full max-w-4xl gap-4 text-left sm:grid-cols-2">
+          {PRIMARY_ACTIONS.map(({ href, key, desc, icon: Icon }) => (
             <Link
               key={href}
               href={href}
-              className="flex flex-col items-center gap-2 rounded-xl border border-zinc-200 p-5 transition-all hover:border-blue-300 hover:shadow-sm"
+              className="flex items-start gap-4 rounded-xl border border-zinc-200 bg-white p-5 transition-all hover:border-blue-300 hover:shadow-md"
             >
-              <Icon className="h-6 w-6 text-blue-600" aria-hidden="true" />
-              <span className="text-sm font-medium">{t(key)}</span>
+              <span className="rounded-lg bg-blue-50 p-3"><Icon className="h-6 w-6 text-blue-600" aria-hidden="true" /></span>
+              <span>
+                <span className="block font-semibold">{t(key)}</span>
+                <span className="mt-1 block text-sm text-zinc-500">{t(desc)}</span>
+              </span>
             </Link>
           ))}
         </div>
+        <Link href="/hub" className="mt-8 text-sm text-blue-600 hover:underline">{t("home.all_tools")}</Link>
       </main>
     </div>
   );

@@ -1,5 +1,5 @@
 id,role,access_mode,state,file_count,total_bytes,citation_url
-sentinel2_sr,primary optical segmentation input,local Earth Engine exports,ready,10,9999533162,https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR_HARMONIZED
+sentinel2_sr,primary optical segmentation input,local Earth Engine exports,ready,10,11684086439,https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR_HARMONIZED
 landsat_collection2,historical optical input,local Earth Engine exports,ready,6,6324134859,https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C02_T1_L2
 rgi_v7_central_asia,supervised glacier-outline labels,local official archive,ready,5,238965922,https://www.glims.org/RGI/
 wgms_fog_2026_02_10,area and change validation,local official archive,ready,1,39137587,https://doi.org/10.5904/wgms-fog-2026-02-10

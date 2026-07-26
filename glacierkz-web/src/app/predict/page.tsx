@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Mountain, Loader2, Download } from "lucide-react";
+import { ArrowLeft, Mountain, Loader2, Download, FlaskConical, ExternalLink } from "lucide-react";
 import UploadZone from "@/components/UploadZone";
 import ModelSelector from "@/components/ModelSelector";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -57,10 +57,29 @@ export default function PredictPage() {
       </header>
       <main id="main-content" className="mx-auto max-w-5xl space-y-6 px-4 py-8">
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{t("predict.title")}</h1>
+        <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div>
+              <h2 className="flex items-center gap-2 font-semibold text-emerald-950">
+                <FlaskConical className="h-5 w-5" aria-hidden="true" />
+                {t("predict.try_example_title")}
+              </h2>
+              <p className="mt-1 max-w-3xl text-sm text-emerald-900">{t("predict.try_example_desc")}</p>
+            </div>
+            <a
+              href="/demo/"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
+            >
+              {t("predict.try_example_button")}
+              <ExternalLink className="h-4 w-4" aria-hidden="true" />
+            </a>
+          </div>
+        </section>
         <ErrorBoundary>
           <section className="rounded-xl bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-lg font-semibold">{t("predict.step1")}</h2>
             <UploadZone onFileSelected={setFile} disabled={loading} />
+            <p className="mt-3 text-sm text-zinc-500">{t("predict.upload_hint")}</p>
           </section>
 
           <section className="rounded-xl bg-white p-6 shadow-sm">

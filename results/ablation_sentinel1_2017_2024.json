@@ -1,0 +1,101 @@
+{
+  "schema": "glaciernet-kz.controlled-ablation.v1",
+  "created_at": "2026-07-26T10:52:36+00:00",
+  "comparison": "Sentinel-2 plus terrain versus Sentinel-2 plus terrain plus Sentinel-1 VV/VH",
+  "protocol": "same sampled patches, identical labels and temporal splits, identical training configuration",
+  "scope": "compact one-AOI temporal ablation with silver RGI-derived labels",
+  "claims_allowed": [
+    "same-patch feature ablation result"
+  ],
+  "claims_not_allowed": [
+    "cross-region generalisation",
+    "independent expert-label accuracy",
+    "operational superiority",
+    "replacement of the full benchmark"
+  ],
+  "control_report": "results/ablation_unet_sentinel2_terrain_control_2017_2024.json",
+  "candidate_report": "results/ablation_unet_sentinel2_terrain_s1_2017_2024.json",
+  "control_report_sha256": "686504e31b182d23d9a21c3f09d338b43f4be8d65bf9490f92854648731c6f65",
+  "candidate_report_sha256": "56ef5e0eb1c26f6745b358b9d9708566ad8c5c89ab16154afd6431fe12860d38",
+  "control_feature_schema": [
+    "B2",
+    "B3",
+    "B4",
+    "B8",
+    "B8A",
+    "B11",
+    "B12",
+    "NDSI",
+    "NDWI",
+    "BSI",
+    "EVI",
+    "elevation_m_normalized",
+    "slope_degrees_normalized",
+    "aspect_degrees_normalized"
+  ],
+  "candidate_feature_schema": [
+    "B2",
+    "B3",
+    "B4",
+    "B8",
+    "B8A",
+    "B11",
+    "B12",
+    "NDSI",
+    "NDWI",
+    "BSI",
+    "EVI",
+    "elevation_m_normalized",
+    "slope_degrees_normalized",
+    "aspect_degrees_normalized",
+    "VV_dB_normalized",
+    "VH_dB_normalized"
+  ],
+  "added_features": [
+    "VV_dB_normalized",
+    "VH_dB_normalized"
+  ],
+  "train_years": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022
+  ],
+  "validation_years": [
+    2023
+  ],
+  "test_years": [
+    2024
+  ],
+  "test_samples": 64,
+  "metrics": {
+    "control": {
+      "dice_coefficient": 0.6941999793052673,
+      "binary_io_u": 0.7938238978385925,
+      "precision": 0.9506933689117432,
+      "recall": 0.8279095888137817
+    },
+    "candidate": {
+      "dice_coefficient": 0.7092239260673523,
+      "binary_io_u": 0.8241759538650513,
+      "precision": 0.9251989126205444,
+      "recall": 0.8830143213272095
+    },
+    "candidate_minus_control": {
+      "dice_coefficient": 0.015023946762084961,
+      "binary_io_u": 0.03035205602645874,
+      "precision": -0.02549445629119873,
+      "recall": 0.055104732513427734
+    }
+  },
+  "finding": "Added Sentinel-1 channels improved Dice in this compact same-patch temporal ablation.",
+  "lineage": {
+    "control_holdout_manifest_sha256": "640c430e27bc388128cfd4ecf0bc6db480627789b4948a641570654f169c0c2f",
+    "candidate_holdout_manifest_sha256": "b420f44ff51ed723657cfcb4e12307bbfd1efa07f6533c8a059bbb789dba0c54",
+    "candidate_source_manifest_sha256": "d260c15aa3ae07bc4884f30f579b7289bbf83996104eb2c64dd4d86c67f6febf",
+    "same_patch_lineage": true,
+    "label_arrays_verified": 24
+  }
+}

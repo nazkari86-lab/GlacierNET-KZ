@@ -1,0 +1,41 @@
+{
+  "schema": "glaciernet-kz.security-exceptions.v1",
+  "review_by": "2026-08-09",
+  "exceptions": [
+    {
+      "id": "PYSEC-2026-1805",
+      "package": "protobuf",
+      "reason": "TensorFlow 2.15 requires protobuf below 5; project inputs and model artifacts are local and hash-verified."
+    },
+    {
+      "id": "PYSEC-2025-121",
+      "package": "keras",
+      "reason": "No patched Keras 2 release exists; upgrading to Keras 3 breaks the versioned SavedModel contract."
+    },
+    {
+      "id": "PYSEC-2025-76",
+      "package": "keras",
+      "reason": "No patched Keras 2 release exists; model deserialization is restricted to exact reviewed SHA-256 artifacts."
+    },
+    {
+      "id": "PYSEC-2026-1487",
+      "package": "keras",
+      "reason": "No patched Keras 2 release exists; model deserialization is restricted to exact reviewed SHA-256 artifacts."
+    },
+    {
+      "id": "PYSEC-2026-2324",
+      "package": "keras",
+      "reason": "The listed fixed Keras version is incompatible and not yet available; exact model hashes are enforced."
+    },
+    {
+      "id": "PYSEC-2026-2547",
+      "package": "keras",
+      "reason": "The listed fixed Keras version is incompatible and not yet available; exact model hashes are enforced."
+    },
+    {
+      "id": "CVE-2025-12060",
+      "package": "keras",
+      "reason": "No patched Keras 2 release exists; model deserialization is restricted to exact reviewed SHA-256 artifacts."
+    }
+  ]
+}

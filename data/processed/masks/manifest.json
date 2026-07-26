@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-07-11T15:03:29+00:00",
+  "created_at": "2026-07-26T08:55:21+00:00",
   "years_requested": [
     2016,
     2017,
@@ -96,7 +96,7 @@
       "source_file": "data/raw/sentinel2/sentinel2_2021.tif",
       "mask_file": "data/processed/masks/mask_2021.tif",
       "source_flag": "sentinel2_sr",
-      "created_this_run": false,
+      "created_this_run": true,
       "shape": [
         5228,
         8583

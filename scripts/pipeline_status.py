@@ -55,12 +55,20 @@ def main() -> None:
             status["mask_manifest"] = str(manifest_path.relative_to(ROOT))
 
     if config.DATA_PATCHES.exists():
-        status["patches"] = sorted(
-            int(p.name) for p in config.DATA_PATCHES.iterdir() if p.is_dir() and p.name.isdigit()
-        )
-        status["patch_manifests"] = sorted(
-            str(p.relative_to(ROOT)) for p in config.DATA_PATCHES.glob("**/manifest.json")
-        )
+        manifest_paths = sorted(config.DATA_PATCHES.glob("**/manifest.json"))
+        status["patch_manifests"] = [str(path.relative_to(ROOT)) for path in manifest_paths]
+        patch_years: set[int] = set()
+        for manifest_path in manifest_paths:
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                patch_years.update(
+                    int(entry["year"])
+                    for entry in manifest.get("years", [])
+                    if isinstance(entry, dict) and str(entry.get("year", "")).isdigit()
+                )
+            except (OSError, ValueError, TypeError, json.JSONDecodeError):
+                continue
+        status["patches"] = sorted(patch_years)
 
     pred_dir = ROOT / "predictions"
     if pred_dir.exists():
@@ -76,6 +84,7 @@ def main() -> None:
     print(f"  Missing:       {status['missing_landsat']}")
     print(f"Training masks:  {status['training_masks']}")
     print(f"Patches:         {status['patches']}")
+    print(f"Patch manifests: {len(status['patch_manifests'])}")
     print(f"Predictions:     {status['predictions']}")
     print(f"\nReport → {report}")
 

@@ -89,7 +89,7 @@ def main() -> None:
     import csv
 
     with OUTPUT.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(["year", "predicted_km2", "wgms_km2", "diff_km2"])
         for y in years:
             writer.writerow([y, predicted[y], wgms_areas[y], diffs[y]])

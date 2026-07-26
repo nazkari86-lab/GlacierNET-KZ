@@ -38,7 +38,7 @@ const structuredData = {
   featureList: [
     "U-Net glacier segmentation",
     "Multi-year trend analysis",
-    "Forecast to 2050",
+    "Quality-scored exploratory trend analysis",
     "Sentinel-2 and Landsat support",
     "EN/RU/KK localization",
   ],

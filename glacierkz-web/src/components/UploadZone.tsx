@@ -27,7 +27,11 @@ export default function UploadZone({ onFileSelected, disabled }: UploadZoneProps
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { "image/tiff": [".tif", ".tiff"], "image/png": [".png"], "image/jpeg": [".jpg", ".jpeg"] },
+    accept: {
+      "image/tiff": [".tif", ".tiff"],
+      "image/geotiff": [".tif", ".tiff"],
+      "application/geotiff": [".tif", ".tiff"],
+    },
     maxFiles: 1,
     disabled,
   });
@@ -57,7 +61,7 @@ export default function UploadZone({ onFileSelected, disabled }: UploadZoneProps
           <p className="text-sm font-medium">
             {isDragActive ? "Drop image here" : "Drag & drop or click to upload"}
           </p>
-          <p className="text-xs text-zinc-400">TIFF, PNG, or JPEG — max 200 MB</p>
+          <p className="text-xs text-zinc-400">7+ band satellite GeoTIFF (.tif/.tiff) — max 200 MB</p>
         </div>
       )}
     </div>

@@ -167,10 +167,11 @@ def predict(file):
     glacier_pct = float(np.mean(mask) * 100)
 
     fig_buf = make_figure(bands, mask, confidence)
-    stats = f"🏔️ **Glacier area:** {glacier_km2:.2f} km² ({glacier_pct:.1f}% of scene)\n\n" \
-            f"**Method:** Attention U-Net (F1=0.876, IoU=0.779)\n" \
-            f"**Patch size:** 256×256, 50% overlap\n" \
-            f"**Threshold:** 0.5"
+    stats = f"🏔️ **Estimated ice-covered area:** {glacier_km2:.2f} km² ({glacier_pct:.1f}% of scene)\n\n" \
+            f"**Method:** Attention U-Net, 7 Sentinel-2 bands plus derived indices\n" \
+            f"**Patch size:** 256×256, 50% overlap; threshold: 0.5\n\n" \
+            f"**Research boundary:** the available temporal test result is Dice 0.7802 / IoU 0.7382 on 2024 data " \
+            f"from one study area with RGI-derived labels. This is a demonstration, not field-validated or cross-region validation."
 
     return fig_buf, stats, confidence
 
@@ -185,8 +186,9 @@ demo = gr.Interface(
     ],
     title="🏔️ GlacierNET-KZ — AI Glacier Monitoring",
     description=(
-        "Upload a Sentinel-2 or Landsat composite (7+ bands) to classify glacier extent "
-        "using an Attention U-Net model trained on the Ili Alatau, Kazakhstan."
+        "Start with the included 7-band 2020 sample below — no file preparation is needed. "
+        "For your own analysis, upload a calibrated Sentinel-2 or Landsat GeoTIFF with 7+ bands. "
+        "Ordinary phone photos, PNG, and JPEG files do not contain the spectral information required for this model."
     ),
     examples=[
         ["examples/sample_2020.npy"] if __import__("pathlib").Path("examples/sample_2020.npy").exists() else None,

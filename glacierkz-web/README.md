@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GlacierNET-KZ web application
 
-## Getting Started
+Next.js interface for verified local glacier results, scientific GeoTIFF
+segmentation, model comparison, trends, datasets, reports, and monitoring.
 
-First, run the development server:
+## Recommended local start
+
+From the repository root:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+./scripts/start.sh
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:8080/explore` to inspect and compare already downloaded
+years without uploading imagery. The full service hub is available at
+`http://localhost:8080/hub`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Frontend development
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cd glacierkz-web
+npm ci
+npm run dev
+```
 
-## Learn More
+The development UI defaults to `http://localhost:3000`. Set
+`NEXT_PUBLIC_API_URL=http://localhost:8000` when the API runs separately. The
+unified gateway uses an empty `NEXT_PUBLIC_API_URL` for same-origin requests.
 
-To learn more about Next.js, take a look at the following resources:
+## Quality checks
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm test
+npm run lint
+npm run build
+npm run test:e2e
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The upload workflow accepts scientific multi-band GeoTIFF input. PNG, JPEG,
+screenshots, and phone photos are not valid substitutes for Sentinel-2 or
+Landsat spectral data.

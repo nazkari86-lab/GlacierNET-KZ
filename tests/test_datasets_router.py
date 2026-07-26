@@ -119,12 +119,40 @@ class TestDeleteDataset:
 
 
 class TestValidateDataset:
-    def test_valid_dataset(self):
+    def test_metadata_only_dataset_is_not_falsely_validated(self):
         _seed_dataset("ds-001")
         result = asyncio.run(validate_dataset(dataset_id="ds-001"))
+        assert result.valid is False
+        assert result.checked_files == 0
+        assert result.checksum_verified is False
+
+    def test_physical_geotiff_is_structurally_validated(self, tmp_path):
+        import numpy as np
+        import rasterio
+        from rasterio.transform import from_origin
+
+        raster = tmp_path / "sample.tif"
+        with rasterio.open(
+            raster,
+            "w",
+            driver="GTiff",
+            width=4,
+            height=4,
+            count=2,
+            dtype="uint16",
+            crs="EPSG:32642",
+            transform=from_origin(500000, 4800000, 10, 10),
+        ) as dst:
+            dst.write(np.ones((2, 4, 4), dtype=np.uint16))
+        _seed_dataset("ds-physical")
+        _datasets["ds-physical"]["path"] = str(raster)
+
+        result = asyncio.run(validate_dataset(dataset_id="ds-physical"))
+
         assert result.valid is True
-        assert result.checked_files == 1000
+        assert result.checked_files == 1
         assert result.corrupt_files == []
+        assert result.checksum_verified is False
 
     def test_validate_not_found(self):
         from fastapi import HTTPException
@@ -134,11 +162,11 @@ class TestValidateDataset:
 
 
 class TestListSamples:
-    def test_returns_samples(self):
+    def test_does_not_invent_samples_for_metadata_only_dataset(self):
         _seed_dataset("ds-001")
         result = asyncio.run(list_samples(dataset_id="ds-001", offset=0, limit=50))
-        assert result.total == 1000
-        assert len(result.sample_ids) == 50  # default limit
+        assert result.total == 0
+        assert result.sample_ids == []
 
     def test_samples_not_found(self):
         from fastapi import HTTPException

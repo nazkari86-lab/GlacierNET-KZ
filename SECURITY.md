@@ -36,10 +36,15 @@ This policy covers:
 
 ## Dependency Scanning
 
-CI runs `bandit` (Python SAST) and `safety` (dependency CVE check) on every push.
+CI runs `bandit` (Python SAST), `pip-audit` (Python dependency CVEs), and
+`npm audit --omit=dev --audit-level=high` on every push.
+Bounded upstream exceptions and their compensating controls are documented in
+[`docs/SECURITY_EXCEPTIONS.md`](docs/SECURITY_EXCEPTIONS.md); CI fails after
+their machine-readable review deadline.
 Run locally:
 
 ```bash
 bandit -r glacierkz-api/app/ -ll --skip B101
-safety check -r requirements.txt -r glacierkz-api/requirements-api.txt
+python scripts/audit_dependencies.py
+cd glacierkz-web && npm audit --omit=dev --audit-level=high
 ```

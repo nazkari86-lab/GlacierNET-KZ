@@ -20,6 +20,126 @@ export interface PredictResult {
   image_path?: string;
 }
 
+export interface YearMethodResult {
+  name: string;
+  area_km2: number;
+  glacier_pixels: number;
+  mask_url?: string | null;
+  artifact_available: boolean;
+}
+
+export interface YearResult {
+  year: number;
+  sensor: string;
+  source_flag: string;
+  source_file: string;
+  source_available: boolean;
+  source_size_mb?: number | null;
+  quality_score: number;
+  confidence: string;
+  include_in_strict_trend: boolean;
+  caveat: string;
+  primary_method: string;
+  primary_area_km2: number;
+  reported_methods: string[];
+  artifact_methods: string[];
+  methods: Record<string, YearMethodResult>;
+  overlay_url?: string | null;
+  provenance_url?: string | null;
+  provenance_available: boolean;
+  artifact_status: "ready" | "metadata_only";
+}
+
+export interface YearComparison {
+  from: YearResult;
+  to: YearResult;
+  change_km2: number;
+  change_percent?: number | null;
+  comparable_in_strict_trend: boolean;
+  warnings: string[];
+  method: string;
+}
+
+export interface GlacierRecord {
+  rgi_id: string;
+  name: string;
+  name_ru: string;
+  named: boolean;
+  priority?: number | null;
+  wgms_reference: boolean;
+  glims_id?: string | null;
+  subregion?: string | null;
+  centroid: { longitude: number; latitude: number };
+  rgi_area_km2: number;
+  elevation: { min_m: number; mean_m: number; max_m: number };
+  slope_deg: number;
+  aspect_deg: number;
+  maximum_length_m: number;
+  dem_source?: string | null;
+  inventory_date?: string | null;
+  geometry?: { type: string; coordinates: unknown };
+}
+
+export interface GlacierSeriesPoint {
+  year: number;
+  area_km2: number;
+  coverage_of_rgi_percent?: number | null;
+  method: string;
+  mask_url: string;
+}
+
+export interface GlacierTimeSeries {
+  glacier: GlacierRecord;
+  method: string;
+  points: GlacierSeriesPoint[];
+  first_year?: number | null;
+  last_year?: number | null;
+  change_km2?: number | null;
+  change_percent?: number | null;
+  wgms_points: { year: number; area_km2: number; source: string }[];
+  scope: string;
+  caveat: string;
+}
+
+export async function fetchGlaciers(
+  search = "",
+  namedOnly = true,
+  limit = 1000
+): Promise<{ glaciers: GlacierRecord[]; total: number }> {
+  const params = new URLSearchParams({
+    search,
+    named_only: String(namedOnly),
+    limit: String(limit),
+  });
+  const res = checkResponse(await fetch(apiUrl(`/api/glaciers?${params}`)));
+  return res.json();
+}
+
+export async function fetchGlacierSeries(
+  rgiId: string,
+  method = "ndsi"
+): Promise<GlacierTimeSeries> {
+  const res = checkResponse(
+    await fetch(apiUrl(`/api/glaciers/${encodeURIComponent(rgiId)}/timeseries?method=${method}`))
+  );
+  return res.json();
+}
+
+export async function fetchYears(strictOnly = false): Promise<YearResult[]> {
+  const res = checkResponse(await fetch(apiUrl(`/api/years?strict_only=${strictOnly}`)));
+  const body = await res.json();
+  return body.years;
+}
+
+export async function compareLocalYears(fromYear: number, toYear: number): Promise<YearComparison> {
+  const params = new URLSearchParams({
+    from_year: String(fromYear),
+    to_year: String(toYear),
+  });
+  const res = checkResponse(await fetch(apiUrl(`/api/years/compare?${params}`)));
+  return res.json();
+}
+
 export interface CompareSegment {
   model_name: string;
   mask_path: string;
@@ -220,6 +340,8 @@ export interface DatasetInfo {
   glacier_name: string;
   date_range: string;
   status: string;
+  bands?: number;
+  source_path?: string;
 }
 
 export interface DatasetListResponse {

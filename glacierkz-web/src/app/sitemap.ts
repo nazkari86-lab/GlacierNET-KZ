@@ -6,6 +6,8 @@ const ROUTES = [
   "",
   "/dashboard",
   "/predict",
+  "/explore",
+  "/glaciers",
   "/compare",
   "/trend",
   "/datasets",

@@ -52,7 +52,7 @@ function mapDataset(ds: DatasetInfo): GlacierDataset {
     name: ds.name,
     source: isLandsat ? "Landsat" : "Sentinel-2",
     year: yearMatch ? parseInt(yearMatch[1], 10) : parseInt(ds.date_range, 10) || 2020,
-    bands: isLandsat ? 11 : 13,
+    bands: ds.bands || (isLandsat ? 11 : 13),
     patchCount: ds.num_samples,
     sizeMb: ds.size_mb,
     status: mapApiStatus(ds.status),

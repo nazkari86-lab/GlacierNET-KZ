@@ -20,6 +20,16 @@ from src import config  # noqa: E402
 
 OUT = config.TABLES_DIR / "glacier_areas_all_years.csv"
 METHOD_MAP = {"ndsi": "NDSI", "rf": "RF", "unet": "U-Net"}
+FIELDNAMES = [
+    "year",
+    "sensor",
+    "method",
+    "area_km2",
+    "glacier_pixels",
+    "total_pixels",
+    "source_file",
+    "created_at",
+]
 
 
 def sensor_for_year(year: int) -> str:
@@ -48,6 +58,17 @@ def read_mask_stats(mask_path: Path) -> tuple[int, int, float]:
     total_pixels = int(mask.size)
     area_km2 = glacier_pixels * pixel_area / 1e6
     return glacier_pixels, total_pixels, round(area_km2, 2)
+
+
+def read_existing_rows() -> list[dict[str, str]]:
+    """Keep valid historical rows when only some prediction years are local."""
+    if not OUT.exists():
+        return []
+    with OUT.open(newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        if not reader.fieldnames or not set(FIELDNAMES).issubset(reader.fieldnames):
+            return []
+        return [row for row in reader if row.get("year") and row.get("method")]
 
 
 def main() -> None:
@@ -97,20 +118,15 @@ def main() -> None:
                 }
             )
 
-    rows.sort(key=lambda r: (int(r["year"]), str(r["method"])))
+    merged: dict[tuple[int, str], dict[str, str | int | float]] = {
+        (int(row["year"]), row["method"]): row for row in read_existing_rows()
+    }
+    for row in rows:
+        merged[(int(row["year"]), str(row["method"]))] = row
+    rows = sorted(merged.values(), key=lambda row: (int(row["year"]), str(row["method"])))
 
-    fieldnames = [
-        "year",
-        "sensor",
-        "method",
-        "area_km2",
-        "glacier_pixels",
-        "total_pixels",
-        "source_file",
-        "created_at",
-    ]
     with OUT.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 

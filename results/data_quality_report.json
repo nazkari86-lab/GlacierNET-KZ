@@ -102,9 +102,9 @@
     },
     {
       "path": "data/raw/sentinel2/sentinel2_2020.tif",
-      "bands": 7,
+      "bands": 11,
       "dtype": [
-        "uint16"
+        "float32"
       ],
       "shape": [
         5228,
@@ -113,7 +113,7 @@
       "crs": "EPSG:32642",
       "loaded_channels": 11,
       "expected_loaded_channels": 11,
-      "size_mb": 486.282
+      "size_mb": 1337.358
     },
     {
       "path": "data/raw/sentinel2/sentinel2_2021.tif",
@@ -132,7 +132,7 @@
     },
     {
       "path": "data/raw/sentinel2/sentinel2_2022.tif",
-      "bands": 7,
+      "bands": 11,
       "dtype": [
         "float32"
       ],
@@ -143,7 +143,7 @@
       "crs": "EPSG:32642",
       "loaded_channels": 11,
       "expected_loaded_channels": 11,
-      "size_mb": 579.811
+      "size_mb": 1335.25
     },
     {
       "path": "data/raw/sentinel2/sentinel2_2023.tif",
@@ -268,7 +268,7 @@
   ],
   "warnings": [
     "sentinel2_2015.tif is an annual late-2015 TOA fallback; no summer L2A/SR scenes exist for AOI.",
-    "Compact Sentinel-2 rasters detected and supported by load_image(): ['data/raw/sentinel2/sentinel2_2015.tif', 'data/raw/sentinel2/sentinel2_2020.tif', 'data/raw/sentinel2/sentinel2_2022.tif']",
+    "Compact Sentinel-2 rasters detected and supported by load_image(): ['data/raw/sentinel2/sentinel2_2015.tif']",
     "Landsat rasters load as 9-channel historical inputs; 11-channel U-Net training uses Sentinel-2 patches."
   ],
   "errors": []

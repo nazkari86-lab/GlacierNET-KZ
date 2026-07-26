@@ -10,11 +10,15 @@ import {
   HeartPulse,
   Monitor,
   ExternalLink,
+  CalendarRange,
+  MapPinned,
 } from "lucide-react";
 import { useI18n } from "@/lib/I18nProvider";
 
 const SERVICES = [
   { href: "/dashboard", key: "hub.dashboard", icon: LayoutDashboard, external: false },
+  { href: "/explore", key: "hub.explore", icon: CalendarRange, external: false },
+  { href: "/glaciers", key: "hub.glaciers", icon: MapPinned, external: false },
   { href: "/predict", key: "hub.predict", icon: Mountain, external: false },
   { href: "/demo", key: "hub.demo", icon: FlaskConical, external: true },
   { href: "/docs", key: "hub.api", icon: BookOpen, external: true },

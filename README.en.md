@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/nazkari86-lab/GlacierNET-KZ/actions/workflows/ci.yml/badge.svg)](https://github.com/nazkari86-lab/GlacierNET-KZ/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10–3.11](https://img.shields.io/badge/python-3.10–3.11-blue.svg)](https://www.python.org/downloads/)
 [![FAIR](https://img.shields.io/badge/FAIR-Reproducible-green)](docs/REPRODUCIBILITY.md)
 [![STAC 1.0](https://img.shields.io/badge/STAC-1.0-orange)](scripts/export_stac_catalog.py)
 
@@ -44,16 +44,26 @@ pytest tests/ -q
 | MCP tools | http://localhost:8080/mcp/tools |
 | Health check | http://localhost:8080/health |
 
-## Current Results
+## Current verified evidence
 
-| Metric | Value |
-|--------|-------|
-| U-Net F1 / IoU | 0.876 / 0.780 |
-| Random Forest F1 | 0.853 |
-| NDSI baseline F1 | 0.851 |
-| Glacier area loss, 2000-2020 | -129.5 km² (-22.4%) |
-| Linear trend | -12.7 km²/year |
-| Forecast to 2050 | ~350 km² |
+| Evaluation | Dice | IoU | Precision | Recall | Scope |
+|---|---:|---:|---:|---:|---|
+| 14-channel U-Net, 2024 year holdout | 0.7802 | 0.7382 | 0.9712 | 0.7547 | One AOI, RGI-derived silver labels |
+| Compact S2 + terrain control, 2024 holdout | 0.6942 | 0.7938 | 0.9507 | 0.8279 | Same-patch ablation control |
+| Compact control + Sentinel-1 VV/VH | 0.7092 | 0.8242 | 0.9252 | 0.8830 | Same patches, labels, splits, and training setup |
+
+In the controlled experiment, Sentinel-1 increased Dice by **0.0150**, IoU by
+**0.0304**, and recall by **0.0551**, while precision decreased by **0.0255**.
+The evidence supports a one-AOI feature-ablation result only. It does not
+establish cross-region generalisation, independent expert-label accuracy,
+field accuracy, or operational readiness.
+
+Historical area tables and forecasts under `results/` remain exploratory:
+most annual prediction masks use deterministic NDSI, while RF/U-Net coverage
+is not yet uniform across all years. See the
+[validation protocol](docs/VALIDATION_PROTOCOL.md), the machine-validated
+[benchmark report](results/temporal_benchmark_unet_sentinel2_terrain_2016_2024.json),
+and the [controlled ablation report](results/ablation_sentinel1_2017_2024.json).
 
 ## Full Workflow
 

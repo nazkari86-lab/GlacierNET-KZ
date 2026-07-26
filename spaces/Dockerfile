@@ -9,8 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gdal-bin libgdal-dev curl && \
     rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt spaces/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt -r spaces/requirements.txt
+COPY spaces/requirements.txt /app/spaces/requirements.txt
+RUN pip install --no-cache-dir -r spaces/requirements.txt
 
 ENV PYTHONPATH=/app
 ENV GRADIO_ROOT_PATH=/demo

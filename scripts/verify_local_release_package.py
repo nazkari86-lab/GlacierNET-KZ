@@ -24,7 +24,11 @@ REQUIRED_PATHS = (
 
 
 def missing_required_paths(root: Path = ROOT) -> list[str]:
-    return [path for path in REQUIRED_PATHS if not (root / path).is_file()]
+    missing = [path for path in REQUIRED_PATHS if not (root / path).is_file()]
+    manifest = root / "results" / "data_manifest.json"
+    if not manifest.is_file():
+        missing.append("results/data_manifest.json")
+    return missing
 
 
 def main() -> int:

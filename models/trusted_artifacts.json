@@ -1,0 +1,18 @@
+{
+  "schema": "glaciernet-kz.trusted-models.v1",
+  "policy": "Only project-local, reviewed model artifacts with exact SHA-256 matches may be deserialized.",
+  "artifacts": {
+    "models/attention_unet_best.h5": "df713f21ad2d4072c6c383084216a143b33d7e0524b2e99f835be8eaf9216003",
+    "models/random_forest.pkl": "5883caab90555b7e9065d94122beed08a7a5d8365ddd764e29deb15579331d37",
+    "models/unet_best.h5": "a115035d95d98dcfa1033a230a0ab3301e1d5faac4d13254e7d74515e032bd97",
+    "models/unet_best_sentinel2_multiyear_sample_2016_2024": "aebe82db525f3764547961b4fa15a61126b26dee2f0ae0a769a92d72231e2264",
+    "models/unet_best_sentinel2_terrain_control_year_holdout_2017_2024": "ac313a80ae88f83bf9c2a48f0a1f1ad757dcd31ea5655f7473761c02993aff6b",
+    "models/unet_best_sentinel2_terrain_s1_year_holdout_2017_2024": "c874443318bc7079b2580ef18e02782e6324d398459bfd55e20f63bc26b83997",
+    "models/unet_best_sentinel2_terrain_year_holdout_2016_2024": "c92f25958e2db9e1fc52d46bee9e207938cf7805ce4717237c0064fcfc09d304",
+    "models/unet_final_sentinel2_multiyear_sample_2016_2024": "91497112cd6264d396aaa090eaa1016cb292bf758084286136ae3027a419ccc4",
+    "models/unet_final_sentinel2_terrain_control_year_holdout_2017_2024": "27a3c7773b07e84c39acf622b2f3a99b2d72f549e1025931a31cfdf2c93863b3",
+    "models/unet_final_sentinel2_terrain_s1_year_holdout_2017_2024": "a7cab9c94a33f6ddbf96ddafea00b635b11d6bdf92fdffd1a6dcbb05ae70c4f3",
+    "models/unet_final_sentinel2_terrain_year_holdout_2016_2024": "2b02c975bad5abcac0b5cd85f684f3748e702beff86a9263254266d90b09f79a",
+    "models/unet_plus_plus_best.h5": "7e343ce1be73dfc1eea00442fd82951d720b670376dd3457f779c3e4a909b1d0"
+  }
+}

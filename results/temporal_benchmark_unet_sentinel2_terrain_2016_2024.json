@@ -1,6 +1,21 @@
 {
-  "created_at": "2026-07-11T20:50:59+00:00",
+  "created_at": "2026-07-26T10:53:23+00:00",
   "evaluation_protocol": "untouched temporal test-year holdout",
+  "split_strategy": "year_holdout",
+  "label_provenance": "RGI-derived masks; not independent expert gold labels",
+  "label_quality_tier": "silver",
+  "generalisation_scope": "one AOI temporal validation only",
+  "claims_allowed": [
+    "temporal holdout benchmark",
+    "research baseline comparison"
+  ],
+  "claims_not_allowed": [
+    "cross-region generalisation",
+    "field accuracy",
+    "operational readiness"
+  ],
+  "patch_manifest_sha256": "5c7798dd61dc96323efb47fb6ed113cc4ebbe6efb6b5ada94801a4e22e7cb520",
+  "model_artifact_sha256": "c92f25958e2db9e1fc52d46bee9e207938cf7805ce4717237c0064fcfc09d304",
   "model_path": "models/unet_best_sentinel2_terrain_year_holdout_2016_2024",
   "patches_dir": "data/processed/patches/sentinel2_terrain_year_holdout_2016_2024",
   "train_years": [

@@ -1,8 +1,12 @@
 """Tests for predict.py — pure functions that don't need TF/sklearn models."""
 
-import numpy as np
+import json
 
-from predict import run_ndsi
+import numpy as np
+import rasterio
+from rasterio.transform import from_origin
+
+from predict import _merge_saved_results, _save_single_mask, run_ndsi
 
 
 class TestRunNDSI:
@@ -38,3 +42,44 @@ class TestRunNDSI:
         img2[:, :, 7] = 0.1  # NDSI (pre-computed, low)
         result2 = run_ndsi(img2, threshold=0.4)
         assert result2.mean() == 0.0
+
+
+def test_saved_prediction_preserves_georeferencing(tmp_path):
+    mask = np.array([[0, 1], [1, 0]], dtype=np.uint8)
+    transform = from_origin(76.0, 43.0, 10.0, 10.0)
+    output = tmp_path / "prediction.tif"
+
+    _save_single_mask(
+        2024,
+        mask,
+        {
+            "H": 2,
+            "W": 2,
+            "crs": "EPSG:32642",
+            "transform": transform,
+        },
+        output,
+    )
+
+    with rasterio.open(output) as dataset:
+        assert dataset.crs.to_string() == "EPSG:32642"
+        assert dataset.transform == transform
+        np.testing.assert_array_equal(dataset.read(1), mask)
+
+
+def test_saved_results_merge_multiple_model_runs(tmp_path):
+    (tmp_path / "results.json").write_text(
+        json.dumps({"ndsi": {"area_km2": 470.54}}),
+        encoding="utf-8",
+    )
+
+    merged = _merge_saved_results(
+        {
+            "rf": {"area_km2": 450.47},
+            "unet": {"area_km2": 373.15},
+        },
+        tmp_path,
+    )
+
+    assert set(merged) == {"ndsi", "rf", "unet"}
+    assert json.loads((tmp_path / "results.json").read_text(encoding="utf-8")) == merged

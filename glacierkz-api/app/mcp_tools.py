@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib
 import logging
+import os
 import sys
 import time
 from pathlib import Path
@@ -29,6 +30,24 @@ if str(CORE_DIR) not in sys.path:
 # ---------------------------------------------------------------------------
 
 TOOL_REGISTRY: dict[str, dict[str, Any]] = {}
+
+# These tools currently construct untrained models, synthetic inputs, or rely on
+# research-scaffold modules. They remain discoverable for API compatibility but
+# fail closed unless a developer explicitly enables research-demo behaviour.
+UNVALIDATED_RESEARCH_TOOLS = frozenset(
+    {
+        "analyze_glacier",
+        "detect_anomalies",
+        "estimate_uncertainty",
+        "run_ensemble_prediction",
+        "search_architectures",
+        "vit_predict",
+        "graph_neural_network_predict",
+        "multi_task_predict",
+        "diffusion_sample",
+    }
+)
+RESEARCH_TOOLS_ENV = "GLACIERKZ_ENABLE_UNVALIDATED_RESEARCH_TOOLS"
 
 
 def _default_image_path() -> str:
@@ -2391,6 +2410,121 @@ _register(
     {},
 )
 
+# ------------------------------------------------------------------
+# Verified local year evidence
+# ------------------------------------------------------------------
+
+
+def list_local_years(strict_only: bool = False) -> dict:
+    """Return verified year metadata and only physically available artifacts."""
+    from app.routers.years import list_years
+
+    return _ok(list_years(strict_only=strict_only))
+
+
+_register(
+    "list_local_years",
+    list_local_years,
+    "List verified local analysis years, quality scores, caveats, and physical artifacts",
+    {
+        "strict_only": {
+            "type": "boolean",
+            "default": False,
+            "description": "Exclude years that are not suitable for the strict trend",
+        }
+    },
+)
+
+
+def inspect_local_year(year: int) -> dict:
+    """Return the evidence package for one locally indexed year."""
+    from app.routers.years import get_year
+
+    return _ok(get_year(int(year)))
+
+
+_register(
+    "inspect_local_year",
+    inspect_local_year,
+    "Inspect one local year: area, sensor, quality, caveat, methods, overlay, and provenance",
+    {
+        "year": {
+            "type": "integer",
+            "required": True,
+            "description": "Locally indexed year, for example 2024",
+        }
+    },
+)
+
+
+def compare_local_years(from_year: int, to_year: int) -> dict:
+    """Compare decision-ready local areas with strict comparability warnings."""
+    from app.routers.years import compare_years
+
+    return _ok(compare_years(from_year=int(from_year), to_year=int(to_year)))
+
+
+_register(
+    "compare_local_years",
+    compare_local_years,
+    "Compare two local years with area change, percent change, and scientific caveats",
+    {
+        "from_year": {"type": "integer", "required": True, "description": "Earlier year"},
+        "to_year": {"type": "integer", "required": True, "description": "Later year"},
+    },
+)
+
+
+def search_glaciers(search: str = "", named_only: bool = True, limit: int = 20) -> dict:
+    """Search physical RGI study-area records."""
+    from app.services.glacier_registry_service import list_glaciers
+
+    return _ok(
+        list_glaciers(
+            search=search,
+            named_only=named_only,
+            limit=min(max(int(limit), 1), 100),
+        )
+    )
+
+
+_register(
+    "search_glaciers",
+    search_glaciers,
+    "Search the verified local RGI glacier registry by name or RGI ID",
+    {
+        "search": {"type": "string", "default": "", "description": "Name or RGI ID"},
+        "named_only": {"type": "boolean", "default": True},
+        "limit": {"type": "integer", "default": 20},
+    },
+)
+
+
+def inspect_glacier_timeseries(rgi_id: str, method: str = "ndsi") -> dict:
+    """Return one glacier's inventory card and physical mask measurements."""
+    from app.services.glacier_registry_service import glacier_timeseries
+
+    return _ok(glacier_timeseries(rgi_id, method))
+
+
+_register(
+    "inspect_glacier_timeseries",
+    inspect_glacier_timeseries,
+    "Inspect one glacier and its physically measured within-RGI mask time series",
+    {
+        "rgi_id": {
+            "type": "string",
+            "required": True,
+            "description": "RGI 7.0 identifier",
+        },
+        "method": {
+            "type": "string",
+            "default": "ndsi",
+            "enum": ["ndsi", "rf", "unet"],
+        },
+    },
+)
+
 # ===================================================================
 # MCP Dispatch Interface
 # ===================================================================
@@ -2404,10 +2538,13 @@ def get_tool_definitions() -> list[dict[str, Any]]:
     """
     definitions: list[dict[str, Any]] = []
     for name, meta in TOOL_REGISTRY.items():
+        description = meta["description"]
+        if name in UNVALIDATED_RESEARCH_TOOLS:
+            description = "[DISABLED BY DEFAULT: unvalidated research scaffold; no operational claims] " + description
         definitions.append(
             {
                 "name": name,
-                "description": meta["description"],
+                "description": description,
                 "inputSchema": {
                     "type": "object",
                     "properties": meta.get("parameters", {}),
@@ -2436,6 +2573,12 @@ def execute_tool(tool_name: str, arguments: dict) -> dict:
     if tool_name not in TOOL_REGISTRY:
         available = ", ".join(sorted(TOOL_REGISTRY.keys()))
         return _err(f"Unknown tool '{tool_name}'. Available tools: {available}")
+    if tool_name in UNVALIDATED_RESEARCH_TOOLS and os.getenv(RESEARCH_TOOLS_ENV) != "1":
+        return _err(
+            f"Tool '{tool_name}' is an unvalidated research scaffold and is disabled by default. "
+            f"Set {RESEARCH_TOOLS_ENV}=1 only for local research demonstrations; outputs must not "
+            "be treated as measured accuracy or operational evidence."
+        )
 
     meta = TOOL_REGISTRY[tool_name]
     func = meta["function"]

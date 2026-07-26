@@ -19,7 +19,23 @@ from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/api/datasets", tags=["datasets"])
 
-CORE_DIR = Path(os.environ.get("CORE_DIR", Path(__file__).resolve().parents[3]))
+
+def _resolve_core_dir() -> Path:
+    configured = os.environ.get("CORE_DIR")
+    here = Path(__file__).resolve()
+    candidates = [
+        Path(configured) if configured else None,
+        here.parents[3],
+        here.parents[2],
+        here.parents[2].parent,
+    ]
+    for candidate in candidates:
+        if candidate is not None and (candidate / "results").is_dir() and (candidate / "data").is_dir():
+            return candidate
+    return Path(configured) if configured else here.parents[3]
+
+
+CORE_DIR = _resolve_core_dir()
 RAW_S2 = CORE_DIR / "data" / "raw" / "sentinel2"
 RAW_LS = CORE_DIR / "data" / "raw" / "landsat"
 PREDICTIONS = CORE_DIR / "predictions"
@@ -40,6 +56,8 @@ class DatasetInfo(BaseModel):
     glacier_name: str = ""
     date_range: str = ""
     status: str = "ready"
+    bands: int = 0
+    source_path: str = ""
 
 
 class DatasetCreate(BaseModel):
@@ -78,6 +96,7 @@ class ValidationReport(BaseModel):
     checked_files: int
     corrupt_files: list[str] = Field(default_factory=list)
     message: str = ""
+    checksum_verified: bool = False
 
 
 class SampleListResponse(BaseModel):
@@ -110,7 +129,8 @@ def _seed_sample_datasets() -> None:
             except ValueError:
                 continue
             ds_id = f"ds-zailiysky-{year}-{source_label.lower()}"
-            has_pred = (PREDICTIONS / str(year) / "rf_mask.tif").exists()
+            prediction_dir = PREDICTIONS / str(year)
+            has_pred = prediction_dir.is_dir() and any(prediction_dir.glob("*_mask.tif"))
             _datasets[ds_id] = {
                 "id": ds_id,
                 "name": f"Zailiysky_{year}_{source_label}",
@@ -120,70 +140,13 @@ def _seed_sample_datasets() -> None:
                 "date_range": str(year),
                 "status": "ready" if has_pred else "empty",
                 "description": f"Raw {source_label} composite for Ili Alatau",
+                "path": str(tif),
                 "created_at": now,
                 "updated_at": now,
             }
 
-    add_from_disk(RAW_S2, "sentinel2", "S2")
+    add_from_disk(RAW_S2, "sentinel2", "Sentinel-2")
     add_from_disk(RAW_LS, "landsat", "Landsat")
-
-    if _datasets:
-        return
-
-    # Fallback samples when running without project data on disk
-    now = time.time()
-    samples = [
-        {
-            "id": "ds-zailiysky-2020",
-            "name": "Zailiysky_2020_S2",
-            "glacier_name": "Zailiysky",
-            "size_mb": 245.0,
-            "num_samples": 1240,
-            "date_range": "2020",
-            "status": "ready",
-            "description": "",
-            "created_at": now,
-            "updated_at": now,
-        },
-        {
-            "id": "ds-tuyuksu-2017",
-            "name": "Tuyuksu_2017_Landsat",
-            "glacier_name": "Tuyuksu",
-            "size_mb": 189.0,
-            "num_samples": 980,
-            "date_range": "2017",
-            "status": "ready",
-            "description": "",
-            "created_at": now,
-            "updated_at": now,
-        },
-        {
-            "id": "ds-mynzhilki-2020",
-            "name": "Mynzhilki_2020_S2",
-            "glacier_name": "Mynzhilki",
-            "size_mb": 218.0,
-            "num_samples": 1100,
-            "date_range": "2020",
-            "status": "empty",
-            "description": "",
-            "created_at": now,
-            "updated_at": now,
-        },
-        {
-            "id": "ds-kumtor-2020",
-            "name": "Kumtor_2020_S2",
-            "glacier_name": "Kumtor",
-            "size_mb": 298.0,
-            "num_samples": 1500,
-            "date_range": "2020",
-            "status": "ready",
-            "description": "",
-            "created_at": now,
-            "updated_at": now,
-        },
-    ]
-    for ds in samples:
-        _datasets[ds["id"]] = ds
 
 
 _seed_sample_datasets()
@@ -196,6 +159,17 @@ _seed_sample_datasets()
 
 def _dataset_to_info(ds: dict[str, Any]) -> DatasetInfo:
     """Map internal dataset dict to the response model."""
+    bands = 0
+    raw_path = ds.get("path")
+    path = Path(raw_path) if raw_path else None
+    if path is not None and path.is_file():
+        try:
+            import rasterio
+
+            with rasterio.open(path) as src:
+                bands = src.count
+        except Exception:
+            bands = 0
     return DatasetInfo(
         id=ds["id"],
         name=ds["name"],
@@ -204,6 +178,8 @@ def _dataset_to_info(ds: dict[str, Any]) -> DatasetInfo:
         glacier_name=ds.get("glacier_name", ""),
         date_range=ds.get("date_range", ""),
         status=ds.get("status", "ready"),
+        bands=bands,
+        source_path=str(path.relative_to(CORE_DIR)) if path is not None and path.is_file() else "",
     )
 
 
@@ -310,13 +286,45 @@ async def validate_dataset(dataset_id: str) -> ValidationReport:
     """
     ds = _get_dataset_or_404(dataset_id)
 
-    # Placeholder – real implementation scans the data directory.
+    raw_path = ds.get("path")
+    path = Path(raw_path) if raw_path else None
+    if path is None or not path.is_file():
+        return ValidationReport(
+            dataset_id=dataset_id,
+            valid=False,
+            checked_files=0,
+            corrupt_files=[str(path)] if path is not None else [],
+            message="Physical dataset file is missing.",
+        )
+    try:
+        import rasterio
+
+        with rasterio.open(path) as src:
+            structurally_valid = bool(
+                src.count > 0
+                and src.width > 0
+                and src.height > 0
+                and src.crs is not None
+                and src.transform is not None
+            )
+    except Exception as exc:
+        return ValidationReport(
+            dataset_id=dataset_id,
+            valid=False,
+            checked_files=1,
+            corrupt_files=[path.name],
+            message=f"GeoTIFF could not be opened: {exc}",
+        )
     return ValidationReport(
         dataset_id=dataset_id,
-        valid=True,
-        checked_files=ds.get("num_samples", 0),
-        corrupt_files=[],
-        message="All files passed integrity checks.",
+        valid=structurally_valid,
+        checked_files=1,
+        corrupt_files=[] if structurally_valid else [path.name],
+        message=(
+            "GeoTIFF structure, dimensions, bands, CRS, and transform are valid. "
+            "Checksum verification remains a separate release quality gate."
+        ),
+        checksum_verified=False,
     )
 
 
@@ -329,8 +337,11 @@ async def list_samples(
     """Return a paginated list of sample IDs within the dataset."""
     ds = _get_dataset_or_404(dataset_id)
 
-    total = ds.get("num_samples", 0)
-    sample_ids = [f"{dataset_id}-sample-{i}" for i in range(offset, min(offset + limit, total))]
+    raw_path = ds.get("path")
+    path = Path(raw_path) if raw_path else None
+    all_samples = [path.name] if path is not None and path.is_file() else []
+    total = len(all_samples)
+    sample_ids = all_samples[offset : offset + limit]
 
     return SampleListResponse(
         dataset_id=dataset_id,
@@ -350,12 +361,23 @@ async def dataset_stats(dataset_id: str) -> DatasetStats:
     """
     ds = _get_dataset_or_404(dataset_id)
 
+    raw_path = ds.get("path")
+    path = Path(raw_path) if raw_path else None
+    coverage_percent = 0.0
+    if path is not None and path.is_file():
+        try:
+            import rasterio
+
+            with rasterio.open(path) as src:
+                coverage_percent = 100.0 if src.width and src.height else 0.0
+        except Exception:
+            coverage_percent = 0.0
     return DatasetStats(
         dataset_id=dataset_id,
         num_samples=ds.get("num_samples", 0),
         size_mb=ds.get("size_mb", 0.0),
         band_means={},
-        coverage_percent=0.0,
+        coverage_percent=coverage_percent,
         date_range=ds.get("date_range", ""),
     )
 

@@ -72,10 +72,14 @@ def test_temporal_benchmark_report_keeps_holdout_protocol(tmp_path, monkeypatch)
         "feature_schema": ["B2"],
     }
     (tmp_path / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    model_path = tmp_path / "model"
+    model_path.mkdir()
+    (model_path / "saved_model.pb").write_bytes(b"model")
     monkeypatch.setattr("scripts.evaluate_temporal_benchmark.ROOT", tmp_path.parent)
-    payload = report_payload(tmp_path / "model", tmp_path, {"dice_coefficient": 0.8}, (2, 256, 256, 14))
+    payload = report_payload(model_path, tmp_path, {"dice_coefficient": 0.8}, (2, 256, 256, 14))
     assert payload["test_years"] == [2022]
     assert payload["metrics"]["dice_coefficient"] == 0.8
+    assert len(payload["model_artifact_sha256"]) == 64
 
 
 def test_photometric_augmentation_preserves_signed_indices_and_terrain_channels():

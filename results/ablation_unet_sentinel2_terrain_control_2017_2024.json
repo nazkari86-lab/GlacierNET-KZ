@@ -1,0 +1,64 @@
+{
+  "created_at": "2026-07-26T10:50:56+00:00",
+  "evaluation_protocol": "untouched temporal test-year holdout",
+  "split_strategy": "year_holdout",
+  "label_provenance": "RGI-derived masks; not independent expert gold labels",
+  "label_quality_tier": "silver",
+  "generalisation_scope": "one AOI temporal validation only",
+  "claims_allowed": [
+    "temporal holdout benchmark",
+    "research baseline comparison"
+  ],
+  "claims_not_allowed": [
+    "cross-region generalisation",
+    "field accuracy",
+    "operational readiness"
+  ],
+  "patch_manifest_sha256": "640c430e27bc388128cfd4ecf0bc6db480627789b4948a641570654f169c0c2f",
+  "model_artifact_sha256": "ac313a80ae88f83bf9c2a48f0a1f1ad757dcd31ea5655f7473761c02993aff6b",
+  "model_path": "models/unet_best_sentinel2_terrain_control_year_holdout_2017_2024",
+  "patches_dir": "data/processed/patches/sentinel2_terrain_control_year_holdout_2017_2024",
+  "train_years": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022
+  ],
+  "validation_years": [
+    2023
+  ],
+  "test_years": [
+    2024
+  ],
+  "feature_schema": [
+    "B2",
+    "B3",
+    "B4",
+    "B8",
+    "B8A",
+    "B11",
+    "B12",
+    "NDSI",
+    "NDWI",
+    "BSI",
+    "EVI",
+    "elevation_m_normalized",
+    "slope_degrees_normalized",
+    "aspect_degrees_normalized"
+  ],
+  "test_patch_shape": [
+    64,
+    256,
+    256,
+    14
+  ],
+  "metrics": {
+    "loss": 0.32430538535118103,
+    "dice_coefficient": 0.6941999793052673,
+    "binary_io_u": 0.7938238978385925,
+    "precision": 0.9506933689117432,
+    "recall": 0.8279095888137817
+  }
+}

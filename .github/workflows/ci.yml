@@ -33,7 +33,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-      - run: pip install -r requirements.txt -r glacierkz-api/requirements-api.txt
+      - run: pip install -r requirements.lock
       - run: pip install pytest-cov
       - name: Run tests with coverage
         run: |
@@ -41,7 +41,7 @@ jobs:
             -m "not experimental" \
             --cov=src --cov=glacierkz-api/app \
             --cov-report=xml --cov-report=term-missing \
-            --cov-fail-under=25
+            --cov-fail-under=35
       - uses: codecov/codecov-action@v4
         if: always()
         with:
@@ -57,7 +57,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-      - run: pip install -r requirements.txt -r glacierkz-api/requirements-api.txt pyright
+      - run: pip install -r requirements.lock pyright
       - run: pyright
 
   frontend-test:
@@ -74,6 +74,7 @@ jobs:
           cache: npm
           cache-dependency-path: glacierkz-web/package-lock.json
       - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run lint -- --max-warnings 100
       - run: npm test
       - run: npm run build
@@ -99,7 +100,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          pip install -r ../requirements.txt -r ../glacierkz-api/requirements-api.txt
+          pip install -r ../requirements.lock
       - name: Install Playwright browser
         run: npx playwright install chromium --with-deps
       - name: Build frontend
@@ -130,11 +131,11 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-      - run: pip install -r requirements.txt -r glacierkz-api/requirements-api.txt bandit safety==2.3.5
+      - run: pip install -r requirements.lock bandit pip-audit==2.10.1
       - name: Run Bandit (Python security)
         run: bandit -r glacierkz-api/app/ -ll --skip B101
-      - name: Run Safety (dependency vulnerabilities)
-        run: safety check -r requirements.txt -r glacierkz-api/requirements-api.txt --full-report
+      - name: Run pip-audit (dependency vulnerabilities)
+        run: python scripts/audit_dependencies.py
 
   validate:
     name: Env Validation
@@ -147,7 +148,7 @@ jobs:
       - run: python scripts/validate-env.py
 
   docker-build:
-    name: Docker Build
+    name: Docker Build (API, Web, Demo)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -155,3 +156,7 @@ jobs:
         run: docker build -f glacierkz-api/Dockerfile.full -t glacierkz-api-test .
       - name: Build Web image
         run: docker build -t glacierkz-web-test ./glacierkz-web
+      - name: Build Gradio demo image
+        run: docker build -f spaces/Dockerfile -t glacierkz-demo-test .
+      - name: Validate unified Compose configuration
+        run: docker compose config --quiet

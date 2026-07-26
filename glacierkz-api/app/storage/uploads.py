@@ -5,7 +5,7 @@ from fastapi import HTTPException, UploadFile
 
 from app.config import MAX_FILE_SIZE_BYTES, UPLOAD_DIR
 
-ALLOWED_EXTENSIONS = {".tif", ".tiff", ".png", ".jpg", ".jpeg"}
+ALLOWED_EXTENSIONS = {".tif", ".tiff"}
 CHUNK_SIZE = 64 * 1024
 
 

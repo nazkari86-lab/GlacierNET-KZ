@@ -7,10 +7,15 @@ All significant design choices recorded here with context, alternatives consider
 ## D-001: Primary Classification Method — Random Forest for Time Series
 
 **Date:** 2026-06-26  
-**Status:** Accepted  
+**Status:** Superseded on 2026-07-26
 **Context:** Need a single method that works across all 9 years (2000–2020). U-Net trained only on 2020 Sentinel-2 data cannot generalize to Landsat sensors without retraining. NDSI thresholding only works for years with visible bands.
 
-**Decision:** Use Random Forest as the primary method for the full temporal analysis (2000–2020).
+**Historical decision:** Use Random Forest as the primary method for the full
+temporal analysis (2000–2020).
+
+**Superseding evidence:** The current 16-year prediction inventory is not a
+uniform RF series: most yearly masks are deterministic NDSI and only 2024 has
+verified RF/U-Net masks. Therefore no homogeneous RF trend claim is allowed.
 
 **Alternatives considered:**
 - U-Net: Best F1 (0.876) but trained only on 2020 Sentinel-2; transfer to Landsat unvalidated
@@ -29,10 +34,16 @@ All significant design choices recorded here with context, alternatives consider
 ## D-002: Linear Forecast Model
 
 **Date:** 2026-06-26  
-**Status:** Accepted with caveats  
+**Status:** Superseded; exploratory output only
 **Context:** Need to project glacier area to 2050 for water resource impact assessment.
 
-**Decision:** Use ordinary least squares (OLS) linear regression for the 2050 forecast.
+**Historical decision:** Use ordinary least squares (OLS) linear regression for
+the 2050 forecast.
+
+**Superseding evidence:** A forecast fitted across mixed sensors and
+non-uniform segmentation methods is not decision-grade. The existing forecast
+figure remains an exploratory artifact and must not be presented as a validated
+2050 prediction.
 
 **Alternatives considered:**
 - Exponential decay: More physically realistic but poor fit with current data variability
@@ -52,10 +63,14 @@ All significant design choices recorded here with context, alternatives consider
 ## D-003: U-Net Architecture — Attention U-Net
 
 **Date:** 2026-06-26  
-**Status:** Accepted  
+**Status:** Superseded as primary benchmark
 **Context:** Choose U-Net variant for semantic segmentation benchmark.
 
-**Decision:** Use Attention U-Net as the deep learning baseline.
+**Historical decision:** Use Attention U-Net as the deep learning baseline.
+
+**Superseding evidence:** The reportable benchmark is now the 14-channel U-Net
+with an untouched 2024 temporal holdout and artifact/manifest hashes. Attention
+U-Net remains a single-year research comparison.
 
 **Alternatives considered:**
 - Vanilla U-Net: Simpler, but attention gates improve small glacier detection
@@ -66,7 +81,8 @@ All significant design choices recorded here with context, alternatives consider
 
 **Consequences:**
 - Model trained on 2020 Sentinel-2 only (single year, single sensor)
-- `attention_unet_best.h5` weights file is missing from repo — must be regenerated
+- `attention_unet_best.h5` exists locally and is hash-registered, but that does
+  not upgrade its scientific validation tier
 - TTA (3 flips) adds ~3x inference time but improves F1 by ~1–2 pp
 
 ---

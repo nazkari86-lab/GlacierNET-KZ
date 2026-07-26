@@ -7,16 +7,10 @@ Usage:
     python predict.py --list-years
 """
 
-
-import sys
-from pathlib import Path
-
-ROOT = Path(__file__).resolve().parent
-
-
 import argparse
 import json
 import warnings
+from pathlib import Path
 
 import numpy as np
 import rasterio
@@ -24,6 +18,10 @@ import rasterio
 import src.config as config
 from src.data_loader import _append_sentinel2_indices
 from src.metrics import pixels_to_area_km2
+from src.model_security import verify_trusted_model
+from src.provenance import build_prediction_provenance, merge_prediction_provenance
+
+ROOT = Path(__file__).resolve().parent
 
 warnings.filterwarnings("ignore")
 
@@ -82,7 +80,7 @@ def _load_landsat(filepath: Path) -> np.ndarray:
     evi = np.clip(evi, -1.0, 1.0)
 
     # Fill missing S2 bands with closest Landsat proxy
-    b8a = b8   # Landsat NIR broad band covers S2 B8A wavelength
+    b8a = b8  # Landsat NIR broad band covers S2 B8A wavelength
     b12 = b11  # Landsat SWIR2 not in this TIF → use SWIR1 as proxy
 
     indices = np.stack([ls_ndsi, ls_ndwi, ls_bsi, evi], axis=-1)
@@ -110,15 +108,27 @@ def _load_tif(year: int) -> tuple[np.ndarray, dict]:
 
     if s2_path.exists():
         with rasterio.open(s2_path) as src:
-            meta = dict(H=src.height, W=src.width,
-                        pixel_area=abs(src.res[0] * src.res[1]),
-                        crs=src.crs, source="Sentinel-2")
+            meta = dict(
+                H=src.height,
+                W=src.width,
+                pixel_area=abs(src.res[0] * src.res[1]),
+                crs=src.crs,
+                transform=src.transform,
+                source_path=s2_path,
+                source="Sentinel-2",
+            )
         img = _load_sentinel2(s2_path)
     elif ls_path.exists():
         with rasterio.open(ls_path) as src:
-            meta = dict(H=src.height, W=src.width,
-                        pixel_area=abs(src.res[0] * src.res[1]),
-                        crs=src.crs, source="Landsat")
+            meta = dict(
+                H=src.height,
+                W=src.width,
+                pixel_area=abs(src.res[0] * src.res[1]),
+                crs=src.crs,
+                transform=src.transform,
+                source_path=ls_path,
+                source="Landsat",
+            )
         img = _load_landsat(ls_path)
     else:
         available = list_available_years()
@@ -129,6 +139,7 @@ def _load_tif(year: int) -> tuple[np.ndarray, dict]:
 def list_available_years() -> list[dict]:
     """Return list of {year, source} for all available TIF files."""
     import re
+
     years = []
     for p in S2_FILES:
         m = re.search(r"sentinel2_(\d{4})", p.name)
@@ -154,9 +165,11 @@ def run_ndsi(img: np.ndarray, threshold: float = 0.4) -> np.ndarray:
 
 def load_rf():
     import joblib
+
     path = config.MODELS_DIR / "random_forest.pkl"
     if not path.exists():
         raise FileNotFoundError(f"RF model not found at {path}")
+    verify_trusted_model(path, root=ROOT)
     return joblib.load(path)
 
 
@@ -185,8 +198,6 @@ def run_rf(model, img: np.ndarray, chunk_size: int = 500000) -> np.ndarray:
 
 def load_unet():
     try:
-        from tensorflow import keras
-
         from src.models import build_unet
     except ImportError:
         print("  ⚠ TensorFlow not installed — skipping U-Net")
@@ -195,6 +206,7 @@ def load_unet():
     if not path.exists():
         print(f"  ⚠ U-Net model not found at {path} — skipping")
         return None
+    verify_trusted_model(path, root=ROOT)
     model = build_unet(input_shape=(None, None, config.N_CHANNELS))
     model.load_weights(str(path))
     return model
@@ -203,6 +215,7 @@ def load_unet():
 def run_unet(model, img: np.ndarray, use_tta: bool = False) -> np.ndarray:
     """U-Net prediction via sliding window with optional TTA."""
     from src.models import predict_full_image, tta_predict
+
     if use_tta:
         _prob, mask = tta_predict(model, img)
     else:
@@ -213,13 +226,14 @@ def run_unet(model, img: np.ndarray, use_tta: bool = False) -> np.ndarray:
 # ─── Main ──────────────────────────────────────────────────────────────────
 
 
-def predict_year(year: int, models: list[str] = ("ndsi", "rf", "unet"),
-                 use_tta: bool = False, save: bool = False) -> dict:
+def predict_year(
+    year: int, models: list[str] = ("ndsi", "rf", "unet"), use_tta: bool = False, save: bool = False
+) -> dict:
     """Run selected models on a given year and return results."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  Year: {year}")
     print(f"  Models: {', '.join(models)}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     img, meta = _load_tif(year)
     H, W, pix_area = meta["H"], meta["W"], meta["pixel_area"]
@@ -236,9 +250,11 @@ def predict_year(year: int, models: list[str] = ("ndsi", "rf", "unet"),
         print("  [1/3] NDSI threshold ...", end=" ", flush=True)
         mask = run_ndsi(img)
         area_km2 = pixels_to_area_km2(mask.sum(), pix_area)
-        results["ndsi"] = {"area_km2": float(f"{area_km2:.2f}"),
-                           "glacier_pixels": int(mask.sum()),
-                           "total_pixels": H * W}
+        results["ndsi"] = {
+            "area_km2": float(f"{area_km2:.2f}"),
+            "glacier_pixels": int(mask.sum()),
+            "total_pixels": H * W,
+        }
         print(f"glacier area = {area_km2:.2f} km²")
         if save:
             _save_single_mask(year, mask, meta, out_dir / "ndsi_mask.tif")
@@ -247,9 +263,7 @@ def predict_year(year: int, models: list[str] = ("ndsi", "rf", "unet"),
         rf_model = load_rf()
         mask = run_rf(rf_model, img)
         area_km2 = pixels_to_area_km2(mask.sum(), pix_area)
-        results["rf"] = {"area_km2": float(f"{area_km2:.2f}"),
-                         "glacier_pixels": int(mask.sum()),
-                         "total_pixels": H * W}
+        results["rf"] = {"area_km2": float(f"{area_km2:.2f}"), "glacier_pixels": int(mask.sum()), "total_pixels": H * W}
         print(f"  glacier area = {area_km2:.2f} km²")
         if save:
             _save_single_mask(year, mask, meta, out_dir / "rf_mask.tif")
@@ -263,16 +277,28 @@ def predict_year(year: int, models: list[str] = ("ndsi", "rf", "unet"),
         else:
             mask = run_unet(unet_model, img, use_tta=use_tta)
             area_km2 = pixels_to_area_km2(mask.sum(), pix_area)
-            results["unet"] = {"area_km2": float(f"{area_km2:.2f}"),
-                               "glacier_pixels": int(mask.sum()),
-                               "total_pixels": H * W}
+            results["unet"] = {
+                "area_km2": float(f"{area_km2:.2f}"),
+                "glacier_pixels": int(mask.sum()),
+                "total_pixels": H * W,
+            }
             print(f"glacier area = {area_km2:.2f} km²")
             if save:
                 _save_single_mask(year, mask, meta, out_dir / "unet_mask.tif")
 
     if save and results:
-        _save_results_json(results, out_dir)
-        _save_overlay(year, img, results, meta, out_dir)
+        saved_results = _merge_saved_results(results, out_dir)
+        provenance = build_prediction_provenance(
+            root=ROOT,
+            year=year,
+            source_path=meta["source_path"],
+            prediction_dir=out_dir,
+            model_names=list(results),
+            ndsi_threshold=config.BEST_NDSI_THRESHOLD,
+            use_tta=use_tta,
+        )
+        merge_prediction_provenance(out_dir / "provenance.json", provenance)
+        _save_overlay(year, img, saved_results, meta, out_dir)
         print(f"  → predictions saved in {out_dir}/")
 
     return results
@@ -280,21 +306,43 @@ def predict_year(year: int, models: list[str] = ("ndsi", "rf", "unet"),
 
 def _save_single_mask(year: int, mask: np.ndarray, meta: dict, dst: Path):
     with rasterio.open(
-        dst, "w", driver="GTiff", height=meta["H"], width=meta["W"],
-        count=1, dtype=rasterio.uint8, crs=meta["crs"],
+        dst,
+        "w",
+        driver="GTiff",
+        height=meta["H"],
+        width=meta["W"],
+        count=1,
+        dtype=rasterio.uint8,
+        crs=meta["crs"],
+        transform=meta["transform"],
+        compress="deflate",
+        tiled=True,
+        blockxsize=512,
+        blockysize=512,
     ) as out:
         out.write(mask, 1)
 
 
-def _save_results_json(results: dict, out_dir: Path):
-    with open(out_dir / "results.json", "w") as f:
-        json.dump(results, f, indent=2)
+def _merge_saved_results(results: dict, out_dir: Path) -> dict:
+    results_path = out_dir / "results.json"
+    merged: dict = {}
+    if results_path.is_file():
+        try:
+            existing = json.loads(results_path.read_text(encoding="utf-8"))
+            if isinstance(existing, dict):
+                merged.update(existing)
+        except (json.JSONDecodeError, OSError):
+            pass
+    merged.update(results)
+    results_path.write_text(json.dumps(merged, indent=2) + "\n", encoding="utf-8")
+    return merged
 
 
 def _save_overlay(year: int, img: np.ndarray, results: dict, meta: dict, out_dir: Path):
     """Save overlay figure without re-running models (uses saved masks)."""
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
@@ -327,25 +375,25 @@ def _save_overlay(year: int, img: np.ndarray, results: dict, meta: dict, out_dir
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="GlacierNET-KZ: predict glacier extent from satellite imagery")
+    parser = argparse.ArgumentParser(description="GlacierNET-KZ: predict glacier extent from satellite imagery")
     parser.add_argument("--year", type=int, help="Target year (e.g. 2020)")
-    parser.add_argument("--models", nargs="+", default=["ndsi", "rf", "unet"],
-                        choices=["ndsi", "rf", "unet"],
-                        help="Models to run (default: all)")
-    parser.add_argument("--tta", action="store_true",
-                        help="Use test-time augmentation for U-Net")
-    parser.add_argument("--save", action="store_true",
-                        help="Save prediction masks and overlay plot")
-    parser.add_argument("--list-years", action="store_true",
-                        help="Show available years and exit")
+    parser.add_argument(
+        "--models",
+        nargs="+",
+        default=["ndsi", "rf", "unet"],
+        choices=["ndsi", "rf", "unet"],
+        help="Models to run (default: all)",
+    )
+    parser.add_argument("--tta", action="store_true", help="Use test-time augmentation for U-Net")
+    parser.add_argument("--save", action="store_true", help="Save prediction masks and overlay plot")
+    parser.add_argument("--list-years", action="store_true", help="Show available years and exit")
     args = parser.parse_args()
 
     if args.list_years:
         years = list_available_years()
         print(f"\nAvailable data ({len(years)} years):")
         print(f"  {'Year':<8} Source")
-        print(f"  {'─'*20}")
+        print(f"  {'─' * 20}")
         for y in years:
             print(f"  {y['year']:<8} {y['source']}")
         return
@@ -354,14 +402,13 @@ def main():
         parser.print_help()
         return
 
-    results = predict_year(args.year, models=args.models,
-                           use_tta=args.tta, save=args.save)
+    results = predict_year(args.year, models=args.models, use_tta=args.tta, save=args.save)
 
-    print(f"\n{'─'*40}")
+    print(f"\n{'─' * 40}")
     print("Summary:")
     for name, r in results.items():
         print(f"  {name.upper():>10}: {r['area_km2']} km²")
-    print(f"{'─'*40}\n")
+    print(f"{'─' * 40}\n")
 
 
 if __name__ == "__main__":

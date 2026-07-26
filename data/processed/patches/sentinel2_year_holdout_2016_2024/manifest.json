@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-07-11T15:37:32+00:00",
+  "created_at": "2026-07-26T09:17:15+00:00",
   "dataset_role": "temporal_year_holdout_evaluation",
   "split_strategy": "year_holdout",
   "source_manifest": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/manifest.json",

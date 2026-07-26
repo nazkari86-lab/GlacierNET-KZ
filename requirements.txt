@@ -2,10 +2,13 @@
 # Install: pip install -r requirements.txt
 
 # Core ML
-tensorflow>=2.12.0
-numpy>=1.24.0
+tensorflow==2.15.1
+numpy>=1.26.4,<2.0.0
 scipy>=1.11.0
-scikit-learn>=1.3.0
+scikit-learn>=1.5.0
+# TensorFlow 2.15 is the newest Keras 2 release compatible with the repository's
+# versioned SavedModel directories. See docs/SECURITY_EXCEPTIONS.md.
+protobuf>=4.25.9,<5.0.0
 
 # Geospatial
 rasterio>=1.3.0
@@ -19,9 +22,9 @@ matplotlib>=3.7.0
 seaborn>=0.12.0
 
 # Utilities
-python-dotenv>=1.0.0
-tqdm>=4.65.0
-pillow>=10.0.0
+python-dotenv>=1.2.2
+tqdm>=4.66.3
+pillow>=12.3.0
 
 # Google Drive download helper (download_drive.py)
 google-api-python-client>=2.100.0

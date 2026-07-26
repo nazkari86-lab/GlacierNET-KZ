@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from datetime import datetime, timezone
@@ -13,15 +14,26 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from src.model_security import verify_trusted_model  # noqa: E402
 from src.models import build_data_generator, compile_model, get_custom_objects  # noqa: E402
+from src.provenance import sha256_directory  # noqa: E402
 from src.train import TrainConfig, load_data  # noqa: E402
 
 
 def report_payload(model_path: Path, patches_dir: Path, metrics: dict[str, float], test_shape: tuple[int, ...]) -> dict:
     manifest = json.loads((patches_dir / "manifest.json").read_text(encoding="utf-8"))
+    manifest_bytes = (patches_dir / "manifest.json").read_bytes()
     return {
         "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "evaluation_protocol": "untouched temporal test-year holdout",
+        "split_strategy": "year_holdout",
+        "label_provenance": "RGI-derived masks; not independent expert gold labels",
+        "label_quality_tier": "silver",
+        "generalisation_scope": "one AOI temporal validation only",
+        "claims_allowed": ["temporal holdout benchmark", "research baseline comparison"],
+        "claims_not_allowed": ["cross-region generalisation", "field accuracy", "operational readiness"],
+        "patch_manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+        "model_artifact_sha256": sha256_directory(model_path),
         "model_path": str(model_path.relative_to(ROOT)),
         "patches_dir": str(patches_dir.relative_to(ROOT)),
         "train_years": manifest.get("train_years", []),
@@ -59,6 +71,7 @@ def main() -> int:
     import tensorflow as tf
 
     _, _, _, _, x_test, y_test = load_data(TrainConfig(patches_path=patches_dir))
+    verify_trusted_model(model_path, root=ROOT)
     model = tf.keras.models.load_model(model_path, custom_objects=get_custom_objects(), compile=False)
     compile_model(model, use_focal=args.focal)
     generator = build_data_generator()(x_test, y_test, batch_size=args.batch_size, augment=False, shuffle=False)
