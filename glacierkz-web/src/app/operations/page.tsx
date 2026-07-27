@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -23,15 +24,20 @@ import {
 } from "lucide-react";
 import {
   createFieldReport,
+  fetchGlaciers,
   fetchOperationsDemo,
   fetchOperationsOverview,
   type ChangeCandidate,
   type FieldReportInput,
+  type GlacierRecord,
   type OperationsAsset,
   type OperationsObservation,
   type OperationsOverview,
 } from "@/lib/api";
 import { useI18n } from "@/lib/I18nProvider";
+
+const OperationsInventoryMap = dynamic(() => import("@/components/OperationsInventoryMap"), { ssr: false });
+const OperationsYearAnalysis = dynamic(() => import("@/components/OperationsYearAnalysis"), { ssr: false });
 
 type DetailMode = "summary" | "compare" | "evidence" | "science";
 
@@ -213,6 +219,9 @@ export default function OperationsPage() {
   const { locale } = useI18n();
   const text = copy[locale];
   const [data, setData] = useState<OperationsOverview | null>(null);
+  const [glaciers, setGlaciers] = useState<GlacierRecord[]>([]);
+  const [registryError, setRegistryError] = useState("");
+  const [mapYear, setMapYear] = useState(2024);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [lastRefreshed, setLastRefreshed] = useState("");
@@ -230,10 +239,18 @@ export default function OperationsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
+    setRegistryError("");
     try {
-      const live = await fetchOperationsOverview();
+      const [live, registry] = await Promise.all([
+        fetchOperationsOverview(),
+        fetchGlaciers("", false, 1000, true).catch((reason) => {
+          setRegistryError(reason instanceof Error ? reason.message : "RGI registry unavailable");
+          return { glaciers: [], total: 0 };
+        }),
+      ]);
       const next = (live.counts.assets ?? 0) > 0 ? live : await fetchOperationsDemo();
       setData(next);
+      setGlaciers(registry.glaciers);
       setLastRefreshed(
         new Intl.DateTimeFormat(locale, {
           hour: "2-digit",
@@ -332,6 +349,7 @@ export default function OperationsPage() {
             <nav aria-label="Operations navigation" className="order-3 flex w-full gap-1 overflow-x-auto md:order-2 md:w-auto">
               <NavLink href="#overview" icon={Eye} label={text.overview} />
               <NavLink href="#monitor" icon={Map} label={text.monitor} />
+              <NavLink href="#years" icon={Layers3} label="Years" />
               <NavLink href="#assets" icon={Database} label={text.assets} />
               <NavLink href="#inspections" icon={ClipboardCheck} label={text.inspections} />
               <NavLink href="#reports" icon={FileCheck2} label={text.reports} />
@@ -418,7 +436,7 @@ export default function OperationsPage() {
           </div>
         ) : (
           <>
-            <section id="monitor" aria-label="Priority queue and operational map" className="grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:grid-cols-[minmax(360px,0.8fr)_1.2fr]">
+            <section id="monitor" aria-label="Priority queue and operational map" className="grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:grid-cols-[minmax(360px,0.7fr)_1.3fr]">
               <div className="border-b border-slate-200 p-5 xl:border-b-0 xl:border-r">
                 <div className="flex items-center justify-between gap-3">
                   <div>
@@ -447,14 +465,34 @@ export default function OperationsPage() {
                   {!data?.observation_queue.length && <p className="rounded-xl bg-slate-50 p-6 text-center text-slate-500">{text.noData}</p>}
                 </div>
               </div>
-              <OperationalMap
-                title={text.map}
-                assets={data?.assets ?? []}
-                candidates={data?.observation_queue ?? []}
-                selectedAssetId={selectedAssetId}
-                onSelect={setSelectedAssetId}
-              />
+              <div className="relative min-h-[430px] overflow-hidden">
+                <div className="pointer-events-none absolute left-4 right-4 top-4 z-[500] flex flex-wrap items-start justify-between gap-3">
+                  <div className="rounded-xl border border-white/70 bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-800">Real spatial context</p>
+                    <h2 className="mt-1 text-lg font-semibold">{text.map}</h2>
+                    <p className="mt-1 text-xs text-slate-600">
+                      {glaciers.length} RGI 7.0 boundaries · {mapYear} segmentation · {data?.assets.length ?? 0} shadow-mode objects
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-slate-300 bg-white/90 px-3 py-1 text-xs shadow-sm">Not a hazard map</span>
+                </div>
+                {registryError && (
+                  <p role="alert" className="absolute bottom-16 left-4 right-4 z-[500] rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+                    RGI geometry unavailable: {registryError}
+                  </p>
+                )}
+                <OperationsInventoryMap
+                  glaciers={glaciers}
+                  assets={data?.assets ?? []}
+                  candidates={data?.observation_queue ?? []}
+                  selectedAssetId={selectedAssetId}
+                  onSelectAsset={setSelectedAssetId}
+                  selectedYear={mapYear}
+                />
+              </div>
             </section>
+
+            <OperationsYearAnalysis onYearChange={setMapYear} />
 
             {selectedAsset && (
               <section aria-labelledby="selected-object-heading" className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -741,66 +779,6 @@ function MiniMap({ asset, tone }: { asset: OperationsAsset; tone: "violet" | "ne
       <span className="absolute bottom-1 right-1 font-mono text-[8px] text-slate-500">{asset.latitude.toFixed(2)}</span>
     </span>
   );
-}
-
-function OperationalMap({ title, assets, candidates, selectedAssetId, onSelect }: { title: string; assets: OperationsAsset[]; candidates: ChangeCandidate[]; selectedAssetId: string; onSelect: (id: string) => void }) {
-  const minLat = Math.min(...assets.map((asset) => asset.latitude), 43);
-  const maxLat = Math.max(...assets.map((asset) => asset.latitude), 43.2);
-  const minLon = Math.min(...assets.map((asset) => asset.longitude), 77.2);
-  const maxLon = Math.max(...assets.map((asset) => asset.longitude), 77.4);
-  const point = (asset: OperationsAsset) => ({
-    x: 12 + ((asset.longitude - minLon) / Math.max(maxLon - minLon, 0.01)) * 76,
-    y: 84 - ((asset.latitude - minLat) / Math.max(maxLat - minLat, 0.01)) * 68,
-  });
-  return (
-    <div className="relative min-h-[430px] overflow-hidden bg-[#dfe9ec] p-5">
-      <div className="relative z-10 flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">Spatial context</p>
-          <h2 className="mt-1 text-xl font-semibold">{title}</h2>
-        </div>
-        <span className="rounded-full border border-slate-300 bg-white/80 px-3 py-1 text-xs">Not a hazard map</span>
-      </div>
-      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Schematic map of monitored objects">
-        <defs>
-          <pattern id="map-grid" width="8" height="8" patternUnits="userSpaceOnUse">
-            <path d="M 8 0 L 0 0 0 8" fill="none" stroke="#94a3b8" strokeWidth=".15" />
-          </pattern>
-        </defs>
-        <rect width="100" height="100" fill="url(#map-grid)" />
-        <path d="M0,88 C18,64 24,74 39,51 C51,34 58,55 71,31 C84,12 91,30 100,18 L100,100 L0,100 Z" fill="#c8d5d7" />
-        <path d="M-4,78 C17,58 29,66 42,45 C55,27 68,43 82,20 C90,8 97,14 105,5" fill="none" stroke="#64748b" strokeWidth=".7" />
-      </svg>
-      <div className="absolute inset-x-0 bottom-0 top-20">
-        {assets.map((asset) => {
-          const candidate = candidates.find((item) => item.asset_id === asset.id);
-          const p = point(asset);
-          const selected = asset.id === selectedAssetId;
-          return (
-            <button
-              key={asset.id}
-              type="button"
-              onClick={() => onSelect(asset.id)}
-              aria-label={`Select ${asset.name}: ${changeLabel(candidate)}`}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-white shadow-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-800 ${
-                candidate?.status === "requires_review" ? "bg-violet-700" : "bg-blue-700"
-              } ${selected ? "h-7 w-7 ring-4 ring-blue-300/70" : "h-6 w-6"}`}
-              style={{ left: `${p.x}%`, top: `${p.y}%` }}
-            />
-          );
-        })}
-      </div>
-      <div className="absolute bottom-5 left-5 right-5 z-10 flex flex-wrap gap-3 rounded-xl border border-white/70 bg-white/85 p-3 text-xs backdrop-blur">
-        <LegendDot className="bg-violet-700" label="Action required" />
-        <LegendDot className="bg-blue-700" label="New observation" />
-        <LegendDot className="border border-slate-400 bg-white" label="No data" />
-      </div>
-    </div>
-  );
-}
-
-function LegendDot({ className, label }: { className: string; label: string }) {
-  return <span className="inline-flex items-center gap-2"><span className={`h-3 w-3 rounded-full ${className}`} aria-hidden="true" />{label}</span>;
 }
 
 function DecisionFact({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {

@@ -61,6 +61,16 @@ export interface YearComparison {
   method: string;
 }
 
+export interface YearMapLayer {
+  year: number;
+  method: string;
+  image_url: string;
+  bounds: [[number, number], [number, number]];
+  source: string;
+  scope: string;
+  caveat: string;
+}
+
 export interface GlacierRecord {
   rgi_id: string;
   name: string;
@@ -105,12 +115,14 @@ export interface GlacierTimeSeries {
 export async function fetchGlaciers(
   search = "",
   namedOnly = true,
-  limit = 1000
+  limit = 1000,
+  includeGeometry = false
 ): Promise<{ glaciers: GlacierRecord[]; total: number }> {
   const params = new URLSearchParams({
     search,
     named_only: String(namedOnly),
     limit: String(limit),
+    include_geometry: String(includeGeometry),
   });
   const res = checkResponse(await fetch(apiUrl(`/api/glaciers?${params}`)));
   return res.json();
@@ -138,6 +150,11 @@ export async function compareLocalYears(fromYear: number, toYear: number): Promi
     to_year: String(toYear),
   });
   const res = checkResponse(await fetch(apiUrl(`/api/years/compare?${params}`)));
+  return res.json();
+}
+
+export async function fetchYearMapLayer(year: number): Promise<YearMapLayer> {
+  const res = checkResponse(await fetch(apiUrl(`/api/years/${year}/map-layer`)));
   return res.json();
 }
 

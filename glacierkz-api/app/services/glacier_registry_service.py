@@ -115,9 +115,10 @@ def list_glaciers(
     min_area_km2: float = 0.0,
     offset: int = 0,
     limit: int = 50,
+    include_geometry: bool = False,
 ) -> dict[str, Any]:
     frame = _load_rgi()
-    records = [_record(row) for _, row in frame.iterrows()]
+    records = [_record(row, include_geometry=include_geometry) for _, row in frame.iterrows()]
     if search:
         query = search.casefold()
         records = [
