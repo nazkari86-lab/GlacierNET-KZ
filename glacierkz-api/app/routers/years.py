@@ -89,9 +89,7 @@ def _map_layer_metadata(year: int) -> dict[str, Any]:
     from rasterio.warp import transform_bounds
 
     with rasterio.open(path) as source:
-        west, south, east, north = transform_bounds(
-            source.crs, "EPSG:4326", *source.bounds, densify_pts=21
-        )
+        west, south, east, north = transform_bounds(source.crs, "EPSG:4326", *source.bounds, densify_pts=21)
     return {
         "year": year,
         "method": method,
