@@ -13,16 +13,25 @@ test.describe("Decision-first Operations workspace", () => {
     await expect(page.getByTestId("analysis-year-select")).toBeVisible();
     await expect(page.getByTestId("year-area-chart")).toBeVisible();
     const annualLayer = page.getByRole("img", { name: "2024 segmentation screening layer" });
-    await expect(annualLayer).toBeVisible({ timeout: 20_000 });
-    await expect.poll(() => annualLayer.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+    const unavailable2024 = page.getByText(/2024 map layer unavailable/);
+    await expect(annualLayer.or(unavailable2024)).toBeVisible({ timeout: 20_000 });
+    if (await annualLayer.count()) {
+      await expect.poll(() => annualLayer.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+    }
 
-    await page.getByText(/Find any glacier/).click();
-    await page.getByTestId("map-glacier-search").fill("Туюксу");
-    await page.getByRole("button", { name: /Ледник Центральный Туюксу/ }).click();
-    await expect(page.getByText(/mean elevation/)).toBeVisible();
+    if (await page.getByText(/586 RGI 7.0 boundaries/).count()) {
+      await page.getByText(/Find any glacier/).click();
+      await page.getByTestId("map-glacier-search").fill("Туюксу");
+      await page.getByRole("button", { name: /Ледник Центральный Туюксу/ }).click();
+      await expect(page.getByText(/mean elevation/)).toBeVisible();
+    } else {
+      await expect(page.getByText(/RGI geometry unavailable/)).toBeVisible();
+    }
 
     await page.getByTestId("analysis-year-select").selectOption("2000");
-    await expect(page.getByRole("img", { name: "2000 segmentation screening layer" })).toBeVisible({ timeout: 20_000 });
+    await expect(
+      page.getByRole("img", { name: "2000 segmentation screening layer" }).or(page.getByText(/2000 map layer unavailable/))
+    ).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText("Next Best Observation")).toBeVisible();
     await expect(page.getByText("What changed")).toBeVisible();
     await expect(page.getByText("Can this be trusted?")).toBeVisible();

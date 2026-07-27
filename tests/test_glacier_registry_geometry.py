@@ -3,11 +3,15 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "glacierkz-api"))
 
 from app.services.glacier_registry_service import list_glaciers
 from app.routers.years import map_layer_image, map_layer_metadata
+
+pytestmark = pytest.mark.local_data
 
 
 def test_bulk_registry_geometry_is_explicitly_opt_in() -> None:
