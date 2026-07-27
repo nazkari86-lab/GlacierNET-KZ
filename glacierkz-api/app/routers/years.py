@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import csv
+import io
 import json
 import os
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import Response
 
 router = APIRouter(prefix="/api/years", tags=["years"])
 
@@ -65,6 +68,62 @@ def _load_json(path: Path) -> dict[str, Any]:
 def _artifact_url(year: int, filename: str) -> str | None:
     path = PREDICTIONS_DIR / str(year) / filename
     return f"/static/predictions/{year}/{filename}" if path.is_file() else None
+
+
+def _map_mask(year: int) -> tuple[Path, str]:
+    record = next((item for item in _build_year_records() if item["year"] == year), None)
+    if record is None:
+        raise HTTPException(404, f"No local result metadata for year {year}")
+    preferred = str(record["primary_method"]).lower().replace("-", "")
+    candidates = [preferred, *record["artifact_methods"], "ndsi", "rf", "unet"]
+    for method in dict.fromkeys(candidates):
+        path = PREDICTIONS_DIR / str(year) / f"{method}_mask.tif"
+        if path.is_file():
+            return path, method
+    raise HTTPException(404, f"No physical map mask is available for year {year}")
+
+
+def _map_layer_metadata(year: int) -> dict[str, Any]:
+    path, method = _map_mask(year)
+    import rasterio
+    from rasterio.warp import transform_bounds
+
+    with rasterio.open(path) as source:
+        west, south, east, north = transform_bounds(
+            source.crs, "EPSG:4326", *source.bounds, densify_pts=21
+        )
+    return {
+        "year": year,
+        "method": method,
+        "image_url": f"/api/years/{year}/map-layer.png",
+        "bounds": [[south, west], [north, east]],
+        "source": str(path.relative_to(CORE_DIR)),
+        "scope": "georeferenced model segmentation screening layer",
+        "caveat": "Not a field-validated annual glacier boundary or hazard layer.",
+    }
+
+
+@lru_cache(maxsize=48)
+def _render_map_layer(path_string: str, modified_ns: int) -> bytes:
+    del modified_ns  # The mtime participates in the cache key.
+    import numpy as np
+    import rasterio
+    from PIL import Image
+    from rasterio.enums import Resampling
+
+    path = Path(path_string)
+    with rasterio.open(path) as source:
+        scale = min(1.0, 2048 / max(source.width, source.height))
+        width = max(1, round(source.width * scale))
+        height = max(1, round(source.height * scale))
+        mask = source.read(1, out_shape=(height, width), resampling=Resampling.nearest)
+    rgba = np.zeros((height, width, 4), dtype=np.uint8)
+    glacier = mask > 0
+    rgba[glacier] = (14, 165, 233, 155)
+    image = Image.fromarray(rgba, mode="RGBA")
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG", optimize=True)
+    return buffer.getvalue()
 
 
 def _build_year_records() -> list[dict[str, Any]]:
@@ -163,6 +222,22 @@ def compare_years(from_year: int = Query(...), to_year: int = Query(...)) -> dic
         "warnings": warnings,
         "method": "decision-ready primary area table",
     }
+
+
+@router.get("/{year}/map-layer", summary="Get georeferencing for a yearly segmentation layer")
+def map_layer_metadata(year: int) -> dict[str, Any]:
+    return _map_layer_metadata(year)
+
+
+@router.get("/{year}/map-layer.png", summary="Render a transparent yearly segmentation map layer")
+def map_layer_image(year: int) -> Response:
+    path, _ = _map_mask(year)
+    content = _render_map_layer(str(path), path.stat().st_mtime_ns)
+    return Response(
+        content,
+        media_type="image/png",
+        headers={"Cache-Control": "public, max-age=3600", "X-Content-Type-Options": "nosniff"},
+    )
 
 
 @router.get("/{year}", summary="Inspect one precomputed local year")

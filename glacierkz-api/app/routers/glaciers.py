@@ -24,8 +24,9 @@ def glaciers(
     min_area_km2: float = Query(0.0, ge=0),
     offset: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=1000),
+    include_geometry: bool = Query(False),
 ):
-    return list_glaciers(search, named_only, min_area_km2, offset, limit)
+    return list_glaciers(search, named_only, min_area_km2, offset, limit, include_geometry)
 
 
 @router.get("/{rgi_id}")

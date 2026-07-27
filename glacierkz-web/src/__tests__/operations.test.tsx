@@ -109,6 +109,55 @@ const overview = vi.hoisted(() => ({
   persistence: "none",
 }));
 
+const years = vi.hoisted(() => [
+  {
+    year: 2000,
+    sensor: "Landsat 7",
+    source_flag: "local",
+    source_file: "data/landsat_2000.tif",
+    source_available: true,
+    quality_score: 88,
+    confidence: "high",
+    include_in_strict_trend: true,
+    caveat: "",
+    primary_method: "ndsi",
+    primary_area_km2: 12.4,
+    reported_methods: ["ndsi"],
+    artifact_methods: ["ndsi"],
+    methods: {},
+    overlay_url: "/static/predictions/2000/overlay.png",
+    provenance_url: "/static/predictions/2000/provenance.json",
+    provenance_available: true,
+    artifact_status: "ready" as const,
+  },
+  {
+    year: 2024,
+    sensor: "Sentinel-2",
+    source_flag: "local",
+    source_file: "data/sentinel2_2024.tif",
+    source_available: true,
+    quality_score: 96,
+    confidence: "high",
+    include_in_strict_trend: true,
+    caveat: "Fixed inventory scope.",
+    primary_method: "ndsi",
+    primary_area_km2: 10.8,
+    reported_methods: ["ndsi", "rf", "unet"],
+    artifact_methods: ["ndsi", "rf", "unet"],
+    methods: {},
+    overlay_url: "/static/predictions/2024/overlay.png",
+    provenance_url: "/static/predictions/2024/provenance.json",
+    provenance_available: true,
+    artifact_status: "ready" as const,
+  },
+]);
+
+vi.mock("@/components/OperationsInventoryMap", () => ({
+  default: ({ glaciers }: { glaciers: unknown[] }) => (
+    <div role="application" aria-label={`Interactive map with ${glaciers.length} real RGI glacier boundaries`} data-testid="real-inventory-map" />
+  ),
+}));
+
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   return {
@@ -121,6 +170,33 @@ vi.mock("@/lib/api", async () => {
       inspection_tasks: [],
     }),
     fetchOperationsDemo: vi.fn().mockResolvedValue(overview),
+    fetchGlaciers: vi.fn().mockResolvedValue({
+      total: 1,
+      glaciers: [{
+        rgi_id: "RGI2000-v7.0-G-13-33843",
+        name: "Tsentralniy Tuyuksu Glacier",
+        name_ru: "Ледник Центральный Туюксу",
+        named: true,
+        wgms_reference: true,
+        centroid: { longitude: 77.08, latitude: 43.05 },
+        rgi_area_km2: 2.4,
+        elevation: { min_m: 3400, mean_m: 3800, max_m: 4200 },
+        slope_deg: 22,
+        aspect_deg: 5,
+        maximum_length_m: 3200,
+        geometry: { type: "Polygon", coordinates: [] },
+      }],
+    }),
+    fetchYears: vi.fn().mockResolvedValue(years),
+    compareLocalYears: vi.fn().mockResolvedValue({
+      from: years[0],
+      to: years[1],
+      change_km2: -1.6,
+      change_percent: -12.9,
+      comparable_in_strict_trend: true,
+      warnings: [],
+      method: "decision-ready primary area table",
+    }),
   };
 });
 
@@ -145,7 +221,10 @@ describe("OperationsPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Operations navigation" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "What needs attention today" })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "Schematic map of monitored objects" })).toBeInTheDocument();
+    expect(await screen.findByTestId("real-inventory-map")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Analysis by year" })).toBeInTheDocument();
+    expect(screen.getByText("2000–2024")).toBeInTheDocument();
+    expect(screen.getByTestId("year-area-chart")).toBeInTheDocument();
     expect(screen.getByText("What changed")).toBeInTheDocument();
     expect(screen.getByText("Can this be trusted?")).toBeInTheDocument();
     expect(screen.getAllByText(/observation priority/i).length).toBeGreaterThan(0);
