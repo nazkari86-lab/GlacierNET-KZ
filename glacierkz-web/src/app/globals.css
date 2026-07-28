@@ -1,13 +1,89 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
 
 body {
   background: #ffffff;
   color: #171717;
+}
+
+.risk-twin-page {
+  background:
+    radial-gradient(circle at 8% 5%, rgb(207 250 254 / 0.9), transparent 28rem),
+    radial-gradient(circle at 92% 12%, rgb(219 234 254 / 0.85), transparent 32rem),
+    linear-gradient(180deg, #f8fbff 0%, #f8fafc 52%, #eef7f7 100%);
+}
+
+.risk-twin-grid {
+  background-image:
+    linear-gradient(rgb(14 116 144 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(14 116 144 / 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.risk-twin-map .leaflet-control-layers,
+.risk-twin-map .leaflet-bar {
+  border: 1px solid rgb(226 232 240 / 0.9) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 32px rgb(15 23 42 / 0.14) !important;
+}
+
+.risk-twin-map .leaflet-control-layers {
+  overflow: hidden;
+  background: rgb(255 255 255 / 0.96);
+  color: #0f172a;
+}
+
+.risk-twin-map .leaflet-control-layers-expanded {
+  padding: 12px 14px 10px;
+}
+
+.risk-twin-map .leaflet-popup-content-wrapper,
+.risk-twin-map .leaflet-popup-tip {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.risk-twin-map .leaflet-popup-content {
+  margin: 13px 16px;
+  line-height: 1.45;
+}
+
+.risk-twin-map .leaflet-popup-content p {
+  color: #cbd5e1;
+}
+
+.risk-twin-map .leaflet-control-attribution {
+  border-radius: 8px 0 0;
+  background: rgb(255 255 255 / 0.82) !important;
+}
+
+.risk-twin-map .risk-twin-object-label {
+  border: 1px solid rgb(103 232 249 / 0.55);
+  border-radius: 7px;
+  background: rgb(8 27 39 / 0.88);
+  box-shadow: 0 5px 18px rgb(2 12 20 / 0.38);
+  color: #f0fdff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 3px 6px;
+}
+
+.risk-twin-map .risk-twin-object-label::before {
+  border-top-color: rgb(8 27 39 / 0.88);
+}
+
+.risk-twin-map .risk-twin-route-flow {
+  animation: risk-twin-route-flow 1.4s linear infinite;
+  stroke-dasharray: 10 8;
+}
+
+@keyframes risk-twin-route-flow {
+  to { stroke-dashoffset: -36; }
 }
 
 /* Accessibility: reduce motion for users who prefer it */
@@ -19,6 +95,10 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .risk-twin-map .risk-twin-route-flow {
+    animation: none;
   }
 }
 

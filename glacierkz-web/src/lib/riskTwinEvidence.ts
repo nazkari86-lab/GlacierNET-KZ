@@ -284,10 +284,11 @@ function rankedActionFor(variable: string, actions: RankedAction[]): string | un
 }
 
 export function buildEvidenceIssues(
-  _objects: EvidenceMapObject[],
+  objects: EvidenceMapObject[],
   dataGaps: string[],
   rankedActions: RankedAction[],
 ): EvidenceIssue[] {
+  const firstId = (kinds: EvidenceKind[]) => kinds.map((kind) => objects.find((item) => item.kind === kind)?.id).find(Boolean);
   return dataGaps.map((variable) => {
     const definition = GAP_DEFINITIONS[variable] ?? {
       decisionImpact: "low" as const,
@@ -298,6 +299,7 @@ export function buildEvidenceIssues(
     };
     return {
       id: `gap-${variable}`,
+      objectId: variable === "exposed_asset_count" ? firstId(["asset", "glacier"]) : variable === "channel_capacity_m3_s" ? firstId(["river", "glacier"]) : firstId(["lake", "glacier"]),
       ...definition,
       nextAction: rankedActionFor(variable, rankedActions) ?? definition.nextAction,
     };
