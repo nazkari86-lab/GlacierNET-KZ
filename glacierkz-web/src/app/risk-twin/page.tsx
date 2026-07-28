@@ -241,7 +241,10 @@ export default function RiskTwinPage() {
   }, [comparisonYear, year]);
 
   useEffect(() => {
-    if (selectedEvidenceId && !evidenceObjects.some((item) => item.id === selectedEvidenceId)) {
+    // A canonical lake deep link arrives before the asynchronous local context.
+    // Do not discard it during that loading window; only clear it after the
+    // context has had a chance to provide (or genuinely omit) the feature.
+    if (selectedEvidenceId && context && !evidenceObjects.some((item) => item.id === selectedEvidenceId)) {
       setSelectedEvidenceId(null);
     }
     if (selectedIssueId && !evidenceIssues.some((item) => item.id === selectedIssueId)) setSelectedIssueId(null);

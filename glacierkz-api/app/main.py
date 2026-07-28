@@ -24,6 +24,7 @@ from app.routers import (
     dashboard,
     data,
     datasets,
+    evidence_cases,
     export,
     glaciers,
     history,
@@ -101,6 +102,10 @@ app = FastAPI(
             "name": "operations",
             "description": "Shadow-mode observation planning, field work, and evidence cases",
         },
+        {
+            "name": "evidence-cases",
+            "description": "Fail-closed local packages for canonical glacier and lake evidence cases",
+        },
     ],
     lifespan=lifespan,
 )
@@ -165,6 +170,7 @@ app.include_router(dashboard.router)
 app.include_router(data.router)
 app.include_router(pipeline.router)
 app.include_router(risk_twin.router)
+app.include_router(evidence_cases.router)
 app.include_router(operations.router)
 app.include_router(auth_router)
 app.include_router(admin_router)
