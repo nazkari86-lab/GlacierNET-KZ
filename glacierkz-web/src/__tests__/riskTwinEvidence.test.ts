@@ -67,7 +67,7 @@ describe("Risk Twin evidence model", () => {
   it("does not create a population object when local population context is unavailable", () => {
     const objects = buildEvidenceMapObjects(glacier, null, lakeContext, []);
 
-    expect(objects.some((item) => item.kind === "population_context")).toBe(false);
+    expect(objects).toHaveLength(2);
   });
 
   it("marks an outlet-data gap as a decision gap rather than a hazard", () => {

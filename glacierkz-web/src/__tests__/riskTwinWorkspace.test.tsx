@@ -9,7 +9,7 @@ const lakeObject: EvidenceMapObject = {
   id: "lake:TS-001",
   kind: "lake",
   name: "Lake ID: TS-001",
-  geometry: { type: "Point", coordinates: [77.081, 43.051] },
+  geometry: { type: "Point", coordinates: [77.081, 43.051] } as GeoJSON.Point,
   source: "Tien Shan lake inventory",
   temporalCoverage: "2023",
   maturity: "spatial_context",
