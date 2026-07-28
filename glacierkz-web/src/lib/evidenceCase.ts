@@ -20,7 +20,7 @@ export function parseEvidenceCase(search: string | URLSearchParams): EvidenceCas
   const yearValue = params.get("year");
   if (!rgiId || !isKnownSourceScope(scope)) return null;
   const year = yearValue === null ? undefined : Number(yearValue);
-  if (yearValue !== null && (!Number.isInteger(year) || year < 1900 || year > 2100)) return null;
+  if (year !== undefined && (!Number.isInteger(year) || year < 1900 || year > 2100)) return null;
   return { rgiId, ...(lakeId ? { lakeId } : {}), ...(year !== undefined ? { year } : {}), sourceScope: scope };
 }
 

@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/dynamic", () => ({
   default: () => (props: { objects: Array<{ id: string; kind: string; name: string }>; selectedObjectId: string | null; onSelectObject: (id: string) => void }) => {
@@ -44,6 +44,10 @@ vi.mock("@/lib/api", async () => {
 import RiskTwinPage from "@/app/risk-twin/page";
 
 describe("Risk Twin evidence workspace", () => {
+  beforeEach(() => {
+    window.history.replaceState({}, "", "/risk-twin");
+  });
+
   it("connects map selection and an evidence gap to the same inspector and map focus", async () => {
     const user = userEvent.setup();
     render(<RiskTwinPage />);
@@ -51,9 +55,23 @@ describe("Risk Twin evidence workspace", () => {
     await user.click(await screen.findByTestId("risk-twin-map-mock"));
     expect(await screen.findByRole("status")).toHaveTextContent("Lake ID: TS-001");
     expect(screen.getByText(/инвентарная близость не подтверждает связь с ледником/i)).toBeInTheDocument();
+    const canonicalCase = new URLSearchParams(window.location.search);
+    expect(canonicalCase.get("rgi")).toBe("RGI2000-v7.0-G-13-33843");
+    expect(canonicalCase.get("lake")).toBe("TS-001");
+    expect(canonicalCase.get("year")).toBe("2024");
+    expect(canonicalCase.get("scope")).toBe("local_inventory");
 
     await user.click(screen.getByRole("button", { name: /пропускная способность выпуска/i }));
     expect(screen.getByTestId("risk-twin-map-mock")).toHaveAttribute("data-selected", "lake:TS-001");
     expect(screen.getAllByText(/снять геометрию выпуска/i)).toHaveLength(2);
+  });
+
+  it("restores a canonical lake case from its URL", async () => {
+    window.history.replaceState({}, "", "/risk-twin?rgi=RGI2000-v7.0-G-13-33843&lake=TS-001&year=2024&scope=local_inventory");
+
+    render(<RiskTwinPage />);
+
+    await screen.findByTestId("risk-twin-map-mock");
+    await waitFor(() => expect(screen.getByTestId("risk-twin-map-mock")).toHaveAttribute("data-selected", "lake:TS-001"));
   });
 });
