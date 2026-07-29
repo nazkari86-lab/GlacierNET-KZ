@@ -21,6 +21,7 @@ from app.routers import (
     analysis,
     area,
     compare,
+    cryogenesis,
     dashboard,
     data,
     datasets,
@@ -112,6 +113,10 @@ app = FastAPI(
             "name": "evidence-cases",
             "description": "Fail-closed local packages for canonical glacier and lake evidence cases",
         },
+        {
+            "name": "cryogenesis",
+            "description": "Validated retrospective matched-glacier Discovery Passports",
+        },
     ],
     lifespan=lifespan,
 )
@@ -186,6 +191,7 @@ app.include_router(pipeline.router)
 app.include_router(risk_twin.router)
 app.include_router(evidence_cases.router)
 app.include_router(operations.router)
+app.include_router(cryogenesis.router)
 app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(mcp_router)
