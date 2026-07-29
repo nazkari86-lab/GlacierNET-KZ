@@ -28,7 +28,10 @@ EVIDENCE_SOURCE_SCOPES: set[str] = {
 
 def _exact_lake_feature(context: dict[str, Any], lake_id: str) -> dict[str, Any] | None:
     """Return only an exact identifier match from the supplied spatial context."""
-    for layer_name in ("tien_shan_lakes_2023", "hma_gli_2015_2018"):
+    # ``tien_shan_lakes`` is tied to the explicit inventory year in the
+    # context query.  Keep the inventory layer second so an exact current
+    # local lake match always wins over a broader reference inventory match.
+    for layer_name in ("tien_shan_lakes", "hma_gli_2015_2018"):
         features = context.get("layers", {}).get(layer_name, {}).get("features", [])
         for feature in features:
             candidate_id = feature.get("properties", {}).get("lake_id")
@@ -39,24 +42,21 @@ def _exact_lake_feature(context: dict[str, Any], lake_id: str) -> dict[str, Any]
 
 def _glacier_facts(glacier: dict[str, Any]) -> dict[str, Any]:
     """Keep a stable, useful subset of the registry record in each package."""
-    return {
-        key: glacier.get(key)
-        for key in ("rgi_id", "name", "rgi_area_km2", "geometry")
-        if key in glacier
-    }
+    return {key: glacier.get(key) for key in ("rgi_id", "name", "rgi_area_km2", "geometry") if key in glacier}
 
 
 def resolve_evidence_case(
     rgi_id: str,
     lake_id: str | None = None,
     year: int = 2024,
+    lake_inventory_year: int = 2023,
     scope: EvidenceSourceScope = "local_inventory",
 ) -> dict[str, Any]:
     """Resolve an auditable local case without fabricating a lake association."""
     if scope not in EVIDENCE_SOURCE_SCOPES:
         raise ValueError(f"Unknown evidence source scope: {scope}")
 
-    context = risk_twin_context(rgi_id, year=year)
+    context = risk_twin_context(rgi_id, year=year, lake_inventory_year=lake_inventory_year)
     glacier = context["glacier"]
     claim_limits = context.get("interpretation", {}).get("not_allowed", [])
     package: dict[str, Any] = {
@@ -65,6 +65,7 @@ def resolve_evidence_case(
             "rgi_id": glacier["rgi_id"],
             "lake_id": None,
             "year": year,
+            "lake_inventory_year": lake_inventory_year,
             "source_scope": scope,
         },
         "facts": {"glacier": _glacier_facts(glacier), "lake": None},

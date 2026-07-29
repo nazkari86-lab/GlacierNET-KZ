@@ -5,6 +5,7 @@
   "train_years": [2016, 2017, 2018, 2019, 2020, 2021, 2022],
   "validation_years": [2023],
   "test_years": [2024],
+  "temporal_split_note": "Calendar years are mutually exclusive across train, validation and test; 2024 remains untouched until final evaluation.",
   "label_quality_tier": "silver",
   "region_scope": ["Ile Alatau AOI"],
   "ready": true,

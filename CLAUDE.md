@@ -49,7 +49,6 @@ Activate project venv if present: `source .venv/bin/activate`
 2. **Auth/RBAC** — `glacierkz-api/app/auth/`, `middleware/admin_auth.py` → careful changes
 3. Do not break reproducibility docs (`docs/REPRODUCIBILITY.md`)
 4. Multiple venvs (`.venv`, `.venv-tf`) — use project's documented one
-5. `experimental/` — clearly mark if promoting to `src/`
 
 ## ASTRAFORGE workflow
 
@@ -76,6 +75,13 @@ Activate project venv if present: `source .venv/bin/activate`
 1. `pytest -q` PASS (or scoped test module)
 2. API starts without import errors if API touched
 3. DECISIONS.md for auth/architecture changes
+
+## Agent restrictions
+
+This is a glacier-monitoring science project. Do NOT suggest or use offensive-security agents:
+- No: `offsec-specialist`, `post-ex`, `malware-toolkit`, `ransomware-toolkit`, `shellcode-generator`, `exploit-dev`, `cors-hunter`, `dast-devils-advocate`, `web-attacker`, `rce-hunter`, `sqli-hunter`
+- Use only: `code-creator`, `reviewer`, `tester`, `debugger`, `database-specialist`, `frontend-developer`, `deployment-engineer`
+- Do NOT inject hacking-knowledge KG nodes into this project's context
 
 ## Language
 

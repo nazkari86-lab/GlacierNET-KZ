@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Mountain, Loader2, Download, FlaskConical, ExternalLink } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Mountain, Loader2, Download, FlaskConical, ArrowRight } from "lucide-react";
 import UploadZone from "@/components/UploadZone";
 import ModelSelector from "@/components/ModelSelector";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -19,6 +20,7 @@ export default function PredictPage() {
   const [file, setFile] = useState<File | null>(null);
   const [useTta, setUseTta] = useState(false);
   const [useCrf, setUseCrf] = useState(false);
+  const [year, setYear] = useState(2024);
   const [ndsiThreshold, setNdsiThreshold] = useState(0.4);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PredictResult | null>(null);
@@ -26,7 +28,10 @@ export default function PredictPage() {
   useEffect(() => {
     fetchModels().then((m) => {
       setModels(m);
-      if (m.length > 0) setSelectedModel(m[0].name);
+      if (m.length > 0) {
+        setSelectedModel(m[0].name);
+        setUseTta(Boolean(m[0].supports_tta));
+      }
     });
   }, []);
 
@@ -35,7 +40,15 @@ export default function PredictPage() {
     setLoading(true);
     setResult(null);
     try {
-      const r = await predict(file, selectedModel, useTta, useCrf, ndsiThreshold);
+      const selected = models.find((model) => model.name === selectedModel);
+      const r = await predict(
+        file,
+        selectedModel,
+        useTta,
+        useCrf,
+        ndsiThreshold,
+        selected?.channel_count === 16 ? year : undefined,
+      );
       setResult(r);
     } catch (e) {
       setResult({ task_id: "", status: "failed", error: String(e) });
@@ -43,6 +56,7 @@ export default function PredictPage() {
       setLoading(false);
     }
   };
+  const selectedSpec = models.find((model) => model.name === selectedModel);
 
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -66,13 +80,13 @@ export default function PredictPage() {
               </h2>
               <p className="mt-1 max-w-3xl text-sm text-emerald-900">{t("predict.try_example_desc")}</p>
             </div>
-            <a
-              href="/demo/"
+            <Link
+              href="/ml"
               className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
             >
               {t("predict.try_example_button")}
-              <ExternalLink className="h-4 w-4" aria-hidden="true" />
-            </a>
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
           </div>
         </section>
         <ErrorBoundary>
@@ -84,7 +98,16 @@ export default function PredictPage() {
 
           <section className="rounded-xl bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-lg font-semibold">{t("predict.step2")}</h2>
-            <ModelSelector models={models} selectedModel={selectedModel} onSelect={setSelectedModel} />
+            <ModelSelector
+              models={models}
+              selectedModel={selectedModel}
+              onSelect={(name) => {
+                const next = models.find((model) => model.name === name);
+                setSelectedModel(name);
+                setUseTta(Boolean(next?.supports_tta));
+                setUseCrf(false);
+              }}
+            />
           </section>
 
           <section className="rounded-xl bg-white p-6 shadow-sm">
@@ -95,6 +118,7 @@ export default function PredictPage() {
                   type="checkbox"
                   checked={useTta}
                   onChange={(e) => setUseTta(e.target.checked)}
+                  disabled={!selectedSpec?.supports_tta}
                   className="rounded"
                 />
                 <span className="text-sm">{t("predict.tta")}</span>
@@ -104,6 +128,7 @@ export default function PredictPage() {
                   type="checkbox"
                   checked={useCrf}
                   onChange={(e) => setUseCrf(e.target.checked)}
+                  disabled={!selectedSpec?.supports_crf}
                   className="rounded"
                 />
                 <span className="text-sm">{t("predict.crf")}</span>
@@ -124,7 +149,30 @@ export default function PredictPage() {
                   <span className="text-sm font-mono">{ndsiThreshold}</span>
                 </label>
               )}
+              {selectedSpec?.channel_count === 16 && (
+                <label className="flex items-center gap-2">
+                  <span className="text-sm">Observation year</span>
+                  <select
+                    value={year}
+                    onChange={(event) => setYear(Number(event.target.value))}
+                    className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm"
+                    aria-label="Observation year for Sentinel-1 composite"
+                  >
+                    {Array.from({ length: 8 }, (_, index) => 2024 - index).map((value) => (
+                      <option key={value} value={value}>{value}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
             </div>
+            {selectedSpec?.feature_schema && (
+              <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-600">
+                <div className="font-semibold text-zinc-800">
+                  Exact input contract · {selectedSpec.channel_count} channels · {selectedSpec.evidence_tier}
+                </div>
+                <div className="mt-1">{selectedSpec.feature_schema.join(" · ")}</div>
+              </div>
+            )}
           </section>
         </ErrorBoundary>
 
@@ -155,19 +203,89 @@ export default function PredictPage() {
                     <p className="text-3xl font-bold text-blue-700">{result.area_km2.toFixed(2)} km²</p>
                   </div>
                 )}
+                {(result.decision_threshold !== undefined || result.uncertain_pixel_fraction !== undefined) && (
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-lg border border-zinc-200 p-3">
+                      <div className="text-xs text-zinc-500">Inference</div>
+                      <div className="mt-1 font-semibold">{result.inference_variant ?? "single_pass"}</div>
+                    </div>
+                    <div className="rounded-lg border border-zinc-200 p-3">
+                      <div className="text-xs text-zinc-500">Decision threshold</div>
+                      <div className="mt-1 font-semibold">{result.decision_threshold?.toFixed(2) ?? "—"}</div>
+                    </div>
+                    <div className="rounded-lg border border-zinc-200 p-3">
+                      <div className="text-xs text-zinc-500">High-entropy pixels</div>
+                      <div className="mt-1 font-semibold">
+                        {result.uncertain_pixel_fraction !== undefined
+                          ? `${(result.uncertain_pixel_fraction * 100).toFixed(1)}%`
+                          : "—"}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {result.mask_path && (
                   <div className="h-96 overflow-hidden rounded-xl">
                     <MapView imageUrl={result.overlay_path && getStaticUrl(result.overlay_path)} maskUrl={getStaticUrl(result.mask_path)} />
                   </div>
                 )}
                 {result.task_id && (
-                  <a
-                    href={apiUrl(`/api/export/${result.task_id}?fmt=geotiff`)}
-                    className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
-                  >
-                    <Download className="h-4 w-4" aria-hidden="true" />
-                    {t("predict.download")}
-                  </a>
+                  <div className="flex flex-wrap gap-4">
+                    <a
+                      href={result.geotiff_path ? getStaticUrl(result.geotiff_path) : apiUrl(`/api/export/${result.task_id}?fmt=geotiff`)}
+                      className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                    >
+                      <Download className="h-4 w-4" aria-hidden="true" />
+                      {t("predict.download")}
+                    </a>
+                    {result.probability_geotiff_path && (
+                      <a href={getStaticUrl(result.probability_geotiff_path)} className="text-sm text-blue-600 hover:underline">
+                        Probability GeoTIFF
+                      </a>
+                    )}
+                    {result.entropy_geotiff_path && (
+                      <a href={getStaticUrl(result.entropy_geotiff_path)} className="text-sm text-blue-600 hover:underline">
+                        Entropy GeoTIFF
+                      </a>
+                    )}
+                  </div>
+                )}
+                {(result.probability_path || result.entropy_path) && (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {result.probability_path && (
+                      <figure className="overflow-hidden rounded-xl border border-zinc-200">
+                        <Image
+                          src={getStaticUrl(result.probability_path)}
+                          alt="Glacier probability map"
+                          width={768}
+                          height={768}
+                          unoptimized
+                          className="h-auto w-full"
+                        />
+                        <figcaption className="p-3 text-xs text-zinc-600">Per-pixel glacier probability</figcaption>
+                      </figure>
+                    )}
+                    {result.entropy_path && (
+                      <figure className="overflow-hidden rounded-xl border border-zinc-200">
+                        <Image
+                          src={getStaticUrl(result.entropy_path)}
+                          alt="Predictive entropy map"
+                          width={768}
+                          height={768}
+                          unoptimized
+                          className="h-auto w-full"
+                        />
+                        <figcaption className="p-3 text-xs text-zinc-600">Predictive entropy · brighter means review first</figcaption>
+                      </figure>
+                    )}
+                  </div>
+                )}
+                {result.warnings && result.warnings.length > 0 && (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+                    <div className="font-semibold">Evidence limits</div>
+                    <ul className="mt-2 list-disc space-y-1 pl-5">
+                      {result.warnings.map((warning) => <li key={warning}>{warning}</li>)}
+                    </ul>
+                  </div>
                 )}
               </div>
             )}

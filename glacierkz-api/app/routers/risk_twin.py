@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from app.services.risk_twin_context_service import regional_lake_screening, risk_twin_context
 from src.risk_twin.workflow import evaluate_basin_payload
 
 router = APIRouter(prefix="/api/risk-twin", tags=["risk-twin"])
@@ -100,6 +101,37 @@ def risk_twin_readiness() -> dict[str, Any]:
         ],
         "safety_statement": "screening evidence only; not an official warning",
     }
+
+
+@router.get("/context/{rgi_id}")
+def risk_twin_spatial_context(
+    rgi_id: str,
+    year: int = 2024,
+    lake_inventory_year: int = Query(default=2023),
+    buffer_km: float = Query(default=10.0, gt=0, le=30),
+) -> dict[str, Any]:
+    """Return local lake/event/terrain/SAR context around one RGI glacier.
+
+    The response is intentionally descriptive: geographical proximity is never
+    converted into a hazard probability or a claimed lake-glacier connection.
+    """
+    return risk_twin_context(
+        rgi_id,
+        year=year,
+        buffer_km=buffer_km,
+        lake_inventory_year=lake_inventory_year,
+    )
+
+
+@router.get("/regional-scan")
+def regional_scan(
+    inventory_year: int = Query(default=2023),
+    buffer_km: float = Query(default=10.0, gt=0, le=30),
+    limit: int = Query(default=100, ge=1, le=500),
+) -> dict[str, Any]:
+    """Automatic all-local-inventory observation screening, never a hazard map."""
+    payload = regional_lake_screening(inventory_year=inventory_year, buffer_km=buffer_km)
+    return {**payload, "candidates": payload["candidates"][:limit], "returned": min(limit, len(payload["candidates"]))}
 
 
 @router.post("/evaluate")

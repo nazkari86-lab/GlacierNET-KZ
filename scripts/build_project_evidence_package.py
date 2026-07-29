@@ -29,6 +29,8 @@ def main() -> int:
         ("Analyze Random Forest feature importance", "analyze_rf_feature_importance.py"),
         ("Refresh decision readiness tables", "build_decision_readiness_tables.py"),
         ("Validate decision readiness provenance", "validate_decision_readiness.py"),
+        ("Validate machine-assisted annotation pack", "validate_machine_assisted_label_pack.py"),
+        ("Refresh external-evidence readiness report", "assess_evidence_readiness.py"),
     ]
     for label, script in steps:
         run_step(label, script)

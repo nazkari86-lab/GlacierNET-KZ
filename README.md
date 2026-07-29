@@ -173,7 +173,7 @@ forecast, GLOF probability or warning.
 
 ### Option A: Unified Local Stack
 
-Use this when you want the dashboard, API, demo, and gateway under one localhost URL.
+Use this when you want the evidence workspace, API, and gateway under one localhost URL.
 
 ```bash
 git clone https://github.com/nazkari86-lab/GlacierNET-KZ.git
@@ -186,11 +186,13 @@ Open:
 | Service | URL |
 |---------|-----|
 | Hub | http://localhost:8080/hub |
-| Dashboard | http://localhost:8080/dashboard |
+| ML evidence workspace | http://localhost:8080/ml |
+| Risk Twin | http://localhost:8080/risk-twin |
+| Operations | http://localhost:8080/operations |
 | Local year explorer | http://localhost:8080/explore |
 | Individual glacier registry | http://localhost:8080/glaciers |
 | Segmentation UI | http://localhost:8080/predict |
-| Gradio demo | http://localhost:8080/demo |
+| Guided workflow | http://localhost:8080/demo |
 | API docs | http://localhost:8080/docs |
 | MCP tools | http://localhost:8080/mcp/tools |
 | Health check | http://localhost:8080/health |
@@ -205,6 +207,14 @@ To stop native services:
 
 ```bash
 ./scripts/start.sh --stop
+```
+
+The older Gradio upload UI is optional and excluded from the default stack:
+
+```bash
+docker compose --profile legacy-demo up demo
+# or for native development:
+ENABLE_LEGACY_DEMO=1 ./scripts/start.sh --native
 ```
 
 ### Option B: Python Pipeline Only
@@ -378,8 +388,7 @@ Common variables:
 | `MAX_FILE_SIZE_MB` | API upload limit |
 | `CORE_DIR` | Optional path to the core `src/` package |
 | `GOOGLE_CLIENT_SECRET` | Google Drive/Earth Engine support scripts |
-| `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY` | Optional LLM report providers |
-| `OLLAMA_BASE_URL` | Optional local LLM fallback |
+| `GROQ_API_KEY` | Optional server-side key for the Groq evidence assistant |
 
 ## Quality Checks
 

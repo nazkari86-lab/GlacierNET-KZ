@@ -116,7 +116,7 @@ export function LineChart({ data, series, height = 200, showGrid = true }: LineC
   }, [data, range, min]);
 
   return (
-    <div className="relative" style={{ height }}>
+    <div className="relative min-w-0 overflow-hidden" style={{ height }}>
       {showGrid && (
         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
           {[0, 25, 50, 75, 100].map((y) => (
@@ -142,7 +142,7 @@ export function LineChart({ data, series, height = 200, showGrid = true }: LineC
         ))}
       </div>
       {series && (
-        <div className="flex gap-3 mt-2 justify-center">
+        <div className="mt-2 flex flex-wrap justify-center gap-3">
           {series.map((s) => (
             <div key={s.name} className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />

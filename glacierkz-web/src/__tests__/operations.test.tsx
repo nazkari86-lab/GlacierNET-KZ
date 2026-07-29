@@ -152,6 +152,18 @@ const years = vi.hoisted(() => [
   },
 ]);
 
+const regionalScan = vi.hoisted(() => ({
+  schema: "glaciernet-kz.regional-observation-scan.v1",
+  status: "automatic_local_inventory_screening",
+  buffer_km: 10,
+  inventory_year: 2023,
+  previous_inventory_year: 2020,
+  returned: 1,
+  summary: { scanned_lakes: 317, candidates_with_nearby_rgi: 225, unmatched_previous: 22, large_change_screening: 40 },
+  limitations: ["Geometric matching only."],
+  candidates: [{ lake_id: "REAL-LAKE-001", inventory_year: 2023, latitude: 43.04, longitude: 77.27, area_current_m2: 120000, previous_inventory_year: 2020, area_previous_m2: 100000, area_change_percent: 20, geometric_match_distance_m: 50, distance_to_rgi_boundary_m: 640, observation_priority_0_100: 88, flags: ["area_change_at_or_above_20_percent", "within_1km_of_rgi_boundary"], glacier: { rgi_id: "RGI2000-v7.0-G-13-33843", name: "Tsentralniy Tuyuksu Glacier", name_ru: "Ледник Центральный Туюксу", centroid: { longitude: 77.08, latitude: 43.05 }, rgi_area_km2: 2.4 }, historical_event_count_in_glacier_context: 1, interpretation: "Real inventory-screening candidate." }],
+}));
+
 vi.mock("@/components/OperationsInventoryMap", () => ({
   default: ({ glaciers }: { glaciers: unknown[] }) => (
     <div role="application" aria-label={`Interactive map with ${glaciers.length} real RGI glacier boundaries`} data-testid="real-inventory-map" />
@@ -169,7 +181,7 @@ vi.mock("@/lib/api", async () => {
       observation_queue: [],
       inspection_tasks: [],
     }),
-    fetchOperationsDemo: vi.fn().mockResolvedValue(overview),
+    fetchRegionalObservationScan: vi.fn().mockResolvedValue(regionalScan),
     fetchGlaciers: vi.fn().mockResolvedValue({
       total: 1,
       glaciers: [{
@@ -205,36 +217,30 @@ describe("OperationsPage", () => {
     localStorage.setItem(LOCALE_STORAGE_KEY, "en");
   });
 
-  it("renders a fail-closed observation workflow from the safe demo", async () => {
+  it("renders real Risk Twin cases without a synthetic fallback", async () => {
     render(
       <I18nProvider>
         <OperationsPage />
       </I18nProvider>
     );
 
-    expect(
-      (await screen.findAllByText("Demo Lake A (synthetic)")).length
-    ).toBeGreaterThan(0);
+    expect(await screen.findByRole("heading", { name: "Критические объекты для следующей проверки" })).toBeInTheDocument();
+    expect(await screen.findByText(/озеро REAL-LAKE-001/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Выбрать любой реальный случай Risk Twin")).toBeInTheDocument();
+    expect(screen.queryByText(/synthetic/i)).not.toBeInTheDocument();
     expect(screen.getByText("Next Best Observation")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Synthetic shadow-mode demo/)
-    ).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Operations navigation" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "What needs attention today" })).toBeInTheDocument();
     expect(await screen.findByTestId("real-inventory-map")).toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "Analysis by year" })).toBeInTheDocument();
     expect(screen.getByText("2000–2024")).toBeInTheDocument();
     expect(screen.getByTestId("year-area-chart")).toBeInTheDocument();
-    expect(screen.getByText("What changed")).toBeInTheDocument();
-    expect(screen.getByText("Can this be trusted?")).toBeInTheDocument();
-    expect(screen.getAllByText(/observation priority/i).length).toBeGreaterThan(0);
+    expect(screen.getByText("Изменение площади")).toBeInTheDocument();
+    expect(screen.getAllByText(/Приоритет/i).length).toBeGreaterThan(0);
     expect(screen.getByText("SHA-256 chain valid")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("tab", { name: "Before / after" }));
-    expect(screen.getByRole("img", { name: /Synthetic difference map/ })).toBeInTheDocument();
-    expect(screen.getByText("Model agreement")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("tab", { name: "Evidence timeline" }));
-    expect(screen.getByText("Human review recorded")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Выбрать любой реальный случай Risk Twin"), { target: { value: "RGI2000-v7.0-G-13-33843:2023:REAL-LAKE-001:43.040000:77.270000" } });
+    expect(screen.getByText("Выбранный реальный case")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Открыть этот проверяемый case/i })).toHaveAttribute("href", "/risk-twin?rgi=RGI2000-v7.0-G-13-33843&scope=local_inventory&lake=REAL-LAKE-001&year=2024&lake_year=2023");
   });
 });

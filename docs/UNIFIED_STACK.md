@@ -11,16 +11,16 @@
                      │   Caddy     │
                      │  (gateway)  │
                      └──────┬──────┘
-          ┌──────────────────┼──────────────────┐
-          │                  │                  │
-    ┌─────▼─────┐     ┌──────▼──────┐   ┌──────▼──────┐
-    │  Next.js  │     │   FastAPI   │   │   Gradio    │
-    │  web:3000 │     │  api:8000   │   │ demo:7860   │
-    └───────────┘     └──────┬──────┘   └─────────────┘
-                             │
-                      ┌──────▼──────┐
-                      │    Redis    │
-                      └─────────────┘
+                  ┌─────────┴─────────┐
+                  │                   │
+            ┌─────▼─────┐       ┌─────▼─────┐
+            │  Next.js  │       │  FastAPI  │
+            │  web:3000 │       │  api:8000 │
+            └───────────┘       └─────┬─────┘
+                                     │
+                                ┌────▼────┐
+                                │  Redis  │
+                                └─────────┘
 ```
 
 ## Routes
@@ -33,7 +33,7 @@
 | `/explore` | Next.js | Browse and compare locally available years without uploads |
 | `/glaciers` | Next.js | Search individual RGI glaciers and inspect mask time series |
 | `/predict` | Next.js | Segmentation UI |
-| `/demo` | Gradio | Quick upload demo |
+| `/demo` | Next.js | Guided route through the real evidence workflow |
 | `/docs` | FastAPI | OpenAPI Swagger |
 | `/api/*` | FastAPI | REST endpoints |
 | `/api/years` | FastAPI | Verified local year metadata and physical artifacts |
@@ -54,6 +54,10 @@
 
 # Stop native processes
 ./scripts/start.sh --stop
+
+# Optional legacy Gradio compatibility UI (not part of the default stack)
+docker compose --profile legacy-demo up demo
+# or: ENABLE_LEGACY_DEMO=1 ./scripts/start.sh --native
 ```
 
 ## Environment
@@ -66,7 +70,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:8080
 ```
 
 The Docker stack mounts `data/raw/`, `data/processed/`, `predictions/`,
-`results/`, and `models/` read-only into the API/demo containers. Generated
+`results/`, and `models/` read-only into the API container. Generated
 uploads and API results remain in dedicated Docker volumes.
 
 ## Easiest verification flow

@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-07-26T16:07:38+00:00",
+  "created_at": "2026-07-29T22:33:28+00:00",
   "quality_table": "results/tables/year_quality_scores.csv",
   "decision_timeseries_table": "results/tables/decision_ready_area_timeseries.csv",
   "strict_trend": {

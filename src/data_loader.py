@@ -183,7 +183,13 @@ def load_image(filepath) -> np.ndarray:
         img = np.moveaxis(img, 0, -1).astype(np.float32)  # (H, W, C)
 
     n_reflectance = min(len(config.S2_BANDS), img.shape[-1])
-    img[..., :n_reflectance] = np.clip(img[..., :n_reflectance] / config.S2_SCALE, 0.0, 1.0)
+    reflectance = img[..., :n_reflectance]
+    finite_reflectance = reflectance[np.isfinite(reflectance)]
+    # Accept both raw Sentinel exports (0..10000) and explicitly normalized
+    # feature stacks. Dividing an already normalized 14/16-channel stack by
+    # 10000 silently destroys the optical signal.
+    scale = config.S2_SCALE if finite_reflectance.size and float(np.max(np.abs(finite_reflectance))) > 2.0 else 1.0
+    img[..., :n_reflectance] = np.clip(reflectance / scale, 0.0, 1.0)
     if img.shape[-1] > n_reflectance:
         img[..., n_reflectance:] = np.clip(img[..., n_reflectance:], -1.0, 1.0)
     img = np.nan_to_num(img, nan=0.0, posinf=1.0, neginf=0.0)

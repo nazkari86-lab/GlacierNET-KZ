@@ -192,11 +192,7 @@ def validate(*, allow_incomplete: bool) -> tuple[list[str], list[str]]:
     elif not events or not controls:
         errors.append("ready manifest requires both verified events and non-event controls")
     else:
-        present_splits = {
-            str(record.get("split"))
-            for record in [*events, *controls]
-            if isinstance(record, dict)
-        }
+        present_splits = {str(record.get("split")) for record in [*events, *controls] if isinstance(record, dict)}
         missing_splits = ALLOWED_SPLITS - present_splits
         if missing_splits:
             errors.append("ready manifest missing splits: " + ", ".join(sorted(missing_splits)))

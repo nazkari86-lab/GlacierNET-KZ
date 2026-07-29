@@ -191,7 +191,9 @@ def main() -> int:
         glacier_id = str(glacier["rgi_id"])
         raw_path = RAW_DIR / f"{glacier_id}_{args.year}.tif"
         if args.refresh or not raw_path.exists():
-            _download_composite(glacier.geometry, destination=raw_path, year=args.year, buffer_degrees=args.buffer_degrees)
+            _download_composite(
+                glacier.geometry, destination=raw_path, year=args.year, buffer_degrees=args.buffer_degrees
+            )
         scene_provenance = _scene_provenance(
             glacier.geometry,
             year=args.year,
@@ -248,14 +250,18 @@ def main() -> int:
         "evaluation_status": "external_geography_but_non_independent_rgi_pseudolabel",
         "claims_not_allowed": ["gold-label accuracy", "independent external validation", "operational accuracy"],
         "cohort_selection": {"per_area_class": args.per_area_class, "seed": args.seed, "n_glaciers": len(cohort)},
-        "metrics_bootstrap": bootstrap_confidence_intervals(records, metrics=("hard_dice", "hard_iou", "recall", "area_error_percent"), seed=args.seed),
+        "metrics_bootstrap": bootstrap_confidence_intervals(
+            records, metrics=("hard_dice", "hard_iou", "recall", "area_error_percent"), seed=args.seed
+        ),
         "per_glacier_table": str(table.relative_to(ROOT)),
         "per_glacier_table_sha256": sha256_file(table),
         "model_directory_sha256": sha256_directory(model_path),
         "rgi_sha256": sha256_file(ROOT / "data/rgi/RGI2000-v7.0-G-13_central_asia.shp"),
         "source_records": source_records,
     }
-    (OUTPUT_DIR / f"zhetysu_candidate_rgi_{args.year}_summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    (OUTPUT_DIR / f"zhetysu_candidate_rgi_{args.year}_summary.json").write_text(
+        json.dumps(summary, indent=2) + "\n", encoding="utf-8"
+    )
     print(json.dumps(summary, indent=2))
     return 0
 

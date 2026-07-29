@@ -1,14 +1,17 @@
 from fastapi import APIRouter
 
 from app.services.model_availability import filter_available_models, is_model_available
+from src.model_registry import MODEL_SPECS, model_metadata
 
 router = APIRouter(prefix="/api", tags=["Models"])
 
 MODELS_CATALOG = [
+    model_metadata(MODEL_SPECS["temporal_s2_terrain_s1"]),
+    model_metadata(MODEL_SPECS["temporal_s2_terrain"]),
     {
         "name": "unet",
         "display_name": "U-Net",
-        "description": "Baseline U-Net with 4 encoder levels and Dice loss. Best general-purpose choice.",
+        "description": "Legacy 11-channel U-Net retained for reproducibility.",
         "supports_tta": True,
         "supports_crf": True,
         "supports_uncertainty": True,
@@ -16,7 +19,7 @@ MODELS_CATALOG = [
     {
         "name": "attention_unet",
         "display_name": "Attention U-Net",
-        "description": "U-Net with attention gates on skip connections. Sharper glacier boundaries.",
+        "description": "Legacy attention-gated U-Net; no current benchmark advantage claim.",
         "supports_tta": True,
         "supports_crf": True,
         "supports_uncertainty": True,
@@ -24,7 +27,7 @@ MODELS_CATALOG = [
     {
         "name": "unet_plus_plus",
         "display_name": "U-Net++",
-        "description": "Nested U-Net with dense skip connections. Highest boundary quality at moderate parameter cost.",
+        "description": "Legacy nested U-Net; no current benchmark advantage claim.",
         "supports_tta": True,
         "supports_crf": True,
         "supports_uncertainty": True,
@@ -43,12 +46,12 @@ MODELS_CATALOG = [
         "description": "Pixel-based Random Forest classifier. Robust on heterogeneous terrain.",
         "supports_tta": False,
         "supports_crf": True,
-        "supports_uncertainty": True,
+        "supports_uncertainty": False,
     },
     {
         "name": "ensemble",
         "display_name": "Ensemble (U-Net + NDSI + RF)",
-        "description": "Weighted average of all available models. Most stable predictions.",
+        "description": "Legacy uncalibrated mean of available baseline masks; comparison use only.",
         "supports_tta": True,
         "supports_crf": True,
         "supports_uncertainty": False,

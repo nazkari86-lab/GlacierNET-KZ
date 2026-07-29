@@ -17,6 +17,7 @@ export default function ComparePage() {
   const [file, setFile] = useState<File | null>(null);
   const [useTta, setUseTta] = useState(false);
   const [useCrf, setUseCrf] = useState(false);
+  const [year, setYear] = useState(2024);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CompareResult | null>(null);
 
@@ -35,7 +36,8 @@ export default function ComparePage() {
     setLoading(true);
     setResult(null);
     try {
-      const r = await compareModels(file, selectedModels, useTta, useCrf);
+      const needsSar = selectedModels.some((name) => models.find((model) => model.name === name)?.channel_count === 16);
+      const r = await compareModels(file, selectedModels, useTta, useCrf, needsSar ? year : undefined);
       setResult(r);
     } catch (e) {
       console.error(e);
@@ -52,7 +54,7 @@ export default function ComparePage() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <Mountain className="h-5 w-5 text-blue-600" aria-hidden="true" />
-          <span className="font-bold">{t("compare.title")}</span>
+          <h1 className="font-bold">{t("compare.title")}</h1>
         </div>
       </header>
       <main id="main-content" className="mx-auto max-w-5xl space-y-6 px-4 py-8">
@@ -85,11 +87,21 @@ export default function ComparePage() {
 
           <section className="rounded-xl bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-lg font-semibold">{t("compare.step3")}</h2>
-            <div className="flex gap-6">
+            <div className="flex flex-wrap gap-6">
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={useTta} onChange={(e) => setUseTta(e.target.checked)} className="rounded" />
                 <span className="text-sm">{t("compare.tta")}</span>
               </label>
+              {selectedModels.some((name) => models.find((model) => model.name === name)?.channel_count === 16) && (
+                <label className="flex items-center gap-2">
+                  <span className="text-sm">Observation year</span>
+                  <select value={year} onChange={(event) => setYear(Number(event.target.value))} className="rounded border px-2 py-1 text-sm">
+                    {Array.from({ length: 8 }, (_, index) => 2024 - index).map((value) => (
+                      <option key={value} value={value}>{value}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={useCrf} onChange={(e) => setUseCrf(e.target.checked)} className="rounded" />
                 <span className="text-sm">{t("compare.crf")}</span>
@@ -116,6 +128,13 @@ export default function ComparePage() {
           <section className="rounded-xl bg-white p-6 shadow-sm" role="status" aria-live="polite">
             <h2 className="mb-4 text-lg font-semibold">{t("compare.results")}</h2>
             <SplitView segments={result.segments} imageUrl={file ? URL.createObjectURL(file) : undefined} />
+            {result.failures && result.failures.length > 0 && (
+              <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+                {result.failures.map((failure) => (
+                  <div key={failure.model_name}><strong>{failure.model_name}:</strong> {failure.error}</div>
+                ))}
+              </div>
+            )}
           </section>
         )}
       </main>

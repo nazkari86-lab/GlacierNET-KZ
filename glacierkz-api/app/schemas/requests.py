@@ -14,7 +14,7 @@ class TrendRequest(BaseModel):
 
 class LLMAnalyzeRequest(BaseModel):
     prompt: str = Field(..., min_length=1, description="Free-form analysis prompt")
-    provider: str = Field("", description="LLM provider: openai, anthropic, groq, google, ollama, openrouter")
+    provider: str = Field("groq", description="Groq is the only enabled LLM provider")
     model: str = Field("", description="Model name within provider")
     mode: str = Field("describe", description="Analysis mode: describe, trend, compare")
     context: Optional[str] = Field(None, description="Optional context JSON")
@@ -22,5 +22,5 @@ class LLMAnalyzeRequest(BaseModel):
 
 
 class FetchModelsRequest(BaseModel):
-    provider: str = Field(..., description="LLM provider: openai, anthropic, groq, google, openrouter")
+    provider: str = Field("groq", description="Groq is the only enabled LLM provider")
     api_key: str = Field(..., min_length=1, description="User-provided API key for the provider")

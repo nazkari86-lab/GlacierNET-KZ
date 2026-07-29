@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
 
 from scripts.build_multiyear_patches import parse_years, sample_patches, write_split  # noqa: E402
 from src import config, data_loader, preprocessing  # noqa: E402
+from src.multimodal_features import normalize_sentinel1, normalize_terrain  # noqa: E402
 
 TERRAIN_FEATURES = ["elevation_m_normalized", "slope_degrees_normalized", "aspect_degrees_normalized"]
 SENTINEL1_FEATURES = ["VV_dB_normalized", "VH_dB_normalized"]
@@ -31,16 +32,7 @@ def load_terrain(path: Path) -> np.ndarray:
         terrain = np.moveaxis(dataset.read().astype(np.float32), 0, -1)
     if terrain.shape[-1] != 3:
         raise ValueError(f"Unexpected terrain shape: {terrain.shape}")
-    terrain[..., 0] = np.clip(np.nan_to_num(terrain[..., 0], nan=0.0) / 7000.0, 0.0, 1.0)
-    terrain[..., 1] = np.clip(np.nan_to_num(terrain[..., 1], nan=0.0) / 90.0, 0.0, 1.0)
-    terrain[..., 2] = np.clip(np.nan_to_num(terrain[..., 2], nan=0.0) / 360.0, 0.0, 1.0)
-    return terrain
-
-
-def normalize_sentinel1(db_x100: np.ndarray) -> np.ndarray:
-    """Convert compact Sentinel-1 dB x100 exports to stable [0, 1] features."""
-    db = db_x100.astype(np.float32) * 0.01
-    return np.clip((db + 40.0) / 40.0, 0.0, 1.0)
+    return normalize_terrain(terrain)
 
 
 def load_sentinel1(path: Path) -> np.ndarray:

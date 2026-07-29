@@ -152,6 +152,36 @@ class DecisionCreate(BaseModel):
     status: Literal["provisional", "approved", "superseded"] = "provisional"
 
 
+class RiskTwinHandoffCreate(BaseModel):
+    """Typed, idempotent transfer of one local Risk Twin follow-up case.
+
+    This deliberately transfers a *screening* case, never a danger score or
+    alert. The server constructs the operational records from typed facts so
+    the browser cannot silently turn an inventory observation into a warning.
+    """
+
+    rgi_id: str = Field(min_length=4, max_length=160)
+    glacier_name: str = Field(min_length=2, max_length=240)
+    lake_id: str | None = Field(default=None, max_length=240)
+    inventory_year: int = Field(ge=1900, le=2100)
+    previous_inventory_year: int | None = Field(default=None, ge=1900, le=2100)
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    area_current_m2: float = Field(ge=0)
+    area_previous_m2: float | None = Field(default=None, ge=0)
+    area_change_percent: float | None = None
+    geometric_match_distance_m: float | None = Field(default=None, ge=0)
+    distance_to_rgi_boundary_m: float = Field(ge=0)
+    observation_priority_0_100: float = Field(ge=0, le=100)
+    flags: list[str] = Field(default_factory=list, max_length=30)
+    action_summary: str = Field(min_length=10, max_length=10_000)
+
+
+def _risk_twin_case_key(request: RiskTwinHandoffCreate) -> str:
+    lake_key = request.lake_id or f"{request.latitude:.6f},{request.longitude:.6f}"
+    return f"risk-twin:{request.rgi_id}:{lake_key}:{request.inventory_year}"
+
+
 @router.get("/readiness")
 def readiness() -> dict[str, Any]:
     return {
@@ -338,6 +368,195 @@ def create_inspection_task(request: InspectionTaskCreate, user: Writer) -> dict[
         if not row_by_id(connection, "assets", request.asset_id):
             raise HTTPException(status_code=404, detail="Asset not found")
         return insert_record(connection, "inspection_tasks", record, actor=user.user_id)
+
+
+@router.post("/risk-twin-handoffs", status_code=201)
+def create_risk_twin_handoff(request: RiskTwinHandoffCreate, user: Writer) -> dict[str, Any]:
+    """Persist one selected real inventory object as an Operations workflow.
+
+    The endpoint is intentionally idempotent per RGI/lake/inventory-year. A
+    repeated click returns the existing case instead of creating a duplicate
+    queue item, while every newly created record remains in the audit chain.
+    """
+    case_key = _risk_twin_case_key(request)
+    asset_name = f"Risk Twin lake {request.lake_id or 'without-id'} · {request.inventory_year}"
+    now = utc_now()
+    with database() as connection:
+        existing_case = connection.execute(
+            "SELECT * FROM evidence_cases WHERE summary LIKE ? ORDER BY updated_at DESC LIMIT 1",
+            (f"%{case_key}%",),
+        ).fetchone()
+        if existing_case:
+            case = dict(existing_case)
+            asset = row_by_id(connection, "assets", case["asset_id"])
+            task = connection.execute(
+                "SELECT * FROM inspection_tasks WHERE asset_id = ? ORDER BY created_at DESC LIMIT 1",
+                (case["asset_id"],),
+            ).fetchone()
+            return {
+                "status": "existing",
+                "case_key": case_key,
+                "asset": asset,
+                "evidence_case": case,
+                "inspection_task": dict(task) if task else None,
+                "operations_url": f"/operations?asset={case['asset_id']}",
+                "safety_statement": "Stored as a screening follow-up case; it is not an official warning or event probability.",
+            }
+
+        basin_row = connection.execute(
+            "SELECT * FROM basins WHERE name = ? AND region = ? LIMIT 1",
+            ("Ile Alatau Risk Twin follow-up", "Ile Alatau local inventory context"),
+        ).fetchone()
+        if basin_row:
+            basin = dict(basin_row)
+        else:
+            basin = insert_record(
+                connection,
+                "basins",
+                {
+                    "id": new_id("basin"),
+                    "name": "Ile Alatau Risk Twin follow-up",
+                    "region": "Ile Alatau local inventory context",
+                    "status": "shadow_mode",
+                    "evidence_tier": "operational_unverified",
+                    "created_at": now,
+                },
+                actor=user.user_id,
+            )
+
+        asset = insert_record(
+            connection,
+            "assets",
+            {
+                "id": new_id("asset"),
+                "basin_id": basin["id"],
+                "asset_type": "moraine_lake",
+                "name": asset_name,
+                "latitude": request.latitude,
+                "longitude": request.longitude,
+                "status": "requires_review",
+                "evidence_tier": "operational_unverified",
+                "model_version": None,
+                "data_version": f"tien-shan-lake-inventory-{request.inventory_year}",
+                "allowed_use": "screening follow-up and evidence management with human review",
+                "forbidden_use": "event probability, official warning, or autonomous emergency action",
+                "created_at": now,
+                "updated_at": now,
+            },
+            actor=user.user_id,
+        )
+        observation = insert_record(
+            connection,
+            "observations",
+            {
+                "id": new_id("obs"),
+                "asset_id": asset["id"],
+                "observation_type": "local_lake_inventory_screening",
+                "observed_at": f"{request.inventory_year}-12-31T00:00:00Z",
+                "source": "Tien Shan glacial-lake inventory local extract",
+                "values_json": _json(
+                    {
+                        "case_key": case_key,
+                        "rgi_id": request.rgi_id,
+                        "lake_id": request.lake_id,
+                        "inventory_year": request.inventory_year,
+                        "previous_inventory_year": request.previous_inventory_year,
+                        "area_current_m2": request.area_current_m2,
+                        "area_previous_m2": request.area_previous_m2,
+                        "area_change_percent": request.area_change_percent,
+                        "geometric_match_distance_m": request.geometric_match_distance_m,
+                        "distance_to_rgi_boundary_m": request.distance_to_rgi_boundary_m,
+                        "flags": request.flags,
+                    }
+                ),
+                "quality_status": "review_required",
+                "uncertainty": 0.65,
+                "artifact_sha256": None,
+                "created_by": user.user_id,
+                "created_at": now,
+            },
+            actor=user.user_id,
+        )
+        rationale = (
+            f"{case_key}. Observation priority {request.observation_priority_0_100:.0f}/100; "
+            f"inventory geometry requires source-scene and field/provenance review."
+        )
+        candidate = insert_record(
+            connection,
+            "change_candidates",
+            {
+                "id": new_id("candidate"),
+                "asset_id": asset["id"],
+                "observation_id": observation["id"],
+                "change_type": "local_lake_inventory_follow_up",
+                "magnitude": abs(request.area_change_percent or 0.0),
+                "uncertainty": 0.65,
+                "data_quality_gap": 0.8,
+                "model_disagreement": 0.5,
+                "expected_information_gain": 0.85,
+                "domain_shift_status": "requires_local_validation",
+                "priority_score": round(request.observation_priority_0_100 / 100, 3),
+                "next_action": "verify_source_imagery_and_measure_water_dam_outlet",
+                "rationale": rationale,
+                "status": "requires_review",
+                "evidence_tier": "operational_unverified",
+                "detected_at": now,
+                "created_at": now,
+            },
+            actor=user.user_id,
+        )
+        task = insert_record(
+            connection,
+            "inspection_tasks",
+            {
+                "id": new_id("task"),
+                "asset_id": asset["id"],
+                "candidate_id": candidate["id"],
+                "action_type": candidate["next_action"],
+                "priority_score": candidate["priority_score"],
+                "rationale": rationale,
+                "status": "queued",
+                "assigned_to": None,
+                "due_at": None,
+                "offline_package_status": "not_built",
+                "created_at": now,
+                "updated_at": now,
+            },
+            actor=user.user_id,
+        )
+        evidence_case = insert_record(
+            connection,
+            "evidence_cases",
+            {
+                "id": new_id("case"),
+                "asset_id": asset["id"],
+                "title": f"Risk Twin follow-up · {request.glacier_name} · {request.inventory_year}",
+                "status": "under_review",
+                "summary": f"{case_key}. {request.action_summary}",
+                "limitations": (
+                    "Inventory geometry and a geometric cross-year match are screening inputs only. "
+                    "No lake-glacier linkage, bathymetry, dam condition, flow path, inundation, exposed population, "
+                    "event probability, or official warning is established by this case."
+                ),
+                "allowed_use": "screening follow-up, provenance review, and human-assigned inspection planning",
+                "forbidden_use": "event probability, official warning, or autonomous emergency action",
+                "reviewer": None,
+                "created_at": now,
+                "updated_at": now,
+            },
+            actor=user.user_id,
+        )
+    return {
+        "status": "created",
+        "case_key": case_key,
+        "asset": asset,
+        "observation": observation,
+        "change_candidate": candidate,
+        "inspection_task": task,
+        "evidence_case": evidence_case,
+        "operations_url": f"/operations?asset={asset['id']}",
+        "safety_statement": "Stored as a screening follow-up case; it is not an official warning or event probability.",
+    }
 
 
 @router.patch("/inspection-tasks/{task_id}")

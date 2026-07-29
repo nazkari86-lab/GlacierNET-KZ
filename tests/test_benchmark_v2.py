@@ -19,6 +19,8 @@ from src.benchmark_metrics import (
     boundary_segmentation_metrics,
     calibrate_threshold,
     hard_segmentation_metrics,
+    probability_calibration_metrics,
+    selective_error_curve,
 )
 from src.benchmark_splits import cross_region_split, glacier_holdout_split, validate_group_manifest
 
@@ -91,6 +93,17 @@ def test_threshold_is_selected_by_declared_validation_objective():
     assert result["selection_split"] == "validation"
     assert result["selected_threshold"] == 0.6
     assert result["selected_metrics"]["hard_dice"] == 1
+
+
+def test_probability_calibration_and_selective_error_are_reproducible():
+    true = np.array([1, 1, 0, 0], dtype=np.uint8)
+    probability = np.array([0.9, 0.55, 0.8, 0.1])
+    calibration = probability_calibration_metrics(true, probability, n_bins=5)
+    assert 0 <= calibration["brier_score"] <= 1
+    assert calibration["expected_calibration_error"] >= 0
+    curve = selective_error_curve(true, probability, threshold=0.5, coverages=(1.0, 0.5))
+    assert curve[0]["pixel_error_rate"] == pytest.approx(0.25)
+    assert curve[1]["pixel_error_rate"] <= curve[0]["pixel_error_rate"]
 
 
 def test_temporal_evaluator_freezes_validation_threshold_for_test():

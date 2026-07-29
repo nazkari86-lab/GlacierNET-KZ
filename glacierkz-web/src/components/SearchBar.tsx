@@ -140,7 +140,7 @@ export default function SearchBar({
   }, [autofocus]);
 
   const sizeClasses = {
-    sm: "pl-8 pr-8 py-1.5 text-xs",
+    sm: "min-h-10 pl-8 pr-8 py-2 text-xs",
     md: "pl-9 pr-9 py-2 text-sm",
     lg: "pl-10 pr-10 py-2.5 text-base",
   };
@@ -154,6 +154,7 @@ export default function SearchBar({
         <input
           ref={inputRef}
           type="text"
+          aria-label={placeholder}
           value={value}
           onChange={(e) => handleChange(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -167,6 +168,8 @@ export default function SearchBar({
         />
         {value && (
           <button
+            type="button"
+            aria-label="Clear search"
             onClick={handleClear}
             className={cn(
               "absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-gray-100 text-gray-400",

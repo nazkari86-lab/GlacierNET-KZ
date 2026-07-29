@@ -75,9 +75,8 @@ API_KEYS_FILE=app/permissions/api_keys.json
 JWT_SECRET_KEY=your-secret-key-here
 RESULTS_DIR=./results
 
-# Optional — LLM
-OLLAMA_BASE_URL=http://localhost:11434
-OPENAI_API_KEY=sk-...
+# Optional — Groq evidence assistant
+GROQ_API_KEY=gsk_...
 
 # Optional — Redis (falls back to in-memory if unavailable)
 REDIS_URL=redis://localhost:6379

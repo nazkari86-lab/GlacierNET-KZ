@@ -212,23 +212,36 @@ class AdminService:
         }
 
     def get_process_info(self) -> List[Dict[str, Any]]:
-        """Информация о процессах."""
+        """Информация о процессах when the host permits process enumeration."""
         processes = []
-        for proc in psutil.process_iter(["pid", "name", "cpu_percent", "memory_percent", "status"]):
-            try:
-                info = proc.info
-                if info["cpu_percent"] and info["cpu_percent"] > 0.1:
-                    processes.append(
-                        {
-                            "pid": info["pid"],
-                            "name": info["name"],
-                            "cpu_percent": info["cpu_percent"],
-                            "memory_percent": round(info["memory_percent"] or 0, 1),
-                            "status": info["status"],
-                        }
-                    )
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
-                continue
+        try:
+            iterator = psutil.process_iter(["pid", "name", "cpu_percent", "memory_percent", "status"])
+        except (PermissionError, psutil.AccessDenied) as exc:
+            # Sandboxed macOS processes can deny the system-wide sysctl used by
+            # psutil. Status endpoints must degrade to an empty, truthful list
+            # instead of turning an observability limitation into a 500.
+            logger.info("Process enumeration is unavailable: %s", exc)
+            return processes
+
+        try:
+            for proc in iterator:
+                try:
+                    info = proc.info
+                    if info["cpu_percent"] and info["cpu_percent"] > 0.1:
+                        processes.append(
+                            {
+                                "pid": info["pid"],
+                                "name": info["name"],
+                                "cpu_percent": info["cpu_percent"],
+                                "memory_percent": round(info["memory_percent"] or 0, 1),
+                                "status": info["status"],
+                            }
+                        )
+                except (psutil.NoSuchProcess, psutil.AccessDenied, PermissionError):
+                    continue
+        except (PermissionError, psutil.AccessDenied) as exc:
+            logger.info("Process enumeration stopped early: %s", exc)
+            return processes
 
         processes.sort(key=lambda x: x["cpu_percent"], reverse=True)
         return processes[:20]

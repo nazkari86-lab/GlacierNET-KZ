@@ -23,7 +23,7 @@ const glacier: GlacierRecord = {
 const lakeContext = {
   layers: {
     hma_gli_2015_2018: { type: "FeatureCollection", features: [] },
-    tien_shan_lakes_2023: {
+    tien_shan_lakes: {
       type: "FeatureCollection",
       features: [{
         type: "Feature",
@@ -35,6 +35,7 @@ const lakeContext = {
     hydrorivers: { type: "FeatureCollection", features: [] },
     hydrobasins_level06: { type: "FeatureCollection", features: [] },
   },
+  query: { year: 2024, buffer_km: 10, lake_inventory_year: 2023, previous_lake_inventory_year: 2020 },
   impact_assets: {
     available: false,
     planning_radius_km: 10,
@@ -62,6 +63,47 @@ describe("Risk Twin evidence model", () => {
     const objects = buildEvidenceMapObjects(glacier, null, lakeContext, []);
 
     expect(objects.find((item) => item.kind === "lake")?.name).toContain("Lake ID: TS-001");
+  });
+
+  it("attaches exact local screening measurements to a matching 2023 lake", () => {
+    const context = {
+      ...lakeContext,
+      screening_candidates: [{
+        lake_id: "TS-001", inventory_year: 2023, previous_inventory_year: 2020, latitude: 43.051,
+        longitude: 77.081,
+        area_current_m2: 120000, area_previous_m2: 100000, area_change_percent: 20,
+        geometric_match_distance_m: 40,
+        distance_to_rgi_boundary_m: 510,
+        elevation_m: 3600,
+        observation_priority_0_100: 72,
+        flags: ["within_1km_of_rgi_boundary"],
+        interpretation: "screening only",
+      }],
+    } as RiskTwinSpatialContext;
+
+    const lake = buildEvidenceMapObjects(glacier, null, context, []).find((item) => item.kind === "lake");
+
+    expect(lake).toMatchObject({
+      name: expect.stringContaining("72/100"),
+      screening: { rank: 1, distanceToRgiBoundaryM: 510, areaChangePercent: 20 },
+    });
+    expect(lake?.inspectorFacts).toContainEqual({ label: "До границы RGI", value: "510 м" });
+  });
+
+  it("preserves a missing 2020 match instead of turning it into a false zero-percent change", () => {
+    const context = {
+      ...lakeContext,
+      screening_candidates: [{
+        lake_id: "TS-001", inventory_year: 2023, previous_inventory_year: 2020, latitude: 43.051, longitude: 77.081,
+        area_current_m2: 120000, area_previous_m2: null, area_change_percent: null,
+        geometric_match_distance_m: 900, distance_to_rgi_boundary_m: 510, elevation_m: 3600,
+        observation_priority_0_100: 72, flags: ["no_reliable_2020_geometric_match"], interpretation: "screening only",
+      }],
+    } as RiskTwinSpatialContext;
+
+    const lake = buildEvidenceMapObjects(glacier, null, context, []).find((item) => item.kind === "lake");
+
+    expect(lake?.screening?.areaChangePercent).toBeNull();
   });
 
   it("does not create a population object when local population context is unavailable", () => {

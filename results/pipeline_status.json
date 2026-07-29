@@ -63,6 +63,7 @@
     2024
   ],
   "patch_manifests": [
+    "data/processed/patches/enhanced_provisional_spatial_holdout/manifest.json",
     "data/processed/patches/sentinel2_multiyear_sample/manifest.json",
     "data/processed/patches/sentinel2_multiyear_sample_2016_2024/manifest.json",
     "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/manifest.json",

@@ -309,10 +309,6 @@ glacierkz-api/app/
 | **results_template.md** | Реальные цифры для раздела Results |
 | **methodology.md** | Описание методологии |
 
-### `experimental/` — эксперименты на других языках
-
-Прототипы на **C, C++, Go, Java, .NET** — не для продакшена, только исследование.
-
 ### `.github/` — автоматизация GitHub
 
 | Файл | Что делает |
@@ -369,7 +365,7 @@ jupyter lab notebooks/
 | **Обязательно понять** | `src/config.py`, `src/models.py`, `notebooks/01-06`, `README.md` |
 | **Для демонстрации** | `glacierkz-web/`, `spaces/`, `glacierkz-api/` |
 | **Для отчёта/статьи** | `paper/`, `results/`, `docs/literature_review.md` |
-| **Можно не трогать** | `experimental/`, `__pycache__/`, `.venv/`, `node_modules/` |
+| **Сгенерируется автоматически** | `__pycache__/`, `.next/`, `.pytest_cache/`, `.ruff_cache/` |
 | **Экспериментальное** | `src/diffusion_model.py`, `federated_learning.py`, `neural_architecture_search.py` |
 
 ---

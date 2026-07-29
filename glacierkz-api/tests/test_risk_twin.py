@@ -16,6 +16,39 @@ def test_risk_twin_readiness_is_fail_closed():
     assert "not an official warning" in body["safety_statement"]
 
 
+def test_risk_twin_context_exposes_local_spatial_evidence_without_risk_claims():
+    response = client.get("/api/risk-twin/context/RGI2000-v7.0-G-13-33843?year=2024&buffer_km=10")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["schema"] == "glaciernet-kz.risk-twin-context.v3"
+    assert body["query"]["lake_inventory_year"] == 2023
+    assert body["layers"]["tien_shan_lakes"]["type"] == "FeatureCollection"
+    assert body["layers"]["historical_glof_events"]["features"]
+    assert body["layers"]["hydrorivers"]["features"]
+    assert body["layers"]["hydrobasins_level06"]["features"]
+    assert len(body["lake_timeseries"]) == 5
+    assert body["impact_assets"]["available"] is True
+    assert body["impact_assets"]["features"]["features"]
+    assert body["impact_assets"]["returned_feature_count"] <= body["impact_assets"]["map_feature_limit"]
+    assert body["impact_assets"]["nearby_asset_count"] >= body["impact_assets"]["returned_feature_count"]
+    assert "distance_to_rgi_boundary_m" in body["impact_assets"]["features"]["features"][0]["properties"]
+    assert body["jrc_surface_water"]["available"] is True
+    assert body["climate_context"]["available"] is True
+    assert body["population_planning_context"]["available"] is True
+    assert "event probability" in body["interpretation"]["not_allowed"]
+    assert "downstream exposure, affected population, evacuation demand, or disruption estimate" in body["interpretation"]["not_allowed"]
+
+
+def test_risk_twin_context_uses_the_explicit_lake_inventory_year_for_layer_and_candidates():
+    response = client.get("/api/risk-twin/context/RGI2000-v7.0-G-13-33843?year=2024&lake_inventory_year=2010")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["query"]["lake_inventory_year"] == 2010
+    assert body["query"]["previous_lake_inventory_year"] == 2000
+    assert all(candidate["inventory_year"] == 2010 for candidate in body["screening_candidates"])
+    assert all(feature["properties"]["inventory_year"] == 2010 for feature in body["layers"]["tien_shan_lakes"]["features"])
+
+
 def test_risk_twin_evaluate_returns_auditable_abstention():
     response = client.post(
         "/api/risk-twin/evaluate",
@@ -110,3 +143,27 @@ def test_risk_twin_api_runs_resilience_stress_surface_without_probability_claim(
     assert body["virtual_stress_test"]["claim_status"] == "unvalidated_model_screening"
     assert body["virtual_stress_test"]["resilience_margin"]["class"] == "external_calibration_required"
     assert body["priorities"]["hazard_priority"]["status"] == "model_based_priority_not_event_probability"
+
+
+def test_regional_scan_returns_real_observation_candidates_without_hazard_claims():
+    from app.services.risk_twin_context_service import regional_lake_screening
+
+    response = regional_lake_screening(inventory_year=2023, buffer_km=10.0)
+
+    assert response["status"] == "automatic_local_inventory_screening"
+    assert response["summary"]["scanned_lakes"] > 0
+    assert response["summary"]["candidates_with_nearby_rgi"] == len(response["candidates"])
+    candidate = response["candidates"][0]
+    assert candidate["glacier"]["rgi_id"].startswith("RGI2000-v7.0")
+    assert "hazard" in candidate["interpretation"].lower()
+
+
+def test_regional_scan_uses_previous_available_inventory_and_keeps_1990_as_baseline():
+    from app.services.risk_twin_context_service import regional_lake_screening
+
+    baseline = regional_lake_screening(inventory_year=1990, buffer_km=10.0)
+    comparison = regional_lake_screening(inventory_year=2020, buffer_km=10.0)
+
+    assert baseline["previous_inventory_year"] is None
+    assert "baseline_inventory_no_earlier_comparison" in baseline["candidates"][0]["flags"]
+    assert comparison["previous_inventory_year"] == 2010

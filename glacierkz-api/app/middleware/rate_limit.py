@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -26,8 +27,15 @@ class RateLimitConfig:
     def get_client_key(self, request: Request) -> str:
         if self.key_func:
             return self.key_func(request)
+        # X-Forwarded-For is user-controlled unless the immediate peer is a
+        # configured reverse proxy.  Do not allow clients to mint rate-limit
+        # buckets by changing a request header.
+        trusted_proxies = {
+            host.strip() for host in os.environ.get("TRUSTED_PROXY_HOSTS", "").split(",") if host.strip()
+        }
         forwarded = request.headers.get("x-forwarded-for")
-        if forwarded:
+        peer = request.client.host if request.client else ""
+        if forwarded and peer in trusted_proxies:
             return forwarded.split(",")[0].strip()
         if request.client:
             return request.client.host

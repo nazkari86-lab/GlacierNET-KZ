@@ -16,6 +16,15 @@ export interface EvidenceMapObject {
   allowedClaim: string;
   prohibitedClaim: string;
   inspectorFacts: Array<{ label: string; value: string }>;
+  screening?: {
+    rank: number;
+    observationPriority: number;
+    distanceToRgiBoundaryM: number;
+    areaM2: number;
+    areaChangePercent: number | null;
+    previousMatchDistanceM: number | null;
+    flags: string[];
+  };
 }
 
 export interface EvidenceIssue {
@@ -39,6 +48,12 @@ type FeatureLike = {
   geometry?: unknown;
   properties?: Record<string, unknown>;
 };
+
+function contextFeatures(layer: unknown): FeatureLike[] {
+  if (!layer || typeof layer !== "object") return [];
+  const features = (layer as { features?: unknown }).features;
+  return Array.isArray(features) ? features as FeatureLike[] : [];
+}
 
 const PROXIMITY_LIMIT = "Пространственная близость не доказывает причинную связь, путь потока, затопление или последствия.";
 const GAP_DEFINITIONS: Record<string, Omit<EvidenceIssue, "id">> = {
@@ -103,6 +118,12 @@ function sourceValue(value: unknown): string {
   return value === null || value === undefined || value === "" ? "not supplied" : String(value);
 }
 
+function finiteNumber(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const result = Number(value);
+  return Number.isFinite(result) ? result : null;
+}
+
 function featureObjects(
   features: FeatureLike[],
   kind: Exclude<EvidenceKind, "glacier" | "annual_segmentation">,
@@ -111,7 +132,7 @@ function featureObjects(
   makeName: (properties: Record<string, unknown>) => string,
   makeFacts: (properties: Record<string, unknown>) => Array<{ label: string; value: string }>,
   maturity: EvidenceMaturity,
-  visibleFact: string,
+  visibleFact: string | ((properties: Record<string, unknown>) => string),
   allowedClaim: string,
   prohibitedClaim = PROXIMITY_LIMIT,
 ): EvidenceMapObject[] {
@@ -120,6 +141,13 @@ function featureObjects(
     if (!geometry) return [];
     const properties = feature.properties ?? {};
     const sourceId = sourceValue(properties.lake_id ?? properties.hyriv_id ?? properties.hybas_id ?? properties.event_id ?? properties.osm_id ?? properties.id ?? index + 1);
+    const observationPriority = finiteNumber(properties.observation_priority_0_100);
+    const screeningRank = finiteNumber(properties.screening_rank);
+    const distanceToRgiBoundaryM = finiteNumber(properties.distance_to_rgi_boundary_m);
+    const areaM2 = finiteNumber(properties.area_current_m2 ?? properties.area_m2);
+    const areaChangePercent = finiteNumber(properties.area_change_percent);
+    const previousMatchDistanceM = finiteNumber(properties.geometric_match_distance_m);
+    const flags = Array.isArray(properties.screening_flags) ? properties.screening_flags.map(String) : [];
     return [{
       id: `${kind}:${sourceId}`,
       kind,
@@ -128,10 +156,21 @@ function featureObjects(
       source,
       temporalCoverage,
       maturity,
-      visibleFact,
+      visibleFact: typeof visibleFact === "function" ? visibleFact(properties) : visibleFact,
       allowedClaim,
       prohibitedClaim,
       inspectorFacts: makeFacts(properties),
+      ...(observationPriority !== null && screeningRank !== null && distanceToRgiBoundaryM !== null && areaM2 !== null ? {
+        screening: {
+          rank: screeningRank,
+          observationPriority,
+          distanceToRgiBoundaryM,
+          areaM2,
+          areaChangePercent,
+          previousMatchDistanceM,
+          flags,
+        },
+      } : {}),
     }];
   });
 }
@@ -194,28 +233,57 @@ export function buildEvidenceMapObjects(
 
   if (!context) return objects;
 
+  const candidatesByLakeId = new Map(
+    (context.screening_candidates ?? [])
+      .filter((candidate) => candidate.lake_id)
+      .map((candidate, index) => [String(candidate.lake_id), { ...candidate, screening_rank: index + 1 }]),
+  );
+  const currentLakes = contextFeatures(context.layers?.tien_shan_lakes).map((feature) => {
+    const properties = feature.properties ?? {};
+    const candidate = candidatesByLakeId.get(String(properties.lake_id ?? ""));
+    return candidate ? {
+      ...feature,
+      properties: {
+        ...properties,
+        ...candidate,
+        screening_flags: candidate.flags,
+      },
+    } : feature;
+  });
+
   objects.push(
     ...featureObjects(
-      [
-        ...(context.layers.hma_gli_2015_2018.features as FeatureLike[]),
-        ...(context.layers.tien_shan_lakes_2023.features as FeatureLike[]),
-      ],
+      currentLakes,
       "lake",
-      "HMA GLI / Tien Shan lake inventory",
-      "2015–2018 or 2023 inventory",
-      (properties) => `Lake ID: ${sourceValue(properties.lake_id)}`,
+      `Tien Shan lake inventory ${context.query.lake_inventory_year}`,
+      `${context.query.lake_inventory_year} inventory; ${context.query.previous_lake_inventory_year ?? "no previous"} comparison where geometric match is explicit`,
+      (properties) => {
+        const priority = finiteNumber(properties.observation_priority_0_100);
+        return priority === null
+          ? `Lake ID: ${sourceValue(properties.lake_id)}`
+          : `Озеро ${sourceValue(properties.lake_id)} · проверка ${priority.toFixed(0)}/100`;
+      },
       (properties) => [
         { label: "Lake ID", value: sourceValue(properties.lake_id) },
-        { label: "Area", value: properties.area_m2 ? `${Number(properties.area_m2).toFixed(0)} m²` : "not supplied" },
+        { label: "Площадь инвентаря", value: finiteNumber(properties.area_current_m2 ?? properties.area_m2) === null ? "not supplied" : `${Number(properties.area_current_m2 ?? properties.area_m2).toFixed(0)} м²` },
         { label: "Inventory year", value: sourceValue(properties.inventory_year ?? properties.period) },
+        ...(finiteNumber(properties.area_change_percent) === null ? [] : [{ label: `Изменение к ${sourceValue(properties.previous_inventory_year)}`, value: `${Number(properties.area_change_percent).toFixed(1)}%` }]),
+        ...(finiteNumber(properties.distance_to_rgi_boundary_m) === null ? [] : [{ label: "До границы RGI", value: `${Number(properties.distance_to_rgi_boundary_m).toFixed(0)} м` }]),
+        ...(finiteNumber(properties.geometric_match_distance_m) === null ? [] : [{ label: "Расстояние геометрического match", value: `${Number(properties.geometric_match_distance_m).toFixed(0)} м` }]),
       ],
       "spatial_context",
-      "Инвентарный водный объект находится в выбранном пространственном контексте.",
+      (properties) => {
+        const priority = finiteNumber(properties.observation_priority_0_100);
+        const distance = finiteNumber(properties.distance_to_rgi_boundary_m);
+        return priority === null || distance === null
+          ? "Инвентарный водный объект находится в выбранном пространственном контексте."
+          : `Кандидат №${Number(properties.screening_rank)}: ${distance.toFixed(0)} м до границы RGI; приоритет проверки ${priority.toFixed(0)}/100.`;
+      },
       "Можно показать геометрию, дату инвентаря и указанную площадь.",
       "Инвентарная близость не подтверждает связь с ледником, объём, состояние морены или вероятность события.",
     ),
     ...featureObjects(
-      context.layers.hydrorivers.features as FeatureLike[],
+      contextFeatures(context.layers?.hydrorivers),
       "river",
       "HydroRIVERS",
       "reference hydrography",
@@ -230,7 +298,7 @@ export function buildEvidenceMapObjects(
       "Можно показать гидрографическую близость и атрибуты справочного сегмента.",
     ),
     ...featureObjects(
-      context.layers.hydrobasins_level06.features as FeatureLike[],
+      contextFeatures(context.layers?.hydrobasins_level06),
       "basin",
       "HydroBASINS level 06",
       "reference basin geometry",
@@ -244,7 +312,7 @@ export function buildEvidenceMapObjects(
       "Можно показать бассейновый контекст исходного набора.",
     ),
     ...featureObjects(
-      context.layers.historical_glof_events.features as FeatureLike[],
+      contextFeatures(context.layers?.historical_glof_events),
       "historical_record",
       "HMAGLOFDB historical record",
       "archive record date as supplied",
@@ -260,7 +328,7 @@ export function buildEvidenceMapObjects(
       "Архивная запись не является прогнозом, доказательством повторяемости или причинной связью с выбранным ледником.",
     ),
     ...featureObjects(
-      context.impact_assets.available ? context.impact_assets.features.features as FeatureLike[] : [],
+      context.impact_assets?.available ? contextFeatures(context.impact_assets.features) : [],
       "asset",
       context.impact_assets.source || "OSM planning context",
       "local planning extract",

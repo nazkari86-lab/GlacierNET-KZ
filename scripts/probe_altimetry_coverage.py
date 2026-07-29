@@ -9,7 +9,6 @@ from pathlib import Path
 
 import earthaccess
 
-
 ROOT = Path(__file__).resolve().parents[1]
 BBOX = (75.5, 42.2, 78.2, 43.8)
 START = "2024-01-01"

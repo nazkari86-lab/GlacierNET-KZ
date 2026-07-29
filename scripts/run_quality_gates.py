@@ -40,6 +40,13 @@ def main() -> int:
         ("benchmark v2 published tables", [python, "scripts/build_benchmark_v2_tables.py"]),
         ("benchmark v2 structure", [python, "scripts/validate_benchmark_v2.py", "--allow-incomplete"]),
         ("provisional glacier cohorts", [python, "scripts/validate_provisional_cohorts.py"]),
+        ("machine-assisted label pack", [python, "scripts/validate_machine_assisted_label_pack.py"]),
+        ("enhanced provisional annotation pack", [python, "scripts/validate_enhanced_annotation_pack.py"]),
+        (
+            "enhanced provisional leakage-safe training dataset",
+            [python, "scripts/validate_enhanced_provisional_training_dataset.py"],
+        ),
+        ("external-evidence readiness report", [python, "scripts/assess_evidence_readiness.py"]),
         ("scientific claims registry", [python, "scripts/validate_claims_registry.py"]),
         ("cascade event review queue", [python, "scripts/build_cascade_review_queue.py"]),
         (
@@ -89,6 +96,14 @@ def main() -> int:
     benchmark = ROOT / "results/temporal_benchmark_unet_sentinel2_terrain_2016_2024.json"
     if benchmark.is_file():
         checks.append(("benchmark provenance", [python, "scripts/validate_benchmark_report.py", str(benchmark)]))
+    inference_variants = ROOT / "benchmarks/v2/reports/inference_variants_s2_terrain_s1_2017_2024.json"
+    if inference_variants.is_file():
+        checks.append(
+            (
+                "inference variant promotion",
+                [python, "scripts/validate_inference_variant_benchmark.py", str(inference_variants)],
+            )
+        )
     holdouts = [
         (
             "baseline year holdout leakage",
@@ -118,7 +133,13 @@ def main() -> int:
     checks.append(("prediction coverage and georeferencing", [python, "scripts/validate_predictions.py"]))
     if not args.skip_tests:
         checks.append(("unit and integration tests", [python, "-m", "pytest", "-q", "--no-cov"]))
-    passed = all(run(label, command) for label, command in checks)
+    outcomes = [(label, run(label, command)) for label, command in checks]
+    passed = all(outcome for _, outcome in outcomes)
+    if not passed:
+        print("\nFailed checks:")
+        for label, outcome in outcomes:
+            if not outcome:
+                print(f"- {label}")
     print(f"\nQuality gates: {'PASS' if passed else 'FAIL'}")
     return 0 if passed else 1
 

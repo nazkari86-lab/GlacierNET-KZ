@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src import config
+from src import config  # noqa: E402
 
 
 def main() -> int:
@@ -36,7 +36,9 @@ def main() -> int:
         status = json.loads(status_path.read_text(encoding="utf-8"))
         for year in status.get("missing_sentinel2", []):
             if (config.DATA_RAW_SENTINEL2 / f"sentinel2_{year}.tif").exists():
-                errors.append(f"pipeline_status.json lists missing_sentinel2={year} but file exists — run pipeline_status.py")
+                errors.append(
+                    f"pipeline_status.json lists missing_sentinel2={year} but file exists — run pipeline_status.py"
+                )
 
     areas_csv = config.TABLES_DIR / "glacier_areas_all_years.csv"
     if areas_csv.exists():
@@ -45,9 +47,10 @@ def main() -> int:
         with areas_csv.open(encoding="utf-8") as f:
             for row in csv.DictReader(f):
                 y = int(row["year"])
-                if not (config.DATA_RAW_SENTINEL2 / f"sentinel2_{y}.tif").exists() and not (
-                    config.DATA_RAW_LANDSAT / f"landsat_{y}.tif"
-                ).exists():
+                if (
+                    not (config.DATA_RAW_SENTINEL2 / f"sentinel2_{y}.tif").exists()
+                    and not (config.DATA_RAW_LANDSAT / f"landsat_{y}.tif").exists()
+                ):
                     errors.append(f"glacier_areas_all_years.csv row year={y} has no raw source")
 
     if errors:

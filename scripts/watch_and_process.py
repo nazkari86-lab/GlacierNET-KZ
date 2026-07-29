@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src import config
+from src import config  # noqa: E402
 
 LOG = ROOT / "logs" / "watch_process.log"
 DRIVE_LIST = json.loads((ROOT / "drive_file_list.json").read_text())
@@ -38,17 +38,18 @@ def find_tif(name: str) -> Path | None:
 
 def year_from_name(name: str) -> int:
     import re
+
     m = re.search(r"(\d{4})", name)
     return int(m.group(1)) if m else 0
 
 
 def run_predict(year: int) -> None:
-  log(f"Running predict.py --year {year} --save")
-  subprocess.run(
-      [sys.executable, str(ROOT / "predict.py"), "--year", str(year), "--save"],
-      cwd=str(ROOT),
-      check=False,
-  )
+    log(f"Running predict.py --year {year} --save")
+    subprocess.run(
+        [sys.executable, str(ROOT / "predict.py"), "--year", str(year), "--save"],
+        cwd=str(ROOT),
+        check=False,
+    )
 
 
 def main() -> None:

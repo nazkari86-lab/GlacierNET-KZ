@@ -1,0 +1,68 @@
+{
+  "schema": "glaciernet-kz.machine-assisted-label-pack.v1",
+  "created_at": "2026-07-27T12:10:14.953351+00:00",
+  "purpose": "Technical QA and annotation bootstrap only",
+  "prohibited_claims": [
+    "independent expert gold-label accuracy",
+    "independent external generalisation",
+    "operational GLOF probability calibration",
+    "validated historical trend or forecast"
+  ],
+  "source_inventory": {
+    "path": "data/rgi/rgi_study_area.shp",
+    "sha256": "d4ba488aaea269028e7e852a66a0b84e46bc695721012903089d98b2e7297911",
+    "licence_note": "Retain upstream RGI attribution and licence when distributing derived labels."
+  },
+  "selection": {
+    "method": "deterministic RGI-area tercile stratification",
+    "per_area_class": 6,
+    "seed": 20260727,
+    "glacier_ids": [
+      "RGI2000-v7.0-G-13-33392",
+      "RGI2000-v7.0-G-13-33448",
+      "RGI2000-v7.0-G-13-33509",
+      "RGI2000-v7.0-G-13-33521",
+      "RGI2000-v7.0-G-13-33531",
+      "RGI2000-v7.0-G-13-33532",
+      "RGI2000-v7.0-G-13-33547",
+      "RGI2000-v7.0-G-13-33568",
+      "RGI2000-v7.0-G-13-33716",
+      "RGI2000-v7.0-G-13-33725",
+      "RGI2000-v7.0-G-13-33774",
+      "RGI2000-v7.0-G-13-33790",
+      "RGI2000-v7.0-G-13-33845",
+      "RGI2000-v7.0-G-13-34028",
+      "RGI2000-v7.0-G-13-34144",
+      "RGI2000-v7.0-G-13-34148",
+      "RGI2000-v7.0-G-13-34170",
+      "RGI2000-v7.0-G-13-34245"
+    ]
+  },
+  "label_records": [
+    {
+      "year": 2022,
+      "path": "benchmarks/v2/annotations/machine_assisted/rgi_inventory_provisional_2022.gpkg",
+      "sha256": "e8cf9cca5056123e584b5a39b80ed50e7c829c6aac66aedb877c25c9f5950812",
+      "feature_count": 18,
+      "source": "RGI 7.0 inventory geometry; copied without human redraw"
+    },
+    {
+      "year": 2023,
+      "path": "benchmarks/v2/annotations/machine_assisted/rgi_inventory_provisional_2023.gpkg",
+      "sha256": "875854a42e55239bd4868e48e45c57a52c6deb82ad0d1fed4e8bd797983948bf",
+      "feature_count": 18,
+      "source": "RGI 7.0 inventory geometry; copied without human redraw"
+    },
+    {
+      "year": 2024,
+      "path": "benchmarks/v2/annotations/machine_assisted/rgi_inventory_provisional_2024.gpkg",
+      "sha256": "163f1c9035e415b77599c6bdcf1633f7d5af595b30f136a63e247388de17bc39",
+      "feature_count": 18,
+      "source": "RGI 7.0 inventory geometry; copied without human redraw"
+    }
+  ],
+  "queue": {
+    "path": "benchmarks/v2/annotations/machine_assisted/machine_assisted_annotation_queue.csv",
+    "sha256": "4ecb4a1ac4a36e1dc135e3999212a852c80eedeb9a82b9f94397b7e08cea7d4d"
+  }
+}

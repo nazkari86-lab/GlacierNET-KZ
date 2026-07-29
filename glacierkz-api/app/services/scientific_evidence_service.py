@@ -14,7 +14,23 @@ from typing import Any
 from app.utils import resolve_core_dir
 
 
-CORE_DIR = resolve_core_dir(__file__)
+def _resolve_project_root() -> Path:
+    """Find the repository root even when an API-only test sets CORE_DIR.
+
+    Most runtime entry points set ``CORE_DIR`` to the repository root.  Some
+    focused API test environments intentionally set it to ``glacierkz-api``;
+    the scientific artifacts are one level above that directory.  Resolve only
+    an existing manifest and otherwise preserve the configured base, rather
+    than guessing or fabricating evidence.
+    """
+    configured = resolve_core_dir(__file__)
+    for candidate in (configured, configured.parent):
+        if (candidate / "benchmarks" / "v2" / "claims_registry.json").is_file():
+            return candidate
+    return configured
+
+
+CORE_DIR = _resolve_project_root()
 
 
 def _read_json(relative_path: str) -> dict[str, Any]:

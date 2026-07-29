@@ -9,9 +9,13 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import platform
+import subprocess
 import sys
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -31,6 +35,10 @@ class TrainConfig:
     learning_rate: float = default_config.LEARNING_RATE
     use_focal: bool = False
     model_name: str = default_config.MODEL_NAME
+    seed: int = default_config.RANDOM_SEED
+    deterministic: bool = True
+    modality_dropout_probability: float = 0.0
+    resume_on_interruption: bool = True
 
     @property
     def model_prefix(self) -> str:
@@ -57,7 +65,18 @@ class TrainConfig:
 def setup_callbacks(train_cfg: TrainConfig):
     import tensorflow as tf
 
-    callbacks = []
+    train_cfg.models_dir().mkdir(parents=True, exist_ok=True)
+    train_cfg.results_dir().mkdir(parents=True, exist_ok=True)
+    callbacks = [tf.keras.callbacks.TerminateOnNaN()]
+    if train_cfg.resume_on_interruption:
+        callbacks.append(
+            tf.keras.callbacks.BackupAndRestore(
+                backup_dir=str(
+                    train_cfg.results_dir() / "training_backups" / f"{train_cfg.model_prefix}_{train_cfg.dataset_label}"
+                ),
+                delete_checkpoint=True,
+            )
+        )
 
     callbacks.append(
         tf.keras.callbacks.ReduceLROnPlateau(
@@ -100,6 +119,79 @@ def setup_callbacks(train_cfg: TrainConfig):
     return callbacks
 
 
+def _feature_schema(train_cfg: TrainConfig) -> list[str]:
+    path = train_cfg.patches_dir() / "manifest.json"
+    if not path.is_file():
+        return []
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    values = payload.get("feature_schema", [])
+    return [str(value) for value in values] if isinstance(values, list) else []
+
+
+def _modality_groups(feature_schema: list[str]) -> list[tuple[int, ...]]:
+    """Return only ancillary groups; optical channels are never fully erased."""
+    groups: list[tuple[int, ...]] = []
+    for names in (
+        ("elevation_m_normalized", "slope_degrees_normalized", "aspect_degrees_normalized"),
+        ("VV_dB_normalized", "VH_dB_normalized"),
+    ):
+        if all(name in feature_schema for name in names):
+            groups.append(tuple(feature_schema.index(name) for name in names))
+    return groups
+
+
+def _git_commit(root: Path) -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=root,
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+def write_training_run_manifest(
+    train_cfg: TrainConfig,
+    *,
+    input_shape: tuple[int, ...],
+    split_sizes: dict[str, int],
+) -> Path:
+    """Persist enough provenance to reproduce a training run without secrets."""
+    dataset_manifest = train_cfg.patches_dir() / "manifest.json"
+    payload = {
+        "schema": "glaciernet-kz.training-run.v1",
+        "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "git_commit": _git_commit(default_config.PROJECT_ROOT),
+        "python": platform.python_version(),
+        "platform": platform.platform(),
+        "dataset": str(train_cfg.patches_dir().resolve().relative_to(default_config.PROJECT_ROOT)),
+        "dataset_manifest_sha256": (
+            hashlib.sha256(dataset_manifest.read_bytes()).hexdigest() if dataset_manifest.is_file() else None
+        ),
+        "model_name": train_cfg.model_name,
+        "input_shape": list(input_shape),
+        "feature_schema": _feature_schema(train_cfg),
+        "splits": split_sizes,
+        "hyperparameters": {
+            "epochs": train_cfg.epochs,
+            "batch_size": train_cfg.batch_size,
+            "learning_rate": train_cfg.learning_rate,
+            "use_focal": train_cfg.use_focal,
+            "seed": train_cfg.seed,
+            "deterministic": train_cfg.deterministic,
+            "modality_dropout_probability": train_cfg.modality_dropout_probability,
+            "resume_on_interruption": train_cfg.resume_on_interruption,
+        },
+        "test_policy": "test split is loaded but never used by fit or threshold selection",
+    }
+    output = train_cfg.results_dir() / f"training_run_{train_cfg.model_prefix}_{train_cfg.dataset_label}.json"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return output
+
+
 def load_data(train_cfg: TrainConfig):
     patches_dir = train_cfg.patches_dir()
     manifest_path = patches_dir / "manifest.json"
@@ -116,6 +208,19 @@ def load_data(train_cfg: TrainConfig):
     X_test = np.load(patches_dir / "X_test.npy")
     y_test = np.load(patches_dir / "y_test.npy")
     return X_train, y_train, X_val, y_val, X_test, y_test
+
+
+def load_sample_weights(train_cfg: TrainConfig):
+    """Load optional pixel reliability maps without weakening legacy datasets."""
+    patches_dir = train_cfg.patches_dir()
+    paths = [patches_dir / f"w_{split}.npy" for split in ("train", "val", "test")]
+    present = [path.is_file() for path in paths]
+    if not any(present):
+        return None
+    if not all(present):
+        missing = [str(path) for path, exists in zip(paths, present) if not exists]
+        raise ValueError(f"Sample-weight dataset is incomplete: {missing}")
+    return tuple(np.load(path, mmap_mode="r") for path in paths)
 
 
 def load_manifest_data(manifest: dict, manifest_dir: Path):
@@ -241,11 +346,29 @@ def load_year_holdout_manifest_data(manifest: dict, manifest_dir: Path):
 def train(train_cfg: TrainConfig):
     import tensorflow as tf
 
-    tf.random.set_seed(default_config.RANDOM_SEED)
-    np.random.seed(default_config.RANDOM_SEED)
+    tf.keras.utils.set_random_seed(train_cfg.seed)
+    np.random.seed(train_cfg.seed)
+    if train_cfg.deterministic:
+        try:
+            tf.config.experimental.enable_op_determinism()
+        except (AttributeError, RuntimeError):
+            pass
 
     print(f"Загрузка данных из {train_cfg.patches_dir()}...")
     X_train, y_train, X_val, y_val, X_test, y_test = load_data(train_cfg)
+    sample_weights = load_sample_weights(train_cfg)
+    if sample_weights is not None:
+        w_train, w_val, w_test = sample_weights
+        for split, labels, weights in (
+            ("train", y_train, w_train),
+            ("validation", y_val, w_val),
+            ("test", y_test, w_test),
+        ):
+            if weights.shape != labels.shape:
+                raise ValueError(f"{split} sample weights {weights.shape} do not match labels {labels.shape}")
+        print("Используются явные карты надёжности пикселей (review zones down-weighted).")
+    else:
+        w_train = w_val = w_test = None
     print(f"Train: {X_train.shape[0]}, Val: {X_val.shape[0]}, Test: {X_test.shape[0]}")
 
     input_shape = tuple(int(value) for value in X_train.shape[1:])
@@ -258,8 +381,33 @@ def train(train_cfg: TrainConfig):
     model.summary()
 
     GlacierDataGenerator = build_data_generator()
-    train_gen = GlacierDataGenerator(X_train, y_train, batch_size=train_cfg.batch_size, augment=True)
-    val_gen = GlacierDataGenerator(X_val, y_val, batch_size=train_cfg.batch_size, augment=False)
+    feature_schema = _feature_schema(train_cfg)
+    modality_groups = _modality_groups(feature_schema)
+    if train_cfg.modality_dropout_probability and not modality_groups:
+        raise ValueError("modality dropout requested, but no terrain/SAR groups exist in feature_schema")
+    train_gen = GlacierDataGenerator(
+        X_train,
+        y_train,
+        batch_size=train_cfg.batch_size,
+        augment=True,
+        seed=train_cfg.seed,
+        modality_groups=modality_groups,
+        modality_dropout_probability=train_cfg.modality_dropout_probability,
+        sample_weights=w_train,
+    )
+    val_gen = GlacierDataGenerator(
+        X_val,
+        y_val,
+        batch_size=train_cfg.batch_size,
+        augment=False,
+        sample_weights=w_val,
+    )
+    run_manifest = write_training_run_manifest(
+        train_cfg,
+        input_shape=input_shape,
+        split_sizes={"train": len(X_train), "validation": len(X_val), "test": len(X_test)},
+    )
+    print(f"Training provenance: {run_manifest}")
 
     callbacks = setup_callbacks(train_cfg)
 
@@ -273,7 +421,13 @@ def train(train_cfg: TrainConfig):
     )
 
     print("Оценка на тесте...")
-    test_gen = GlacierDataGenerator(X_test, y_test, batch_size=train_cfg.batch_size, augment=False)
+    test_gen = GlacierDataGenerator(
+        X_test,
+        y_test,
+        batch_size=train_cfg.batch_size,
+        augment=False,
+        sample_weights=w_test,
+    )
     metrics = model.evaluate(test_gen, verbose=1)
     metric_names = [m.name if hasattr(m, "name") else str(m) for m in model.metrics]
     for name, val in zip(metric_names, metrics):
@@ -300,6 +454,15 @@ def main():
     parser.add_argument("--batch-size", type=int, default=None)
     parser.add_argument("--lr", type=float, default=None)
     parser.add_argument("--focal", action="store_true", help="Использовать Focal Loss")
+    parser.add_argument("--seed", type=int, default=default_config.RANDOM_SEED)
+    parser.add_argument(
+        "--modality-dropout",
+        type=float,
+        default=0.0,
+        help="Experimental probability of dropping each ancillary modality group during training.",
+    )
+    parser.add_argument("--non-deterministic", action="store_true")
+    parser.add_argument("--no-resume", action="store_true", help="Disable interruption-resume checkpoints")
     parser.add_argument(
         "--model",
         choices=["unet", "attention_unet", "unet_plus_plus"],
@@ -316,6 +479,10 @@ def main():
         learning_rate=args.lr or default_config.LEARNING_RATE,
         use_focal=args.focal,
         model_name=args.model,
+        seed=args.seed,
+        deterministic=not args.non_deterministic,
+        modality_dropout_probability=args.modality_dropout,
+        resume_on_interruption=not args.no_resume,
     )
 
     train(train_cfg)

@@ -111,6 +111,7 @@ class TestCacheMiddleware:
             r2 = await client.get("/data")
             assert r2.status_code == 200
             assert r2.headers.get("etag") is not None
+            assert r2.headers.get("x-cache-status") == "HIT"
 
     @pytest.mark.asyncio
     async def test_post_not_cached(self, app_with_cache):

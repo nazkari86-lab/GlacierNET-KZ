@@ -32,7 +32,7 @@ export default function HistoryPage() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <Mountain className="h-5 w-5 text-blue-600" aria-hidden="true" />
-          <span className="font-bold">{t("history.title")}</span>
+          <h1 className="font-bold">{t("history.title")}</h1>
           <button
             onClick={load}
             className="ml-auto text-zinc-400 hover:text-zinc-600"

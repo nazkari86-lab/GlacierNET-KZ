@@ -15,10 +15,11 @@ async def compare_models(
     model_names: str = Form("unet,attention_unet,ndsi,ensemble"),
     use_tta: bool = Form(True),
     use_crf: bool = Form(False),
+    year: int | None = Form(None),
 ):
     names = [m.strip() for m in model_names.split(",")]
     image_path = await save_upload(file)
-    result = await asyncio.to_thread(run_compare, image_path, names, use_tta, use_crf)
+    result = await asyncio.to_thread(run_compare, image_path, names, use_tta, use_crf, year)
     for seg in result.get("segments", []):
         seg["mask_path"] = path_to_url(seg["mask_path"])
         seg["overlay_path"] = path_to_url(seg["overlay_path"])

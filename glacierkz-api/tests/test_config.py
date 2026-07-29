@@ -41,6 +41,10 @@ class TestConfigModule:
     def test_cors_origins_is_list(self):
         assert isinstance(config.CORS_ORIGINS, list)
 
+    def test_localhost_cors_origin_has_loopback_alias(self):
+        assert "http://localhost:3000" in config.CORS_ORIGINS
+        assert "http://127.0.0.1:3000" in config.CORS_ORIGINS
+
     def test_redis_url_is_string(self):
         assert isinstance(config.REDIS_URL, str)
 
@@ -61,3 +65,6 @@ class TestConfigModule:
 
     def test_analysis_lang(self):
         assert isinstance(config.ANALYSIS_LANG, str)
+
+    def test_mcp_inference_is_fail_closed_by_default(self):
+        assert config.MCP_INFERENCE_ENABLED is False

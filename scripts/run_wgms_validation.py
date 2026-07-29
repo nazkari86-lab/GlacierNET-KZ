@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src import config, metrics
+from src import config, metrics  # noqa: E402
 
 WGMS_JSON = config.PROJECT_ROOT / "data" / "wgms" / "tuyuksu_areas.json"
 FOG_STATE = config.PROJECT_ROOT / "data" / "wgms" / "raw" / "fog_extracted" / "data" / "state.csv"
@@ -83,7 +83,7 @@ def main() -> None:
     print(f"\nWGMS Validation (scaled bbox proxy, {len(years)} years: {years[0]}–{years[-1]})")
     print(f"  RMSE: {rmse:.4f} km²")
     print(f"  MAE:  {mae:.4f} km²")
-    print(f"  Note: For publication-grade RMSE, crop masks to RGI Tuyuksu polygon.")
+    print("  Note: For publication-grade RMSE, crop masks to RGI Tuyuksu polygon.")
 
     config.TABLES_DIR.mkdir(parents=True, exist_ok=True)
     import csv

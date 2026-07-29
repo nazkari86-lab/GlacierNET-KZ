@@ -68,7 +68,6 @@ GlacierNET-KZ/
 │   │   ├── main.py          # Точка входа FastAPI
 │   │   ├── config.py        # Конфигурация (плоские переменные)
 │   │   ├── utils.py         # Утилиты (resolve_core_dir, path_to_url)
-│   │   ├── worker.py        # Celery worker (не используется)
 │   │   ├── mcp_tools.py     # MCP инструменты для ИИ-агентов
 │   │   ├── routers/         # 14 файлов маршрутов API
 │   │   ├── routes/          # 9 файлов дополнительных маршрутов
@@ -212,11 +211,11 @@ GeoTIFF/Landsat → Загрузка (rasterio) → Спектральные и�
 → Маска ледника → Расчёт площади → Экспорт (PNG/NPY/GeoJSON)
 ```
 
-### 3.5. LLM Gateway
+### 3.5. Evidence assistant
 
 ```
-Запрос → litellm → Выбор провайдера (OpenAI/Anthropic/Groq/Gemini/Ollama)
-→ Системный промпт (гляциолог) → Анализ → Ответ
+Запрос → проверенный локальный evidence context → Groq
+→ ограничивающий системный промпт → анализ с явными границами утверждений
 ```
 
 ---
@@ -250,8 +249,7 @@ GeoTIFF/Landsat → Загрузка (rasterio) → Спектральные и�
 | `app/main.py` | Точка входа FastAPI. CORS, middleware стек (4 шт.), подключение static, роутеров, WebSocket, lifespan |
 | `app/config.py` | Центральная конфигурация: пути (DATA_DIR, UPLOAD_DIR, RESULTS_DIR), REDIS_URL, CORS_ORIGINS, MAX_FILE_SIZE, LLM настройки. **Плоские переменные модуля**, без объекта `settings` |
 | `app/utils.py` | `resolve_core_dir()` — находит пакет src/ через CORE_DIR env. `path_to_url()` — конвертирует пути файлов в static URL |
-| `app/worker.py` | Celery worker (не используется — вся сегментация синхронная) |
-| `app/mcp_tools.py` | MCP инструменты для ИИ-агентов: спектральный анализ, сегментация, временные ряды. 740 строк |
+| `app/mcp_tools.py` | Компактный evidence-only MCP: локальные годы, RGI, datasets, Risk Twin и доверенный glacier-first inference. Синтетические и случайные fallback-инструменты отсутствуют |
 
 #### app/routers/ — 14 файлов маршрутов API
 
@@ -289,7 +287,7 @@ GeoTIFF/Landsat → Загрузка (rasterio) → Спектральные и�
 | Файл | Назначение |
 |------|-----------|
 | `segmentation_service.py` | **Ядро ML**: загрузка Keras моделей (U-Net, Attention U-Net, U-Net++), RF модель, инференс со скользящим окном, TTA, генерация масок/оверлеев. Потокобезопасный кэш моделей с lock |
-| `llm_service.py` | LLM шлюз через litellm: мульти-провайдер (OpenAI, Anthropic, Groq, Google, Ollama, OpenRouter) с fallback, системные промпты для гляциолога |
+| `llm_service.py` | Groq-only evidence assistant без скрытых fallback-провайдеров; ключ используется только для запроса, системные промпты ограничивают неподтверждённые утверждения |
 | `area_service.py` | Расчёт площади ледника из маски (TIF через rasterio или PNG через PIL) |
 | `trend_service.py` | Многолетний тренд и прогноз до 2050 через core функции metrics |
 | `export_service.py` | Экспорт: маски в numpy/png, предсказания в JSON/CSV/GeoJSON, экспорт TF моделей. 333 строки |

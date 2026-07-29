@@ -79,10 +79,15 @@ class CacheMiddleware(BaseHTTPMiddleware):
                 etag = entry.headers.get("etag")
                 if etag and if_none_match == etag:
                     return Response(status_code=304)
+                headers = dict(entry.headers)
+                headers["x-cache-status"] = "HIT"
+                # The original application timing belongs to the cache miss
+                # and must not be replayed as if cached requests took as long.
+                headers.pop("x-response-time", None)
                 resp = Response(
                     content=entry.data,
                     status_code=entry.status,
-                    headers=entry.headers,
+                    headers=headers,
                 )
                 return resp
 

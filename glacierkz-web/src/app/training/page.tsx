@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import {
   Play,
   Pause,
@@ -219,27 +220,47 @@ export default function TrainingPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50">
+      <a href="#main" aria-label="Skip to main content" className="sr-only rounded-lg bg-zinc-950 px-4 py-3 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[1000]">Перейти к обучению</a>
       <ToastContainer />
       <header className="w-full border-b bg-white">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
               <h1 className="text-2xl font-bold text-gray-900">{t("training.title")}</h1>
               <p className="mt-1 text-sm text-gray-500">{t("training.subtitle")}</p>
             </div>
-            <button
+            <div className="flex max-w-full flex-wrap items-center gap-2"><nav aria-label="Training navigation"><Link href="/operations" className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Operations</Link></nav><button
               onClick={() => setShowSettings(true)}
               className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               aria-label="Training settings"
             >
               <Settings className="h-4 w-4" />
               {t("training.configuration")}
-            </button>
+            </button></div>
           </div>
         </div>
       </header>
 
-      <main id="main-content" className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+      <main id="main" className="mx-auto min-w-0 max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+        <section role="alert" className="flex flex-col gap-4 rounded-xl border border-amber-300 bg-amber-50 p-5 text-amber-950 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+            <div>
+              <h2 className="font-semibold">Legacy UI simulation — not a scientific training run</h2>
+              <p className="mt-1 text-sm leading-6">
+                This page exercises job-monitor controls with simulated epochs. The real leakage-safe
+                weighted dataset, QA evidence, and executable TensorFlow command are available in ML Workspace.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/ml#training-data"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-lg bg-amber-950 px-4 text-sm font-semibold text-white hover:bg-amber-900"
+          >
+            Open real training evidence
+          </Link>
+        </section>
+
         {/* Training Status */}
         <section aria-label="Training status">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -296,7 +317,7 @@ export default function TrainingPage() {
         {/* Training Charts */}
         <section aria-label="Training charts">
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div className="rounded-xl border border-gray-200 bg-white p-6">
+            <div className="min-w-0 overflow-hidden rounded-xl border border-gray-200 bg-white p-4 sm:p-6">
               <h3 className="mb-4 text-sm font-semibold text-gray-700">{t("training.loss")} over {t("training.epochs")}</h3>
               <LineChart
                 data={lossData}
@@ -307,7 +328,7 @@ export default function TrainingPage() {
                 height={220}
               />
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-6">
+            <div className="min-w-0 overflow-hidden rounded-xl border border-gray-200 bg-white p-4 sm:p-6">
               <h3 className="mb-4 text-sm font-semibold text-gray-700">{t("training.iou_over_epochs")}</h3>
               <LineChart
                 data={iouData}
@@ -354,8 +375,9 @@ export default function TrainingPage() {
           <TabPanel active={activeTab} tab="hyperparams">
             <div className="mt-2 grid grid-cols-1 gap-4 rounded-xl border border-gray-200 bg-white p-6 sm:grid-cols-2 lg:grid-cols-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600">{t("training.learning_rate")}</label>
+                <label htmlFor="training-learning-rate" className="mb-1 block text-xs font-medium text-gray-600">{t("training.learning_rate")}</label>
                 <input
+                  id="training-learning-rate"
                   type="number"
                   step="0.00001"
                   value={hyperparams.learningRate}
@@ -365,8 +387,9 @@ export default function TrainingPage() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600">{t("training.batch_size")}</label>
+                <label htmlFor="training-batch-size" className="mb-1 block text-xs font-medium text-gray-600">{t("training.batch_size")}</label>
                 <input
+                  id="training-batch-size"
                   type="number"
                   value={hyperparams.batchSize}
                   onChange={(e) => setHyperparams({ ...hyperparams, batchSize: parseInt(e.target.value) || 8 })}
@@ -375,8 +398,9 @@ export default function TrainingPage() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600">{t("training.epochs")}</label>
+                <label htmlFor="training-epochs" className="mb-1 block text-xs font-medium text-gray-600">{t("training.epochs")}</label>
                 <input
+                  id="training-epochs"
                   type="number"
                   value={hyperparams.epochs}
                   onChange={(e) => setHyperparams({ ...hyperparams, epochs: parseInt(e.target.value) || 100 })}
@@ -385,8 +409,9 @@ export default function TrainingPage() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600">{t("training.optimizer")}</label>
+                <label htmlFor="training-optimizer" className="mb-1 block text-xs font-medium text-gray-600">{t("training.optimizer")}</label>
                 <select
+                  id="training-optimizer"
                   value={hyperparams.optimizer}
                   onChange={(e) => setHyperparams({ ...hyperparams, optimizer: e.target.value })}
                   disabled={status === "running"}
@@ -399,8 +424,9 @@ export default function TrainingPage() {
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600">{t("training.model")}</label>
+                <label htmlFor="training-model" className="mb-1 block text-xs font-medium text-gray-600">{t("training.model")}</label>
                 <select
+                  id="training-model"
                   value={hyperparams.model}
                   onChange={(e) => setHyperparams({ ...hyperparams, model: e.target.value })}
                   disabled={status === "running"}
@@ -412,7 +438,7 @@ export default function TrainingPage() {
                   <option value="deeplabv3plus">DeepLabV3+</option>
                 </select>
               </div>
-              <div className="flex items-end gap-6">
+              <fieldset className="flex items-end gap-6"><legend className="sr-only">{t("training.augmentation")} and TTA</legend>
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -433,7 +459,7 @@ export default function TrainingPage() {
                   />
                   <span className="text-sm text-gray-700">TTA</span>
                 </label>
-              </div>
+              </fieldset>
             </div>
           </TabPanel>
         </section>
@@ -450,7 +476,7 @@ export default function TrainingPage() {
             }`}
           >
             <Play className="h-4 w-4" />
-            {t("training.start")}
+            Run UI simulation
           </button>
           <button
             onClick={pauseTrainingHandler}
@@ -503,27 +529,27 @@ export default function TrainingPage() {
           <p className="text-sm text-gray-600">{t("training.settings_desc")}</p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600">{t("training.gpu_device")}</label>
-              <select className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
+              <label htmlFor="training-gpu-device" className="mb-1 block text-xs font-medium text-gray-600">{t("training.gpu_device")}</label>
+              <select id="training-gpu-device" className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
                 <option>CUDA:0 (NVIDIA RTX 4090)</option>
                 <option>CUDA:1 (NVIDIA RTX 4090)</option>
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600">{t("training.num_workers")}</label>
-              <input type="number" defaultValue={4} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+              <label htmlFor="training-workers" className="mb-1 block text-xs font-medium text-gray-600">{t("training.num_workers")}</label>
+              <input id="training-workers" type="number" defaultValue={4} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600">{t("training.precision")}</label>
-              <select className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
+              <label htmlFor="training-precision" className="mb-1 block text-xs font-medium text-gray-600">{t("training.precision")}</label>
+              <select id="training-precision" className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
                 <option>fp32</option>
                 <option>fp16 (mixed)</option>
                 <option>bf16</option>
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600">{t("training.checkpoint_dir")}</label>
-              <input type="text" defaultValue="checkpoints/" className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+              <label htmlFor="training-checkpoint-dir" className="mb-1 block text-xs font-medium text-gray-600">{t("training.checkpoint_dir")}</label>
+              <input id="training-checkpoint-dir" type="text" defaultValue="checkpoints/" className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
             </div>
           </div>
         </div>

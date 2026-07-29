@@ -83,7 +83,9 @@ def _window_for_geometry(dataset, geometry, *, buffer_m: float, max_pixels: int)
     window = rasterio.windows.from_bounds(*bounds, transform=dataset.transform)
     pad = int(np.ceil(buffer_m / max(dataset.res)))
     window = window.round_offsets().round_lengths()
-    window = rasterio.windows.Window(window.col_off - pad, window.row_off - pad, window.width + 2 * pad, window.height + 2 * pad)
+    window = rasterio.windows.Window(
+        window.col_off - pad, window.row_off - pad, window.width + 2 * pad, window.height + 2 * pad
+    )
     full = rasterio.windows.Window(0, 0, dataset.width, dataset.height)
     window = window.intersection(full).round_offsets().round_lengths()
     if max(window.width, window.height) > max_pixels:
@@ -156,7 +158,8 @@ def _paired_deltas(records: list[dict[str, object]]) -> list[dict[str, object]]:
                 "hard_iou": float(candidate["hard_iou"]) - float(control["hard_iou"]),
                 "precision": float(candidate["precision"]) - float(control["precision"]),
                 "recall": float(candidate["recall"]) - float(control["recall"]),
-                "absolute_area_error_km2": abs(float(candidate["area_error_km2"])) - abs(float(control["area_error_km2"])),
+                "absolute_area_error_km2": abs(float(candidate["area_error_km2"]))
+                - abs(float(control["area_error_km2"])),
             }
         )
     return deltas
@@ -240,9 +243,13 @@ def main() -> int:
         }
         records: list[dict[str, object]] = []
         for _, glacier in cohort.iterrows():
-            window = _window_for_geometry(source, glacier.geometry, buffer_m=args.buffer_m, max_pixels=args.max_crop_pixels)
+            window = _window_for_geometry(
+                source, glacier.geometry, buffer_m=args.buffer_m, max_pixels=args.max_crop_pixels
+            )
             transform = source.window_transform(window)
-            label = _label_for_geometry(glacier.geometry, shape=(int(window.height), int(window.width)), transform=transform)
+            label = _label_for_geometry(
+                glacier.geometry, shape=(int(window.height), int(window.width)), transform=transform
+            )
             s2 = _read_s2_features(image_path, window)
             terrain = _read_terrain(terrain_path, window)
             s1 = _read_s1(s1_path, window)
@@ -292,9 +299,7 @@ def main() -> int:
             "sentinel2_sha256": sha256_file(image_path),
             "terrain_sha256": sha256_file(terrain_path),
             "sentinel1_sha256": sha256_file(s1_path),
-            "model_directory_sha256": {
-                name: sha256_directory(path) for name, (path, _, _) in models.items()
-            },
+            "model_directory_sha256": {name: sha256_directory(path) for name, (path, _, _) in models.items()},
         },
     }
     summary_path = args.output_dir / f"ile_alatau_rgi_{args.year}_paired_summary.json"

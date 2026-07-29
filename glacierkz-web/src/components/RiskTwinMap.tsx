@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { GlacierRecord, YearMapLayer } from "@/lib/api";
+import type { GlacierRecord, MlEvidenceCase, YearMapLayer } from "@/lib/api";
 import type { EvidenceKind, EvidenceMapObject } from "@/lib/riskTwinEvidence";
+import { apiUrl } from "@/lib/utils";
 
 type MapMode = "evidence" | "route" | "people";
-type Basemap = "terrain" | "satellite";
+type Basemap = "offline" | "terrain" | "satellite";
 
 interface RiskTwinMapProps {
   glacier: GlacierRecord | null;
@@ -17,6 +18,7 @@ interface RiskTwinMapProps {
   mode: MapMode;
   yearLayer: YearMapLayer | null;
   comparisonLayer: YearMapLayer | null;
+  mlEvidence?: MlEvidenceCase | null;
 }
 
 const KIND_LABELS: Record<EvidenceKind, string> = {
@@ -58,7 +60,7 @@ function pointStyle(kind: EvidenceKind, latlng: L.LatLng): L.CircleMarker {
   return L.circleMarker(latlng, { ...style, radius: kind === "historical_record" ? 7 : 6 });
 }
 
-export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSelectObject, mode, yearLayer, comparisonLayer }: RiskTwinMapProps) {
+export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSelectObject, mode, yearLayer, comparisonLayer, mlEvidence = null }: RiskTwinMapProps) {
   const elementRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const contentLayerRef = useRef<L.LayerGroup | null>(null);
@@ -66,10 +68,16 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
   const baseLayersRef = useRef<Partial<Record<Basemap, L.TileLayer>>>({});
   const fittedGlacierRef = useRef<string | null>(null);
   const [mapError, setMapError] = useState("");
-  const [basemap, setBasemap] = useState<Basemap>("terrain");
+  const [basemap, setBasemap] = useState<Basemap>("offline");
+  const [showMlBoundary, setShowMlBoundary] = useState(true);
   const [visibleKinds, setVisibleKinds] = useState<Record<EvidenceKind, boolean>>({
-    glacier: true, annual_segmentation: true, lake: true, river: true, basin: true, historical_record: true, asset: true,
+    glacier: true, annual_segmentation: true, lake: true, river: false, basin: false, historical_record: false, asset: false,
   });
+  const selectedObject = objects.find((object) => object.id === selectedObjectId) ?? null;
+  // A selected glacier context is intentionally finite (10 km by default),
+  // so hiding all but the three highest ranked lakes loses useful evidence.
+  // Render every supplied local object; users can still toggle source kinds.
+  const mapObjects = objects;
 
   useEffect(() => {
     if (!elementRef.current || mapRef.current) return;
@@ -99,12 +107,24 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
     const map = mapRef.current;
     const layers = baseLayersRef.current;
     if (!map || !layers.terrain || !layers.satellite) return;
+    if (basemap === "offline") {
+      if (map.hasLayer(layers.terrain)) map.removeLayer(layers.terrain);
+      if (map.hasLayer(layers.satellite)) map.removeLayer(layers.satellite);
+      return;
+    }
     const active = layers[basemap];
     const inactive = basemap === "terrain" ? layers.satellite : layers.terrain;
     if (!active || !inactive) return;
     if (map.hasLayer(inactive)) map.removeLayer(inactive);
     if (!map.hasLayer(active)) active.addTo(map);
   }, [basemap]);
+
+  useEffect(() => {
+    // Mode changes never manufacture a routed impact. They merely expose the
+    // local source layers that support the user’s current inspection task.
+    if (mode === "route") setVisibleKinds((current) => ({ ...current, river: true, basin: true }));
+    if (mode === "people") setVisibleKinds((current) => ({ ...current, asset: true }));
+  }, [mode]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -114,26 +134,49 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
     objectLayerRef.current.clear();
     setMapError("");
 
-    const attach = (object: EvidenceMapObject, layer: L.Layer & { bindPopup?: (content: HTMLElement) => unknown; bindTooltip?: (content: string, options?: L.TooltipOptions) => unknown }) => {
+    const attach = (object: EvidenceMapObject, layer: L.Layer & { bindPopup?: (content: HTMLElement) => unknown }) => {
       layer.bindPopup?.(popup(object));
-      layer.bindTooltip?.(object.name, { permanent: object.kind !== "basin", direction: "top", className: "risk-twin-object-label" });
+      // Keep the geographic evidence readable: object names belong in the
+      // click-triggered popup and inspector, not as permanently overlapping labels.
       layer.on("click", () => onSelectObject(object.id));
       content.addLayer(layer);
       objectLayerRef.current.set(object.id, layer);
     };
 
     if (yearLayer && visibleKinds.annual_segmentation) {
-      const annualImage = L.imageOverlay(yearLayer.image_url, yearLayer.bounds as L.LatLngBoundsExpression, { opacity: comparisonLayer ? 0.4 : 0.58, alt: `${yearLayer.year} segmentation screening layer` });
+      const annualImage = L.imageOverlay(apiUrl(yearLayer.image_url), yearLayer.bounds as L.LatLngBoundsExpression, { opacity: comparisonLayer ? 0.4 : 0.58, alt: `${yearLayer.year} segmentation screening layer` });
       annualImage.on("error", () => setMapError(`${yearLayer.year} map layer unavailable; other local layers remain visible.`));
       content.addLayer(annualImage);
     }
     if (comparisonLayer && visibleKinds.annual_segmentation) {
-      const comparisonImage = L.imageOverlay(comparisonLayer.image_url, comparisonLayer.bounds as L.LatLngBoundsExpression, { opacity: 0.34, alt: `${comparisonLayer.year} comparison segmentation screening layer` });
+      const comparisonImage = L.imageOverlay(apiUrl(comparisonLayer.image_url), comparisonLayer.bounds as L.LatLngBoundsExpression, { opacity: 0.34, alt: `${comparisonLayer.year} comparison segmentation screening layer` });
       comparisonImage.on("error", () => setMapError(`${comparisonLayer.year} comparison layer unavailable; current local layer remains visible.`));
       content.addLayer(comparisonImage);
     }
+    if (mlEvidence?.map.model_geometry && showMlBoundary) {
+      const mlLayer = L.geoJSON(mlEvidence.map.model_geometry as GeoJSON.GeoJsonObject, {
+        style: {
+          color: "#22c55e",
+          weight: 4,
+          fillColor: "#22c55e",
+          fillOpacity: 0.2,
+        },
+      });
+      const details = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = `${mlEvidence.year} multimodal ML boundary`;
+      const metrics = document.createElement("p");
+      metrics.className = "mt-1 text-xs leading-4";
+      metrics.textContent = `${mlEvidence.metrics.predicted_area_km2.toFixed(4)} km² · RGI agreement ${(mlEvidence.metrics.rgi_overlap_iou * 100).toFixed(1)}% · review priority ${mlEvidence.metrics.review_priority_0_100}/100`;
+      const limit = document.createElement("p");
+      limit.className = "mt-1 text-xs leading-4";
+      limit.textContent = "Model screening evidence; not independent accuracy or an event probability.";
+      details.append(title, metrics, limit);
+      mlLayer.bindPopup(details);
+      content.addLayer(mlLayer);
+    }
 
-    for (const object of objects) {
+    for (const object of mapObjects) {
       if (!visibleKinds[object.kind]) continue;
       const selected = object.id === selectedObjectId;
       const style = { ...KIND_STYLE[object.kind], weight: (KIND_STYLE[object.kind].weight ?? 2) + (selected ? 1.7 : 0), className: mode === "route" && object.kind === "river" ? "risk-twin-route-flow" : undefined };
@@ -151,7 +194,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
       if (bounds.isValid()) map.fitBounds(bounds, { padding: [44, 44], maxZoom: 13 });
       fittedGlacierRef.current = glacier?.rgi_id ?? null;
     }
-  }, [comparisonLayer, glacier, mode, objects, onSelectObject, selectedObjectId, visibleKinds, yearLayer]);
+  }, [comparisonLayer, glacier, mapObjects, mlEvidence, mode, onSelectObject, selectedObjectId, showMlBoundary, visibleKinds, yearLayer]);
 
   useEffect(() => {
     if (!selectedObjectId) return;
@@ -159,9 +202,15 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
     const layer = objectLayerRef.current.get(selectedObjectId) as (L.Layer & { getBounds?: () => L.LatLngBounds; openPopup?: () => unknown }) | undefined;
     if (!map || !layer) return;
     const bounds = layer.getBounds?.();
-    if (bounds?.isValid()) map.fitBounds(bounds, { padding: [64, 64], maxZoom: 14 });
+    const glacierLayer = glacier ? objectLayerRef.current.get(`glacier:${glacier.rgi_id}`) as (L.Layer & { getBounds?: () => L.LatLngBounds }) | undefined : undefined;
+    const glacierBounds = glacierLayer?.getBounds?.();
+    if (bounds?.isValid() && glacierBounds?.isValid()) {
+      map.fitBounds(bounds.extend(glacierBounds), { padding: [64, 64], maxZoom: 14 });
+    } else if (bounds?.isValid()) {
+      map.fitBounds(bounds, { padding: [64, 64], maxZoom: 14 });
+    }
     layer.openPopup?.();
-  }, [selectedObjectId]);
+  }, [glacier, selectedObjectId]);
 
   const toggleKind = (kind: EvidenceKind) => setVisibleKinds((current) => ({ ...current, [kind]: !current[kind] }));
 
@@ -171,19 +220,28 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
         <div ref={elementRef} className="h-[620px] w-full" aria-label="Risk Twin evidence map" />
         <div className="absolute left-3 top-3 z-[500] max-w-[268px] rounded-xl border border-white/15 bg-slate-950/90 p-3 text-white shadow-lg backdrop-blur">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-200">Карта доказательств</p>
-          <p className="mt-1 text-sm font-semibold">Именованные объекты и границы вывода</p>
-          <p className="mt-1 text-xs leading-4 text-slate-300">Выберите объект: справа появятся источник, допустимое утверждение и следующая проверка.</p>
+          {selectedObject?.screening ? <>
+            <p className="mt-1 text-sm font-semibold">Точный кейс: {selectedObject.name}</p>
+            <p className="mt-1 text-xs leading-4 text-slate-200">{(selectedObject.screening.areaM2 / 1_000_000).toFixed(3)} км² · {selectedObject.screening.distanceToRgiBoundaryM.toFixed(0)} м до RGI · {selectedObject.screening.areaChangePercent === null ? "нет надёжного match 2020" : `${selectedObject.screening.areaChangePercent > 0 ? "+" : ""}${selectedObject.screening.areaChangePercent.toFixed(1)}% к 2020`}</p>
+          </> : <>
+            <p className="mt-1 text-sm font-semibold">Локальный набор для проверки</p>
+            <p className="mt-1 text-xs leading-4 text-slate-300">Показаны все локальные объекты выбранного контекста. Включайте источники ниже, чтобы не перегружать карту.</p>
+          </>}
+          {selectedObject && <a href="#case-action-plan" className="mt-3 inline-flex min-h-9 items-center rounded-lg bg-cyan-300 px-2.5 text-xs font-bold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">{selectedObject.screening ? "Открыть действия по кейсу" : "Открыть план проверки"}</a>}
         </div>
         <div className="absolute right-3 top-3 z-[500] flex max-w-[calc(100%-24px)] flex-wrap justify-end gap-1.5">
-          <button type="button" onClick={() => setBasemap("terrain")} aria-pressed={basemap === "terrain"} className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold shadow-sm backdrop-blur ${basemap === "terrain" ? "border-cyan-200 bg-cyan-100 text-cyan-950" : "border-white/20 bg-slate-950/85 text-white"}`}>Карта</button>
-          <button type="button" onClick={() => setBasemap("satellite")} aria-pressed={basemap === "satellite"} className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold shadow-sm backdrop-blur ${basemap === "satellite" ? "border-cyan-200 bg-cyan-100 text-cyan-950" : "border-white/20 bg-slate-950/85 text-white"}`}>Спутник</button>
+          <button type="button" onClick={() => setBasemap("offline")} aria-pressed={basemap === "offline"} className={`min-h-10 rounded-lg border px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur ${basemap === "offline" ? "border-cyan-200 bg-cyan-100 text-cyan-950" : "border-white/20 bg-slate-950/85 text-white"}`}>Локально</button>
+          <button type="button" onClick={() => setBasemap("terrain")} aria-pressed={basemap === "terrain"} className={`min-h-10 rounded-lg border px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur ${basemap === "terrain" ? "border-cyan-200 bg-cyan-100 text-cyan-950" : "border-white/20 bg-slate-950/85 text-white"}`}>Карта</button>
+          <button type="button" onClick={() => setBasemap("satellite")} aria-pressed={basemap === "satellite"} className={`min-h-10 rounded-lg border px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur ${basemap === "satellite" ? "border-cyan-200 bg-cyan-100 text-cyan-950" : "border-white/20 bg-slate-950/85 text-white"}`}>Спутник</button>
         </div>
         <div className="absolute bottom-8 left-3 right-16 z-[500] flex flex-wrap gap-1.5">
-          {(Object.keys(KIND_LABELS) as EvidenceKind[]).map((kind) => <button key={kind} type="button" aria-pressed={visibleKinds[kind]} onClick={() => toggleKind(kind)} className={`rounded-full border px-2 py-1 text-[10px] font-semibold shadow-sm backdrop-blur ${visibleKinds[kind] ? "border-cyan-100 bg-slate-950/90 text-white" : "border-slate-500 bg-slate-950/70 text-slate-400 line-through"}`}>{KIND_LABELS[kind]}</button>)}
+          {mlEvidence && <button type="button" aria-pressed={showMlBoundary} onClick={() => setShowMlBoundary((current) => !current)} className={`min-h-9 rounded-full border px-3 py-2 text-[11px] font-semibold shadow-sm backdrop-blur ${showMlBoundary ? "border-emerald-200 bg-emerald-950/90 text-emerald-100" : "border-slate-500 bg-slate-950/70 text-slate-400 line-through"}`}>ML boundary · {mlEvidence.year}</button>}
+          {(Object.keys(KIND_LABELS) as EvidenceKind[]).map((kind) => <button key={kind} type="button" aria-pressed={visibleKinds[kind]} onClick={() => toggleKind(kind)} className={`min-h-9 rounded-full border px-3 py-2 text-[11px] font-semibold shadow-sm backdrop-blur ${visibleKinds[kind] ? "border-cyan-100 bg-slate-950/90 text-white" : "border-slate-500 bg-slate-950/70 text-slate-400 line-through"}`}>{KIND_LABELS[kind]}{!mapObjects.some((object) => object.kind === kind) ? " · нет точного кейса" : ""}</button>)}
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600" aria-label="Map legend"><span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-cyan-400" />инвентарь/слой</span><span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-blue-500" />вода и русла</span><span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-violet-500" />бассейн/OSM</span><span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-red-500" />архивная запись</span></div>
-      {mapError && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900">{mapError}</p>}
+      {basemap === "offline" && <p role="status" aria-live="polite" className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-950">Локальный презентационный режим: внешняя подложка отключена, но все локальные научные слои и выбранный кейс остаются доступны.</p>}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600" aria-label="Map legend"><span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-emerald-500" />ML boundary</span><span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-cyan-400" />инвентарь/слой</span><span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-blue-500" />вода и русла</span><span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-violet-500" />бассейн/OSM</span><span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-red-500" />архивная запись</span></div>
+      {mapError && <p role="status" aria-live="polite" className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900">{mapError}</p>}
     </div>
   );
 }

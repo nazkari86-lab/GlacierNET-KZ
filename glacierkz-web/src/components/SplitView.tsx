@@ -19,7 +19,9 @@ export default function SplitView({ segments, imageUrl }: SplitViewProps) {
           <div className="mb-2 flex items-center gap-2">
             <div className="h-3 w-3 rounded-full" style={{ backgroundColor: MODEL_COLORS[i % MODEL_COLORS.length] }} />
             <span className="font-semibold">{seg.model_name}</span>
-            <span className="ml-auto text-sm text-zinc-500">{seg.area_km2.toFixed(2)} km²</span>
+            <span className="ml-auto text-sm text-zinc-500">
+              {seg.area_km2 !== null ? `${seg.area_km2.toFixed(2)} km²` : "Area unavailable"}
+            </span>
           </div>
           <div className="grid grid-cols-2 gap-3">
             {imageUrl && (

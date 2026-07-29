@@ -10,11 +10,20 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import numpy as np
+
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.benchmark_metrics import area_metrics, calibrate_threshold, hard_segmentation_metrics  # noqa: E402
+from src.benchmark_metrics import (  # noqa: E402
+    area_metrics,
+    boundary_segmentation_metrics,
+    calibrate_threshold,
+    hard_segmentation_metrics,
+    probability_calibration_metrics,
+    selective_error_curve,
+)
 from src.model_security import verify_trusted_model  # noqa: E402
 from src.models import build_data_generator, compile_model, get_custom_objects  # noqa: E402
 from src.provenance import sha256_directory  # noqa: E402
@@ -100,10 +109,42 @@ def benchmark_v2_metrics(
         **hard_segmentation_metrics(test_labels, test_probabilities, threshold),
         **area_metrics(test_labels, test_probabilities, threshold, pixel_area_m2=pixel_area_m2),
     }
+    boundary_rows = []
+    for label, probability in zip(test_labels, test_probabilities):
+        row = boundary_segmentation_metrics(
+            label,
+            probability,
+            threshold,
+            tolerance_pixels=2,
+            pixel_size=float(pixel_area_m2) ** 0.5,
+        )
+        boundary_rows.append(row)
+    finite_boundary_rows = [
+        row
+        for row in boundary_rows
+        if all(np.isfinite(float(row[key])) for key in ("boundary_f1", "hausdorff95", "assd"))
+    ]
+    boundary_diagnostic = {
+        "status": "diagnostic_only_overlapping_patch_units",
+        "n_patches": len(boundary_rows),
+        "n_finite_patches": len(finite_boundary_rows),
+        "n_missing_boundary_patches": len(boundary_rows) - len(finite_boundary_rows),
+    }
+    if finite_boundary_rows:
+        for key in ("boundary_f1", "hausdorff95", "assd"):
+            values = np.asarray([float(row[key]) for row in finite_boundary_rows])
+            boundary_diagnostic[f"mean_{key}"] = float(values.mean())
+            boundary_diagnostic[f"median_{key}"] = float(np.median(values))
     return {
         "threshold_calibration": calibration,
         "hard_metrics": hard,
-        "boundary_metrics_status": "blocked: glacier-aware non-overlapping test geometry is required",
+        "probability_calibration": probability_calibration_metrics(test_labels, test_probabilities),
+        "selective_error_curve": selective_error_curve(test_labels, test_probabilities, threshold=threshold),
+        "patch_boundary_diagnostic": boundary_diagnostic,
+        "boundary_metrics_status": (
+            "patch diagnostic available; claim-grade glacier boundary metrics remain blocked "
+            "until non-overlapping glacier geometry is present"
+        ),
         "bootstrap_status": "blocked: glacier_id is absent from the current silver patch manifest",
     }
 

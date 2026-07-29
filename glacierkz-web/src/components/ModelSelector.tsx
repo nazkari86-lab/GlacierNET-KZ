@@ -19,6 +19,8 @@ const COMPLEXITY_STYLE: Record<Complexity, string> = {
 };
 
 const USE_CASE: Record<string, string> = {
+  temporal_s2_terrain_s1: 'Best measured: optical + terrain + Sentinel-1 SAR',
+  temporal_s2_terrain: 'Temporal model without SAR dependency',
   unet: 'General-purpose segmentation',
   attention_unet: 'High-accuracy with attention gates',
   ndsi: 'Fast threshold-based classification',
@@ -27,6 +29,8 @@ const USE_CASE: Record<string, string> = {
 };
 
 const COMPLEXITY_MAP: Record<string, Complexity> = {
+  temporal_s2_terrain_s1: 'High',
+  temporal_s2_terrain: 'High',
   unet: 'Medium',
   attention_unet: 'High',
   ndsi: 'Low',
@@ -35,6 +39,8 @@ const COMPLEXITY_MAP: Record<string, Complexity> = {
 };
 
 const MODEL_ICON: Record<string, string> = {
+  temporal_s2_terrain_s1: '🛰️',
+  temporal_s2_terrain: '🏔️',
   unet: '🔵',
   attention_unet: '🟣',
   ndsi: '🟢',
@@ -77,7 +83,14 @@ export default function ModelSelector({ selectedModel, onSelect, models }: Model
                 {MODEL_ICON[model.name] ?? '⚪'}
               </span>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-zinc-900">{model.display_name}</div>
+                <div className="flex items-center gap-2 text-sm font-semibold text-zinc-900">
+                  {model.display_name}
+                  {model.recommended && (
+                    <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[9px] font-bold uppercase text-white">
+                      Recommended
+                    </span>
+                  )}
+                </div>
                 <div className="mt-1 text-xs text-zinc-500 line-clamp-2">{useCase}</div>
               </div>
             </div>
@@ -101,6 +114,12 @@ export default function ModelSelector({ selectedModel, onSelect, models }: Model
             </div>
 
             <div className="mt-2 text-[10px] text-zinc-400 capitalize">{model.name.replace('_', ' ')}</div>
+            {model.channel_count && (
+              <div className="mt-1 text-[10px] text-zinc-500">
+                {model.channel_count} channels
+                {model.decision_threshold !== undefined && ` · threshold ${model.decision_threshold.toFixed(2)}`}
+              </div>
+            )}
           </button>
         );
       })}

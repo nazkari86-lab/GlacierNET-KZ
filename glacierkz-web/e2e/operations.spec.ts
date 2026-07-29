@@ -7,6 +7,10 @@ test.describe("Decision-first Operations workspace", () => {
     await expect(
       page.getByRole("heading", { name: "What needs attention today" })
     ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Критические объекты для следующей проверки" })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText("Real local Risk Twin screening")).toBeVisible();
+    const riskTwinSelector = page.getByLabel("Выбрать любой реальный случай Risk Twin");
+    await expect(riskTwinSelector).toBeVisible({ timeout: 20_000 });
     await expect(page.getByTestId("real-inventory-map")).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText(/RGI 7.0 boundaries/)).toBeVisible();
     await expect(page.getByRole("heading", { name: "Analysis by year" })).toBeVisible();
@@ -32,19 +36,10 @@ test.describe("Decision-first Operations workspace", () => {
     await expect(
       page.getByRole("img", { name: "2000 segmentation screening layer" }).or(page.getByText(/2000 map layer unavailable/))
     ).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText("Next Best Observation")).toBeVisible();
-    await expect(page.getByText("What changed")).toBeVisible();
-    await expect(page.getByText("Can this be trusted?")).toBeVisible();
-
-    await page.getByRole("tab", { name: "Before / after" }).click();
-    await expect(
-      page.getByRole("img", { name: /Synthetic difference map/ })
-    ).toBeVisible();
-    await expect(page.getByText("Model agreement")).toBeVisible();
-
-    await page.getByText("2. Demo Lake A (synthetic)").click();
-    await page.getByRole("tab", { name: "Evidence timeline" }).click();
-    await expect(page.getByText("Human review recorded")).toBeVisible();
-    await expect(page.getByText("Evidence case fixed")).toBeVisible();
+    const selectableCases = await riskTwinSelector.locator("option").allTextContents();
+    expect(selectableCases.length).toBeGreaterThan(1);
+    await riskTwinSelector.selectOption({ index: 1 });
+    await expect(page.getByText("Выбранный реальный case")).toBeVisible();
+    await expect(page.getByText(/Приоритет наблюдения/)).toBeVisible();
   });
 });

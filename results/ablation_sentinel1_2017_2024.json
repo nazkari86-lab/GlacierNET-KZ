@@ -1,6 +1,6 @@
 {
   "schema": "glaciernet-kz.controlled-ablation.v1",
-  "created_at": "2026-07-26T17:30:38+00:00",
+  "created_at": "2026-07-29T11:42:53+00:00",
   "comparison": "Sentinel-2 plus terrain versus Sentinel-2 plus terrain plus Sentinel-1 VV/VH",
   "protocol": "same sampled patches, identical labels and temporal splits, identical training configuration",
   "scope": "compact one-AOI temporal ablation with silver RGI-derived labels",
@@ -16,7 +16,7 @@
   "control_report": "results/ablation_unet_sentinel2_terrain_control_2017_2024.json",
   "candidate_report": "results/ablation_unet_sentinel2_terrain_s1_2017_2024.json",
   "control_report_sha256": "d53e0e84eb8224b1efd24f13bbbc0e3cc76fb9b2d60124e737747551ef5bdb5f",
-  "candidate_report_sha256": "bb57655dc598e9adcf7e09e8e806d8064b52d5ee21c6fd1012d13218d2f234dd",
+  "candidate_report_sha256": "17eeb875d383296dd7deeecfce56a35a2e7c98c1c948f03fe4a870c4cf3db735",
   "control_feature_schema": [
     "B2",
     "B3",

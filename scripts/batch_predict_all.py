@@ -12,8 +12,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from predict import list_available_years
-from src import config
+from predict import list_available_years  # noqa: E402
 
 
 def years_needing_predictions(require_mask: str = "rf_mask.tif") -> list[int]:

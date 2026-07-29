@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { WebSocketClient } from "@/lib/websocket";
 
 let lastSocket: {
+  url: string;
   readyState: number;
   send: ReturnType<typeof vi.fn>;
   close: ReturnType<typeof vi.fn>;

@@ -2,7 +2,7 @@
 # One URL: http://localhost:8080
 #
 #   /         Dashboard (Next.js)
-#   /demo     Gradio upload demo
+#   /demo     Guided Next.js evidence workflow
 #   /docs     API Swagger
 #   /api/*    REST endpoints
 #   /mcp/*    MCP tools bridge
@@ -48,11 +48,24 @@ services:
       - results_data:/app/data/results
       - ./models:/app/models:ro
       - ./results:/app/results:ro
+      # Evidence assets are deliberately mounted read-only so the Jury page can
+      # cite the same local artefacts that are reviewed in the repository.
+      - ./benchmarks:/app/benchmarks:ro
+      - ./docs:/app/docs:ro
+      - ./README.md:/app/README.md:ro
+      - ./CITATION.cff:/app/CITATION.cff:ro
       - ./predictions:/app/predictions:ro
       - ./data/raw:/app/data/raw:ro
       - ./data/processed:/app/data/processed:ro
       - ./data/rgi:/app/data/rgi:ro
       - ./data/wgms:/app/data/wgms:ro
+      - ./data/lakes:/app/data/lakes:ro
+      - ./data/events:/app/data/events:ro
+      - ./data/impact_assets:/app/data/impact_assets:ro
+      - ./data/hydrology/subsets:/app/data/hydrology/subsets:ro
+      - ./data/water:/app/data/water:ro
+      - ./data/climate:/app/data/climate:ro
+      - ./data/population:/app/data/population:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -103,9 +116,12 @@ services:
       - glaciernet
 
   demo:
+    profiles: ["legacy-demo"]
     build:
       context: .
       dockerfile: spaces/Dockerfile
+    ports:
+      - "${DEMO_PORT:-7860}:7860"
     expose:
       - "7860"
     environment:
@@ -131,7 +147,6 @@ services:
     depends_on:
       - api
       - web
-      - demo
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
       interval: 15s

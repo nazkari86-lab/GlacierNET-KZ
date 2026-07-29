@@ -75,7 +75,11 @@ def check_node() -> bool:
 def check_conda() -> bool:
     print("\n[4] Conda (for geospatial libs)")
     try:
-        out = subprocess.check_output(["conda", "--version"], text=True).strip()
+        out = subprocess.check_output(
+            ["conda", "--version"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
         check("conda", True, out)
         return True
     except FileNotFoundError:
@@ -156,7 +160,7 @@ def check_disk_space() -> bool:
     import shutil
 
     usage = shutil.disk_usage(str(root))
-    free_gb = usage.free / (1024 ** 3)
+    free_gb = usage.free / (1024**3)
     ok = free_gb > 10
     check("free disk >= 10 GB", ok, f"{free_gb:.1f} GB free")
     return ok

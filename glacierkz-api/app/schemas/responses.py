@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ModelInfo(BaseModel):
@@ -10,6 +10,13 @@ class ModelInfo(BaseModel):
     supports_tta: bool
     supports_crf: bool
     supports_uncertainty: bool
+    channel_count: Optional[int] = None
+    feature_schema: list[str] = Field(default_factory=list)
+    decision_threshold: Optional[float] = None
+    inference_variant: Optional[str] = None
+    evidence_tier: Optional[str] = None
+    recommended: bool = False
+    year_range: Optional[list[Optional[int]]] = None
 
 
 class SegmentationResult(BaseModel):
@@ -19,13 +26,24 @@ class SegmentationResult(BaseModel):
     overlay_path: Optional[str] = None
     area_km2: Optional[float] = None
     error: Optional[str] = None
+    model_name: Optional[str] = None
+    geotiff_path: Optional[str] = None
+    probability_path: Optional[str] = None
+    probability_geotiff_path: Optional[str] = None
+    entropy_path: Optional[str] = None
+    entropy_geotiff_path: Optional[str] = None
+    decision_threshold: Optional[float] = None
+    inference_variant: Optional[str] = None
+    feature_schema: list[str] = Field(default_factory=list)
+    uncertain_pixel_fraction: Optional[float] = None
+    warnings: list[str] = Field(default_factory=list)
 
 
 class CompareSegment(BaseModel):
     model_name: str
     mask_path: str
     overlay_path: str
-    area_km2: float
+    area_km2: Optional[float] = None
 
 
 class CompareResult(BaseModel):

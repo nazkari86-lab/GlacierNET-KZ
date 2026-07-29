@@ -583,27 +583,19 @@ Status is `healthy` when CPU < 95% and memory < 95%; otherwise `degraded`.
 
 ### `GET /api/analysis/models`
 
-List available LLM providers and models.
+List the Groq provider and its available chat models.
 
 **Response `200`:**
 
 ```json
 [
   {
-    "provider": "openai",
-    "label": "OpenAI",
+    "provider": "groq",
+    "label": "Groq",
     "models": [
-      {"id": "gpt-4o", "name": "GPT-4o", "free": false}
+      {"id": "llama-3.3-70b-versatile", "name": "llama-3.3-70b-versatile", "free": false}
     ],
     "needs_key": true
-  },
-  {
-    "provider": "ollama",
-    "label": "Ollama (local)",
-    "models": [
-      {"id": "llama3", "name": "Llama 3", "free": true}
-    ],
-    "needs_key": false
   }
 ]
 ```
@@ -615,8 +607,8 @@ Send analysis prompt to an LLM provider.
 ```json
 {
   "prompt": "Describe the glacier retreat pattern in the Almaty region",
-  "provider": "ollama",
-  "model": "llama3",
+  "provider": "groq",
+  "model": "llama-3.3-70b-versatile",
   "mode": "describe",
   "context": "Time series data: 2000=2.5km², 2010=2.0km², 2020=1.5km²",
   "api_key": null
@@ -626,7 +618,7 @@ Send analysis prompt to an LLM provider.
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `prompt` | string | yes | Analysis question |
-| `provider` | string | no | LLM provider (auto-selects if omitted) |
+| `provider` | string | no | Must be `groq`; other providers fail closed |
 | `model` | string | no | Model ID |
 | `mode` | string | no | `describe`, `trend`, or `compare` |
 | `context` | string | no | Additional context for the LLM |
@@ -637,8 +629,8 @@ Send analysis prompt to an LLM provider.
 ```json
 {
   "content": "The glacier shows a consistent retreat pattern...",
-  "provider": "ollama",
-  "model": "llama3",
+  "provider": "groq",
+  "model": "llama-3.3-70b-versatile",
   "fallback_used": false
 }
 ```

@@ -6,7 +6,7 @@ import json
 
 import numpy as np
 
-from src.train import ShardedArray, TrainConfig, load_data
+from src.train import ShardedArray, TrainConfig, _modality_groups, load_data, load_sample_weights
 
 
 def write_split(root, year: int, offset: float) -> None:
@@ -71,3 +71,32 @@ def test_load_data_assigns_whole_years_to_temporal_splits(tmp_path):
     assert np.isclose(x_test.mean(), 3.0)
     assert isinstance(x_train, ShardedArray)
     np.testing.assert_allclose(x_train[[0, 3]], 1.0)
+
+
+def test_modality_groups_are_derived_from_declared_feature_schema():
+    schema = [
+        "B2",
+        "B3",
+        "elevation_m_normalized",
+        "slope_degrees_normalized",
+        "aspect_degrees_normalized",
+        "VV_dB_normalized",
+        "VH_dB_normalized",
+    ]
+    assert _modality_groups(schema) == [(2, 3, 4), (5, 6)]
+
+
+def test_load_sample_weights_is_optional_and_fail_closed(tmp_path):
+    cfg = TrainConfig(patches_path=tmp_path)
+    assert load_sample_weights(cfg) is None
+
+    shape = (2, 256, 256)
+    np.save(tmp_path / "w_train.npy", np.ones(shape, dtype=np.float16))
+    with np.testing.assert_raises_regex(ValueError, "incomplete"):
+        load_sample_weights(cfg)
+
+    np.save(tmp_path / "w_val.npy", np.ones(shape, dtype=np.float16))
+    np.save(tmp_path / "w_test.npy", np.ones(shape, dtype=np.float16))
+    weights = load_sample_weights(cfg)
+    assert weights is not None
+    assert all(array.shape == shape for array in weights)

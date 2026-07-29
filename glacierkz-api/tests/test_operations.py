@@ -198,3 +198,42 @@ def test_operations_evidence_workflow_and_export_hash() -> None:
     assert body["audit_chain"]["valid"] is True
     assert body["bundle_sha256"] == export.headers["x-artifact-sha256"]
     assert "not an official warning" in body["safety_statement"]
+
+
+def test_risk_twin_handoff_is_idempotent_and_creates_auditable_follow_up() -> None:
+    client = TestClient(app, headers={"x-forwarded-for": "198.51.100.14"})
+    set_current_user(analyst())
+    payload = {
+        "rgi_id": "RGI2000-v7.0-G-13-33843",
+        "glacier_name": "Tsentralniy Tuyuksu Glacier",
+        "lake_id": "REAL-LAKE-001",
+        "inventory_year": 2023,
+        "previous_inventory_year": 2020,
+        "latitude": 43.051,
+        "longitude": 77.081,
+        "area_current_m2": 120000,
+        "area_previous_m2": 100000,
+        "area_change_percent": 20,
+        "geometric_match_distance_m": 42,
+        "distance_to_rgi_boundary_m": 510,
+        "observation_priority_0_100": 81,
+        "flags": ["within_1km_of_rgi_boundary"],
+        "action_summary": "Verify source imagery and collect a field profile before any operational conclusion.",
+    }
+    created = client.post("/api/operations/risk-twin-handoffs", json=payload)
+    assert created.status_code == 201
+    body = created.json()
+    assert body["status"] == "created"
+    assert body["asset"]["evidence_tier"] == "operational_unverified"
+    assert body["inspection_task"]["status"] == "queued"
+    assert "official warning" in body["safety_statement"]
+
+    repeated = client.post("/api/operations/risk-twin-handoffs", json=payload)
+    assert repeated.status_code == 201
+    assert repeated.json()["status"] == "existing"
+    assert repeated.json()["evidence_case"]["id"] == body["evidence_case"]["id"]
+
+    overview = client.get("/api/operations/overview").json()
+    assert overview["counts"]["assets"] == 1
+    assert overview["counts"]["evidence_cases"] == 1
+    assert overview["audit_chain"]["valid"] is True

@@ -27,7 +27,17 @@ def build_data_generator():
 
     class GlacierDataGenerator(tf.keras.utils.Sequence):
         def __init__(
-            self, X, y, batch_size=config.BATCH_SIZE, augment=False, shuffle=True, seed=config.RANDOM_SEED, **kwargs
+            self,
+            X,
+            y,
+            batch_size=config.BATCH_SIZE,
+            augment=False,
+            shuffle=True,
+            seed=config.RANDOM_SEED,
+            modality_groups=None,
+            modality_dropout_probability=0.0,
+            sample_weights=None,
+            **kwargs,
         ):
             super().__init__(**kwargs)
             self.X = X
@@ -36,6 +46,20 @@ def build_data_generator():
             self.augment = augment
             self.shuffle = shuffle
             self.rng = np.random.default_rng(seed)
+            self.modality_groups = tuple(tuple(group) for group in (modality_groups or ()))
+            self.modality_dropout_probability = float(modality_dropout_probability)
+            self.sample_weights = sample_weights
+            if sample_weights is not None:
+                if len(sample_weights) != len(X):
+                    raise ValueError("sample_weights and X must have the same number of patches")
+                if sample_weights.shape[1:] != y.shape[1:]:
+                    raise ValueError("sample_weights and y must have matching spatial dimensions")
+            if not 0.0 <= self.modality_dropout_probability < 1.0:
+                raise ValueError("modality_dropout_probability must be in [0, 1)")
+            if any(not group for group in self.modality_groups):
+                raise ValueError("modality dropout groups must not be empty")
+            if any(index < 0 or index >= X.shape[-1] for group in self.modality_groups for index in group):
+                raise ValueError("modality dropout channel index is outside the feature tensor")
             self.indices = np.arange(len(X))
             if shuffle:
                 self.rng.shuffle(self.indices)
@@ -47,19 +71,36 @@ def build_data_generator():
             batch_idx = self.indices[idx * self.batch_size : (idx + 1) * self.batch_size]
             X_batch = self.X[batch_idx].astype(np.float32)
             y_batch = self.y[batch_idx].astype(np.float32)[..., np.newaxis]
+            weight_batch = (
+                self.sample_weights[batch_idx].astype(np.float32) if self.sample_weights is not None else None
+            )
 
             if self.augment:
                 photometric_channels = min(len(config.S2_BANDS), X_batch.shape[-1])
                 for i in range(len(X_batch)):
+                    target = (
+                        np.stack([y_batch[i, ..., 0], weight_batch[i]], axis=-1)
+                        if weight_batch is not None
+                        else y_batch[i, ..., 0]
+                    )
                     img, msk = augment_patch(
                         X_batch[i],
-                        y_batch[i, ..., 0],
+                        target,
                         self.rng,
                         photometric_channels=photometric_channels,
                     )
                     X_batch[i] = img
-                    y_batch[i, ..., 0] = msk
+                    if weight_batch is not None:
+                        y_batch[i, ..., 0] = msk[..., 0]
+                        weight_batch[i] = msk[..., 1]
+                    else:
+                        y_batch[i, ..., 0] = msk
+                    for group in self.modality_groups:
+                        if self.rng.random() < self.modality_dropout_probability:
+                            X_batch[i, ..., list(group)] = 0.0
 
+            if weight_batch is not None:
+                return X_batch, y_batch, weight_batch
             return X_batch, y_batch
 
         def on_epoch_end(self):
@@ -404,7 +445,7 @@ def predict_full_image(image: np.ndarray, model, patch_size: int = config.PATCH_
     """
     full_pred, count_map = _sliding_window_predict(image, model, patch_size)
     full_pred = full_pred / np.maximum(count_map, 1)
-    binary_mask = (full_pred > threshold).astype(np.uint8)
+    binary_mask = (full_pred >= threshold).astype(np.uint8)
     return full_pred, binary_mask
 
 
@@ -505,8 +546,44 @@ def tta_predict(model, image: np.ndarray, threshold: float = 0.5):
         preds.append(pred)
 
     prob = np.mean(preds, axis=0)
-    binary = (prob > threshold).astype(np.uint8)
+    binary = (prob >= threshold).astype(np.uint8)
     return prob, binary
+
+
+def tta_predict_full_image(
+    model,
+    image: np.ndarray,
+    *,
+    patch_size: int = config.PATCH_SIZE,
+    threshold: float = 0.5,
+):
+    """Sliding-window TTA for scenes larger or smaller than one model patch.
+
+    The previous runtime called ``model.predict`` on an arbitrary full scene,
+    which fails for fixed 256x256 SavedModels.  Each transformed scene now uses
+    the same overlap-averaged sliding-window inference path.
+    """
+    transforms = [
+        (lambda value: value, lambda value: value),
+    ]
+    if config.TTA_FLIP_LR:
+        transforms.append((np.fliplr, np.fliplr))
+    if config.TTA_FLIP_UD:
+        transforms.append((np.flipud, np.flipud))
+    if config.TTA_FLIP_LR and config.TTA_FLIP_UD:
+        transforms.append(
+            (
+                lambda value: np.flipud(np.fliplr(value)),
+                lambda value: np.flipud(np.fliplr(value)),
+            )
+        )
+    probabilities = []
+    for forward, inverse in transforms:
+        transformed = np.ascontiguousarray(forward(image))
+        prediction, _ = predict_full_image(transformed, model, patch_size=patch_size, threshold=threshold)
+        probabilities.append(np.ascontiguousarray(inverse(prediction)))
+    probability = np.mean(probabilities, axis=0, dtype=np.float32)
+    return probability, (probability >= threshold).astype(np.uint8)
 
 
 def tta_predict_batch(model, X: np.ndarray, threshold: float = 0.5, batch_size: int = 16):
@@ -531,7 +608,7 @@ def tta_predict_batch(model, X: np.ndarray, threshold: float = 0.5, batch_size: 
         preds.append(pred_fb)
 
     prob = np.mean(preds, axis=0)
-    return prob, (prob > threshold).astype(np.uint8)
+    return prob, (prob >= threshold).astype(np.uint8)
 
 
 # ----------------------------------------------------------------------

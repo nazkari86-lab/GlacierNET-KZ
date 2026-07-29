@@ -14,7 +14,15 @@ def main() -> int:
     args = parser.parse_args()
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     errors: list[str] = []
-    splits = {key: {int(v) for v in manifest.get(key, [])} for key in ("train_years", "val_years", "test_years")}
+    raw_validation = manifest.get("val_years", manifest.get("validation_years", []))
+    splits = {
+        "train_years": {int(v) for v in manifest.get("train_years", [])},
+        "val_years": {int(v) for v in raw_validation},
+        "test_years": {int(v) for v in manifest.get("test_years", [])},
+    }
+    for key, values in splits.items():
+        if not values:
+            errors.append(f"{key} must be non-empty")
     for left, right in (("train_years", "val_years"), ("train_years", "test_years"), ("val_years", "test_years")):
         overlap = splits[left] & splits[right]
         if overlap:

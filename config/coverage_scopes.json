@@ -1,0 +1,34 @@
+{
+  "schema": "glaciernet-kz.coverage-scopes.v1",
+  "research_modules": [
+    "src/anomaly.py",
+    "src/callbacks.py",
+    "src/clustering.py",
+    "src/datasets.py",
+    "src/diffusion_model.py",
+    "src/distributed_training.py",
+    "src/domain_adaptation.py",
+    "src/evaluation.py",
+    "src/feature_engineering.py",
+    "src/federated_learning.py",
+    "src/graph_neural_network.py",
+    "src/hyperparameter_tuning.py",
+    "src/interpretability.py",
+    "src/model_compression.py",
+    "src/multi_task_learning.py",
+    "src/neural_architecture_search.py",
+    "src/postprocessing.py",
+    "src/reporting.py",
+    "src/schedulers.py",
+    "src/segmentation_models.py",
+    "src/self_supervised.py",
+    "src/time_series.py",
+    "src/uncertainty.py",
+    "src/vision_transformer.py",
+    "src/visualization.py"
+  ],
+  "policy": {
+    "repository_minimum_percent": 45,
+    "production_scope_minimum_percent": 55
+  }
+}

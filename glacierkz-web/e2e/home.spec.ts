@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Home page", () => {
   test("loads with English title by default", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1, name: "GlacierNET-KZ" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Analyze a real glacier and see where the model can be trusted." })).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
   });
 
@@ -11,20 +11,16 @@ test.describe("Home page", () => {
     await page.goto("/");
     await page.getByRole("radio", { name: "RU" }).click();
     await expect(page.locator("html")).toHaveAttribute("lang", "ru");
-    const navigation = page.getByLabel("Main navigation");
-    await expect(navigation.getByRole("link", { name: "Обзор" })).toBeVisible();
-    await expect(navigation.getByRole("link", { name: "Карта" })).toBeVisible();
-    await expect(navigation.getByRole("link", { name: "Объекты" })).toBeVisible();
-    await expect(navigation.getByRole("link", { name: "Проверки" })).toBeVisible();
-    await expect(navigation.getByRole("link", { name: "Отчёты" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Спутниктік бақылауларды тексерілетін дәлелдерге айналдырамыз." })).not.toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Проанализируйте реальный ледник и увидьте, где модели можно доверять." })).toBeVisible();
   });
 
-  test("navigates to the decision-first Operations workspace", async ({ page }) => {
+  test("navigates to the glacier-first ML workspace", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: "Open Operations" }).click();
-    await expect(page).toHaveURL(/\/operations/);
+    await page.getByRole("link", { name: "Open ML Workspace" }).click();
+    await expect(page).toHaveURL(/\/ml/);
     await expect(
-      page.getByRole("heading", { name: "What needs attention today" })
+      page.getByRole("heading", { name: /От спутникового композита/i })
     ).toBeVisible();
   });
 

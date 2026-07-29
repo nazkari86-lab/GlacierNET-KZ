@@ -64,7 +64,9 @@ def verify_same_patch_lineage(control: dict, candidate: dict) -> dict:
     checked_labels = 0
     for year in years:
         control_dir = ROOT / str(next(item["output_dir"] for item in control_manifest["years"] if item["year"] == year))
-        candidate_dir = ROOT / str(next(item["output_dir"] for item in candidate_manifest["years"] if item["year"] == year))
+        candidate_dir = ROOT / str(
+            next(item["output_dir"] for item in candidate_manifest["years"] if item["year"] == year)
+        )
         for split in ("train", "val", "test"):
             control_label = control_dir / f"y_{split}.npy"
             candidate_label = candidate_dir / f"y_{split}.npy"
@@ -86,10 +88,7 @@ def build_report(control_path: Path, candidate_path: Path) -> dict:
     candidate = load_json(candidate_path)
     validate_pair(control, candidate)
     lineage = verify_same_patch_lineage(control, candidate)
-    delta = {
-        metric: float(candidate["metrics"][metric]) - float(control["metrics"][metric])
-        for metric in METRICS
-    }
+    delta = {metric: float(candidate["metrics"][metric]) - float(control["metrics"][metric]) for metric in METRICS}
     dice_delta = delta["dice_coefficient"]
     if dice_delta > 0:
         finding = "Added Sentinel-1 channels improved Dice in this compact same-patch temporal ablation."

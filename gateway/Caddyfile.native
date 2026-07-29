@@ -19,11 +19,6 @@
 		reverse_proxy host.docker.internal:8000
 	}
 
-	@demo path /demo /demo/*
-	handle @demo {
-		reverse_proxy host.docker.internal:7860
-	}
-
 	@legacy path /legacy /legacy/*
 	handle @legacy {
 		uri strip_prefix /legacy

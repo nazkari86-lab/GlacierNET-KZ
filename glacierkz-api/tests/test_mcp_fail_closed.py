@@ -1,26 +1,72 @@
-"""MCP research scaffolds must never fabricate production-looking results."""
+"""MCP exposes only evidence-backed tools and fails closed for old scaffolds."""
 
 from __future__ import annotations
 
 import pytest
 
-from app import mcp_tools
+from app import config, mcp_tools
 
 
-def test_unvalidated_research_tool_fails_closed(monkeypatch):
-    monkeypatch.delenv(mcp_tools.RESEARCH_TOOLS_ENV, raising=False)
-
+def test_removed_research_tool_fails_closed():
     result = mcp_tools.execute_tool("analyze_glacier", {"image_path": "missing.tif"})
 
     assert result["status"] == "error"
-    assert "unvalidated research scaffold" in result["error"]
+    assert "Unknown or removed tool" in result["error"]
 
 
-def test_unvalidated_tools_are_visibly_labeled():
-    definitions = {item["name"]: item for item in mcp_tools.get_tool_definitions()}
+def test_catalog_contains_only_evidence_tools():
+    names = {item["name"] for item in mcp_tools.get_tool_definitions()}
 
-    for name in mcp_tools.UNVALIDATED_RESEARCH_TOOLS:
-        assert definitions[name]["description"].startswith("[DISABLED BY DEFAULT:")
+    assert names == {
+        "analyze_registered_glacier",
+        "compare_local_years",
+        "get_ml_readiness",
+        "get_model_info",
+        "get_project_stats",
+        "get_risk_twin_context",
+        "inspect_glacier_timeseries",
+        "inspect_local_year",
+        "inspect_ml_case",
+        "list_datasets",
+        "list_local_years",
+        "list_ml_cases",
+        "list_models",
+        "scan_regional_lakes",
+        "search_glaciers",
+    }
+    assert not names & {
+        "diffusion_sample",
+        "graph_neural_network_predict",
+        "run_ensemble_prediction",
+        "vit_predict",
+    }
+
+
+def test_unknown_arguments_fail_closed():
+    result = mcp_tools.execute_tool("list_local_years", {"invented": True})
+
+    assert result["status"] == "error"
+    assert "unexpected" in result["error"]
+
+
+def test_heavy_mcp_inference_requires_explicit_opt_in(monkeypatch):
+    monkeypatch.setattr(config, "MCP_INFERENCE_ENABLED", False)
+
+    result = mcp_tools.execute_tool(
+        "analyze_registered_glacier",
+        {"rgi_id": "RGI2000-v7.0-G-13-33843", "year": 2024},
+    )
+
+    assert result["status"] == "error"
+    assert "MCP inference is disabled" in result["error"]
+
+
+def test_dataset_tool_lists_physical_local_files():
+    result = mcp_tools.execute_tool("list_datasets", {"limit": 3})
+
+    assert result["status"] == "success"
+    assert result["data"]["datasets"]
+    assert all(item["source_path"] for item in result["data"]["datasets"])
 
 
 def test_verified_local_year_tools_use_real_tables():

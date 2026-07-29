@@ -7,17 +7,21 @@ import { AlertTriangle, CheckCircle2, Database, MapPinned, Mountain, Plus, Radar
 import EvidenceInspector from "@/components/risk-twin/EvidenceInspector";
 import EvidenceIssueQueue from "@/components/risk-twin/EvidenceIssueQueue";
 import EvidenceRouteRibbon from "@/components/risk-twin/EvidenceRouteRibbon";
+import CaseActionPlan from "@/components/risk-twin/CaseActionPlan";
 import { parseEvidenceCase, serializeEvidenceCase, type EvidenceCaseRef, type EvidenceSourceScope } from "@/lib/evidenceCase";
 import { buildEvidenceIssues, buildEvidenceMapObjects } from "@/lib/riskTwinEvidence";
 import {
   evaluateRiskTwin,
   fetchGlaciers,
+  fetchMlCase,
   fetchRiskTwinContext,
   fetchRiskTwinReadiness,
   fetchRegionalObservationScan,
   fetchYearMapLayer,
+  regionalObservationCandidateKey,
   fetchYears,
   type GlacierRecord,
+  type MlEvidenceCase,
   type RiskTwinObservationInput,
   type RiskTwinReadiness,
   type RiskTwinResult,
@@ -98,6 +102,7 @@ export default function RiskTwinPage() {
   const [comparisonLayer, setComparisonLayer] = useState<YearMapLayer | null>(null);
   const [comparisonError, setComparisonError] = useState("");
   const [sourceScope, setSourceScope] = useState<EvidenceSourceScope>("local_inventory");
+  const [mlEvidence, setMlEvidence] = useState<MlEvidenceCase | null>(null);
 
   const selected = useMemo(() => glaciers.find((item) => item.rgi_id === selectedId) ?? null, [glaciers, selectedId]);
   const gaps = result?.state.data_gaps ?? REQUIRED;
@@ -105,6 +110,10 @@ export default function RiskTwinPage() {
   const evidenceIssues = useMemo(() => buildEvidenceIssues(evidenceObjects, gaps, result?.observation_ranking ?? []), [evidenceObjects, gaps, result]);
   const selectedEvidenceObject = useMemo(() => evidenceObjects.find((item) => item.id === selectedEvidenceId) ?? null, [evidenceObjects, selectedEvidenceId]);
   const selectedEvidenceIssue = useMemo(() => evidenceIssues.find((item) => item.id === selectedIssueId) ?? null, [evidenceIssues, selectedIssueId]);
+  const selectedCandidate = useMemo(() => {
+    const lakeId = selectedEvidenceObject?.kind === "lake" ? selectedEvidenceObject.id.slice("lake:".length) : null;
+    return lakeId ? context?.screening_candidates.find((candidate) => candidate.lake_id === lakeId) ?? null : null;
+  }, [context, selectedEvidenceObject]);
 
   const replaceMapQuery = useCallback((updates: Record<string, string | null>) => {
     const url = new URL(window.location.href);
@@ -117,18 +126,19 @@ export default function RiskTwinPage() {
 
   const replaceEvidenceCaseQuery = useCallback((reference: EvidenceCaseRef) => {
     const url = new URL(window.location.href);
-    for (const key of ["rgi", "lake", "year", "scope"]) url.searchParams.delete(key);
+    for (const key of ["rgi", "lake", "year", "lake_year", "scope"]) url.searchParams.delete(key);
     const canonical = new URLSearchParams(serializeEvidenceCase(reference));
     canonical.forEach((value, key) => url.searchParams.set(key, value));
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
   }, []);
 
-  const caseForSelection = useCallback((rgiId: string, lakeId?: string, scope = sourceScope): EvidenceCaseRef => ({
+  const caseForSelection = useCallback((rgiId: string, lakeId?: string, scope = sourceScope, lakeInventoryYear = scanInventoryYear): EvidenceCaseRef => ({
     rgiId,
     ...(lakeId ? { lakeId } : {}),
     year,
+    lakeInventoryYear,
     sourceScope: scope,
-  }), [sourceScope, year]);
+  }), [scanInventoryYear, sourceScope, year]);
 
   const selectEvidence = useCallback((id: string) => {
     const object = evidenceObjects.find((item) => item.id === id);
@@ -170,6 +180,7 @@ export default function RiskTwinPage() {
         setYears(availableYears);
         if (requestedCase?.year && availableYears.includes(requestedCase.year)) setYear(requestedCase.year);
         else if (availableYears.length) setYear(availableYears.at(-1) ?? 2024);
+        if (requestedCase?.lakeInventoryYear && LAKE_INVENTORY_YEARS.includes(requestedCase.lakeInventoryYear)) setScanInventoryYear(requestedCase.lakeInventoryYear);
         if (requestedCase) {
           setSourceScope(requestedCase.sourceScope);
           setSelectedEvidenceId(requestedCase.lakeId ? `lake:${requestedCase.lakeId}` : null);
@@ -190,6 +201,12 @@ export default function RiskTwinPage() {
     if (object) setSelectedEvidenceId(object);
     if (issue) setSelectedIssueId(issue);
     if (Number.isInteger(compare) && compare > 0) setComparisonYear(compare);
+    const mlCase = params.get("ml_case");
+    if (mlCase) {
+      fetchMlCase(mlCase)
+        .then(setMlEvidence)
+        .catch((cause) => setError(cause instanceof Error ? cause.message : "ML evidence case could not be loaded"));
+    }
   }, []);
 
   const selectGlacier = useCallback((rgiId: string) => {
@@ -200,6 +217,21 @@ export default function RiskTwinPage() {
     replaceMapQuery({ object: null, issue: null });
     replaceEvidenceCaseQuery(caseForSelection(rgiId, undefined, "local_inventory"));
   }, [caseForSelection, replaceEvidenceCaseQuery, replaceMapQuery]);
+
+  /** Open a concrete lake case, not merely the glacier around it.  The URL is
+   * shareable and the map/action plan converge on the same object after the
+   * asynchronous local context arrives. */
+  const openLakeCase = useCallback((rgiId: string, lakeId: string | null, inventoryYear?: number) => {
+    const caseInventoryYear = inventoryYear && LAKE_INVENTORY_YEARS.includes(inventoryYear) ? inventoryYear : scanInventoryYear;
+    if (caseInventoryYear !== scanInventoryYear) setScanInventoryYear(caseInventoryYear);
+    const objectId = lakeId ? `lake:${lakeId}` : null;
+    setSelectedId(rgiId);
+    setSelectedEvidenceId(objectId);
+    setSelectedIssueId(null);
+    setSourceScope("local_inventory");
+    replaceMapQuery({ object: objectId, issue: null });
+    replaceEvidenceCaseQuery(caseForSelection(rgiId, lakeId ?? undefined, "local_inventory", caseInventoryYear));
+  }, [caseForSelection, replaceEvidenceCaseQuery, replaceMapQuery, scanInventoryYear]);
 
   const selectYear = useCallback((nextYear: number) => {
     setYear(nextYear);
@@ -248,15 +280,28 @@ export default function RiskTwinPage() {
       setSelectedEvidenceId(null);
     }
     if (selectedIssueId && !evidenceIssues.some((item) => item.id === selectedIssueId)) setSelectedIssueId(null);
-  }, [evidenceIssues, evidenceObjects, selectedEvidenceId, selectedIssueId]);
+  }, [context, evidenceIssues, evidenceObjects, selectedEvidenceId, selectedIssueId]);
 
   useEffect(() => {
     if (!selected) return;
-    fetchRiskTwinContext(selected.rgi_id, year, 10).then(setContext).catch((cause) => {
+    setContext(null);
+    fetchRiskTwinContext(selected.rgi_id, year, 10, scanInventoryYear).then(setContext).catch((cause) => {
       setContext(null);
       setError(cause instanceof Error ? cause.message : "Local spatial context could not be loaded");
     });
-  }, [selected, year]);
+  }, [selected, year, scanInventoryYear]);
+
+  useEffect(() => {
+    if (!selected || selectedEvidenceId || !context) return;
+    const suggested = context.screening_candidates.find((candidate) => candidate.lake_id);
+    if (!suggested?.lake_id) return;
+    const objectId = `lake:${suggested.lake_id}`;
+    setSelectedEvidenceId(objectId);
+    setSelectedIssueId(null);
+    setSourceScope("local_inventory");
+    replaceMapQuery({ object: objectId, issue: null });
+    replaceEvidenceCaseQuery(caseForSelection(selected.rgi_id, suggested.lake_id, "local_inventory", suggested.inventory_year));
+  }, [caseForSelection, context, replaceEvidenceCaseQuery, replaceMapQuery, selected, selectedEvidenceId]);
 
   const addObservation = () => {
     const value = Number(form.value);
@@ -333,9 +378,9 @@ export default function RiskTwinPage() {
           <div className="absolute -bottom-32 left-1/3 h-64 w-64 rounded-full bg-blue-500/15 blur-3xl" />
           <div className="relative">
             <nav aria-label="Risk Twin sections" className="mb-7 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-cyan-100">
-              <a href="#risk-twin-workspace" className="rounded-full bg-white/10 px-3 py-1.5 font-medium transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Карта</a>
-              <a href="#observation-queue" className="rounded-full bg-white/10 px-3 py-1.5 font-medium transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Очередь наблюдений</a>
-              <a href="#evidence-ledger" className="rounded-full bg-white/10 px-3 py-1.5 font-medium transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Evidence ledger</a>
+              <a href="#risk-twin-workspace" className="inline-flex min-h-11 items-center rounded-full bg-white/10 px-4 py-2 font-medium transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Карта</a>
+              <a href="#observation-queue" className="inline-flex min-h-11 items-center rounded-full bg-white/10 px-4 py-2 font-medium transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Очередь наблюдений</a>
+              <a href="#evidence-ledger" className="inline-flex min-h-11 items-center rounded-full bg-white/10 px-4 py-2 font-medium transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Evidence ledger</a>
             </nav>
             <div className="flex flex-wrap items-start justify-between gap-6">
               <div className="max-w-3xl">
@@ -354,6 +399,21 @@ export default function RiskTwinPage() {
         </header>
 
         {error && <div role="alert" aria-live="assertive" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-900 shadow-sm">{error}</div>}
+        {mlEvidence && (
+          <section aria-label="Linked ML evidence" className="grid gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-800">Linked model evidence · {mlEvidence.case_id}</p>
+              <h2 className="mt-1 text-lg font-bold">{mlEvidence.glacier.name_ru} · {mlEvidence.year} multimodal boundary</h2>
+              <p className="mt-2 text-sm text-emerald-950">
+                ML area {mlEvidence.metrics.predicted_area_km2.toFixed(4)} km² · RGI agreement {(mlEvidence.metrics.rgi_overlap_iou * 100).toFixed(1)}% · uncertain review zone {(mlEvidence.metrics.uncertain_fraction_in_review_zone * 100).toFixed(1)}%.
+                These values are screening evidence, not an event probability.
+              </p>
+            </div>
+            <Link href={`/ml?case=${encodeURIComponent(mlEvidence.case_id)}`} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-emerald-700 px-4 text-sm font-bold text-emerald-900 hover:bg-white">
+              Inspect ML layers
+            </Link>
+          </section>
+        )}
         {loading ? <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-600 shadow-sm">Загружаем реестр, годовые слои и контекст Risk Twin…</div> : (
           <>
             <section id="risk-twin-workspace" aria-label="Risk Twin workspace controls" className="grid gap-4 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-[0_16px_40px_-26px_rgba(15,23,42,0.45)] backdrop-blur md:grid-cols-4">
@@ -378,11 +438,11 @@ export default function RiskTwinPage() {
               <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wider text-cyan-800">Real evidence route</p><h2 className="mt-1 text-lg font-semibold">Полный путь Risk Twin для {selected?.name_ru || selected?.name || "выбранного ледника"}</h2></div><p className="max-w-md text-xs text-slate-600">Каждый шаг кликабелен на карте или раскрывается ниже. Красные и жёлтые элементы — необходимость проверки, не прогноз.</p></div>
               <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8">
                 <div className="rounded-2xl border border-cyan-100 bg-white p-3 shadow-sm"><MapPinned className="h-5 w-5 text-cyan-700" /><p className="mt-2 text-sm font-semibold">1. RGI ледник</p><p className="mt-1 text-xs text-slate-600">{selected ? `${selected.rgi_area_km2.toFixed(2)} км² inventory area` : "Загрузка…"}</p></div>
-                <div className="rounded-xl border border-indigo-100 bg-white p-3"><Radar className="h-5 w-5 text-indigo-700" /><p className="mt-2 text-sm font-semibold">2. {year} сегментация</p><p className="mt-1 text-xs text-slate-600">{yearLayer ? "локальный raster-слой" : "слой недоступен"}</p></div>
-                <div className="rounded-xl border border-blue-100 bg-white p-3"><Waves className="h-5 w-5 text-blue-700" /><p className="mt-2 text-sm font-semibold">3. Озёра рядом</p><p className="mt-1 text-xs text-slate-600">{context ? `${context.layers.tien_shan_lakes_2023.features.length} polygons · 2023` : "Загрузка…"}</p></div>
-                <div className="rounded-xl border border-red-100 bg-white p-3"><AlertTriangle className="h-5 w-5 text-red-700" /><p className="mt-2 text-sm font-semibold">4. Архив событий</p><p className="mt-1 text-xs text-slate-600">{context ? `${context.layers.historical_glof_events.features.length} HMAGLOFDB records` : "Загрузка…"}</p></div>
+                <div className="rounded-xl border border-indigo-100 bg-white p-3"><Radar className="h-5 w-5 text-indigo-700" /><p className="mt-2 text-sm font-semibold">2. {year} сегментация</p><p className="mt-1 text-xs text-slate-600">{mlEvidence ? `multimodal ML · ${(mlEvidence.metrics.rgi_overlap_iou * 100).toFixed(1)}% RGI agreement` : yearLayer ? "локальный raster-слой" : "слой недоступен"}</p></div>
+                <div className="rounded-xl border border-blue-100 bg-white p-3"><Waves className="h-5 w-5 text-blue-700" /><p className="mt-2 text-sm font-semibold">3. Озёра рядом</p><p className="mt-1 text-xs text-slate-600">{context ? `${context.layers?.tien_shan_lakes?.features?.length ?? 0} polygons · ${context.query.lake_inventory_year}` : "Загрузка…"}</p></div>
+                <div className="rounded-xl border border-red-100 bg-white p-3"><AlertTriangle className="h-5 w-5 text-red-700" /><p className="mt-2 text-sm font-semibold">4. Архив событий</p><p className="mt-1 text-xs text-slate-600">{context ? `${context.layers?.historical_glof_events?.features?.length ?? 0} HMAGLOFDB records` : "Загрузка…"}</p></div>
                 <div className="rounded-xl border border-emerald-100 bg-white p-3"><Mountain className="h-5 w-5 text-emerald-700" /><p className="mt-2 text-sm font-semibold">5. Рельеф и S1</p><p className="mt-1 text-xs text-slate-600">DEM + Sentinel‑1 {year}</p></div>
-                <div className="rounded-xl border border-cyan-100 bg-white p-3"><Waves className="h-5 w-5 text-cyan-700" /><p className="mt-2 text-sm font-semibold">6. Реки и бассейны</p><p className="mt-1 text-xs text-slate-600">{context ? `${context.layers.hydrorivers.features.length} reaches · ${context.layers.hydrobasins_level06.features.length} basins` : "Загрузка…"}</p></div>
+                <div className="rounded-xl border border-cyan-100 bg-white p-3"><Waves className="h-5 w-5 text-cyan-700" /><p className="mt-2 text-sm font-semibold">6. Реки и бассейны</p><p className="mt-1 text-xs text-slate-600">{context ? `${context.layers?.hydrorivers?.features?.length ?? 0} reaches · ${context.layers?.hydrobasins_level06?.features?.length ?? 0} basins` : "Загрузка…"}</p></div>
                 <div className="rounded-xl border border-violet-100 bg-white p-3"><Database className="h-5 w-5 text-violet-700" /><p className="mt-2 text-sm font-semibold">7. Люди: context</p><p className="mt-1 text-xs text-slate-600">GHSL + OSM, без «пострадавших»</p></div>
                 <div className="rounded-xl border border-teal-100 bg-white p-3"><Radar className="h-5 w-5 text-teal-700" /><p className="mt-2 text-sm font-semibold">8. Water & climate</p><p className="mt-1 text-xs text-slate-600">JRC water + ERA5 catalog</p></div>
                 <div className="rounded-xl border border-amber-100 bg-white p-3"><ShieldAlert className="h-5 w-5 text-amber-700" /><p className="mt-2 text-sm font-semibold">9. Чего не знаем</p><p className="mt-1 text-xs text-slate-600">{gaps.length} данных нужны для вывода</p></div>
@@ -392,33 +452,33 @@ export default function RiskTwinPage() {
             <section id="observation-queue" aria-label="Automatic regional observation scan" className="relative overflow-hidden rounded-3xl bg-slate-950 p-5 text-white shadow-[0_24px_60px_-30px_rgba(15,23,42,0.9)] sm:p-6">
               <div className="absolute right-0 top-0 h-48 w-48 rounded-full bg-cyan-400/10 blur-3xl" />
               <div className="relative flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-cyan-200">Automatic regional scan</p><h2 className="mt-2 text-xl font-bold">Система сама нашла объекты, которые стоит проверить</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">Выберите год инвентаря озёр: он сравнивается только с предыдущим доступным инвентарём. Год сегментации ледника выше — отдельный слой и не подменяет это сравнение.</p></div><div className="flex items-center gap-3"><label htmlFor="risk-twin-scan-year" className="text-xs font-semibold text-cyan-100">Год инвентаря озёр<select id="risk-twin-scan-year" value={scanInventoryYear} onChange={(event) => setScanInventoryYear(Number(event.target.value))} className="mt-1 block min-h-11 rounded-xl border border-white/20 bg-slate-900 px-3 py-2 text-sm font-bold text-white outline-none focus:border-cyan-200 focus:ring-4 focus:ring-cyan-300/20">{LAKE_INVENTORY_YEARS.map((item) => <option key={item} value={item}>{item}</option>)}</select></label><span className="rounded-full border border-amber-200/20 bg-amber-300/15 px-3 py-1.5 text-xs font-bold text-amber-100">Не карта опасности</span></div></div>
-              {regionalScanError ? <p className="mt-4 rounded-lg bg-red-500/20 p-3 text-sm text-red-100">Regional scan unavailable: {regionalScanError}</p> : !regionalScan ? <p className="mt-4 text-sm text-slate-300">Сканирование локальных инвентарей…</p> : <><p className="mt-4 rounded-lg bg-cyan-300/10 p-3 text-sm text-cyan-50">Период сравнения: <strong>{regionalScan.inventory_year}</strong>{regionalScan.previous_inventory_year ? <> против <strong>{regionalScan.previous_inventory_year}</strong></> : " — базовый инвентарь без более раннего сравнения"}.</p><div className="mt-4 grid gap-3 sm:grid-cols-4"><div className="rounded-xl bg-white/10 p-3"><p className="text-xs text-slate-300">Просканировано озёр {regionalScan.inventory_year}</p><p className="mt-1 text-2xl font-bold">{regionalScan.summary.scanned_lakes}</p></div><div className="rounded-xl bg-white/10 p-3"><p className="text-xs text-slate-300">Реальных кандидатов</p><p className="mt-1 text-2xl font-bold">{regionalScan.summary.candidates_with_nearby_rgi}</p></div><div className="rounded-xl bg-white/10 p-3"><p className="text-xs text-slate-300">Крупное изм. площади</p><p className="mt-1 text-2xl font-bold">{regionalScan.summary.large_change_screening}</p></div><div className="rounded-xl bg-white/10 p-3"><p className="text-xs text-slate-300">Без match предыдущего года</p><p className="mt-1 text-2xl font-bold">{regionalScan.summary.unmatched_previous}</p></div></div><div className="mt-4 grid gap-2 lg:grid-cols-2">{regionalScan.candidates.slice(0, 8).map((item) => <button key={`${item.glacier.rgi_id}-${item.lake_id}`} type="button" onClick={() => { selectGlacier(item.glacier.rgi_id); document.getElementById("risk-twin-map")?.scrollIntoView({ behavior: "smooth", block: "start" }); }} className="rounded-xl border border-white/10 bg-white/5 p-3 text-left transition hover:bg-white/10"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{item.glacier.name_ru || item.glacier.name}</p><p className="mt-1 text-xs text-slate-300">Lake {item.lake_id ?? "without ID"} · {item.latitude.toFixed(4)}, {item.longitude.toFixed(4)}</p></div><span className="rounded-full bg-cyan-300/20 px-2 py-1 text-xs font-bold text-cyan-100">{item.observation_priority_0_100.toFixed(0)}/100</span></div><p className="mt-2 text-sm text-amber-100">{item.area_change_percent === null ? `Нет надёжного match с ${regionalScan.previous_inventory_year ?? "предыдущим годом"}` : `Изменение площади: ${item.area_change_percent > 0 ? "+" : ""}${item.area_change_percent.toFixed(1)}%`} · до RGI: {item.distance_to_rgi_boundary_m.toFixed(0)} м</p><p className="mt-1 text-xs text-slate-300">Нажмите, чтобы открыть полный контекст этого ледника.</p></button>)}</div><p className="mt-4 text-xs text-slate-400">{regionalScan.limitations[0]} {regionalScan.limitations[1]}</p></>}
+              {regionalScanError ? <p className="mt-4 rounded-lg bg-red-500/20 p-3 text-sm text-red-100">Regional scan unavailable: {regionalScanError}</p> : !regionalScan ? <p className="mt-4 text-sm text-slate-300">Сканирование локальных инвентарей…</p> : <><p className="mt-4 rounded-lg bg-cyan-300/10 p-3 text-sm text-cyan-50">Период сравнения: <strong>{regionalScan.inventory_year}</strong>{regionalScan.previous_inventory_year ? <> против <strong>{regionalScan.previous_inventory_year}</strong></> : " — базовый инвентарь без более раннего сравнения"}.</p><div className="mt-4 grid gap-3 sm:grid-cols-4"><div className="rounded-xl bg-white/10 p-3"><p className="text-xs text-slate-300">Просканировано озёр {regionalScan.inventory_year}</p><p className="mt-1 text-2xl font-bold">{regionalScan.summary.scanned_lakes}</p></div><div className="rounded-xl bg-white/10 p-3"><p className="text-xs text-slate-300">Реальных кандидатов</p><p className="mt-1 text-2xl font-bold">{regionalScan.summary.candidates_with_nearby_rgi}</p></div><div className="rounded-xl bg-white/10 p-3"><p className="text-xs text-slate-300">Крупное изм. площади</p><p className="mt-1 text-2xl font-bold">{regionalScan.summary.large_change_screening}</p></div><div className="rounded-xl bg-white/10 p-3"><p className="text-xs text-slate-300">Без match предыдущего года</p><p className="mt-1 text-2xl font-bold">{regionalScan.summary.unmatched_previous}</p></div></div><div className="mt-4 grid gap-2 lg:grid-cols-2">{regionalScan.candidates.slice(0, 8).map((item) => <button key={regionalObservationCandidateKey(item)} type="button" onClick={() => { openLakeCase(item.glacier.rgi_id, item.lake_id, item.inventory_year); document.getElementById("risk-twin-map")?.scrollIntoView({ behavior: "smooth", block: "start" }); }} className="rounded-xl border border-white/10 bg-white/5 p-3 text-left transition hover:bg-white/10"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{item.glacier.name_ru || item.glacier.name}</p><p className="mt-1 text-xs text-slate-300">Lake {item.lake_id ?? "without ID"} · {item.latitude.toFixed(4)}, {item.longitude.toFixed(4)}</p></div><span className="rounded-full bg-cyan-300/20 px-2 py-1 text-xs font-bold text-cyan-100">{item.observation_priority_0_100.toFixed(0)}/100</span></div><p className="mt-2 text-sm text-amber-100">{item.area_change_percent === null ? `Нет надёжного match с ${regionalScan.previous_inventory_year ?? "предыдущим годом"}` : `Изменение площади: ${item.area_change_percent > 0 ? "+" : ""}${item.area_change_percent.toFixed(1)}%`} · до RGI: {item.distance_to_rgi_boundary_m.toFixed(0)} м</p><p className="mt-1 text-xs text-slate-300">Нажмите, чтобы открыть этот объект на карте и конкретный план проверки.</p></button>)}</div><p className="mt-4 text-xs text-slate-400">{regionalScan.limitations[0]} {regionalScan.limitations[1]}</p></>}
             </section>
 
-            <section className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(340px,0.85fr)]">
-              <div id="risk-twin-map" className="space-y-3 rounded-3xl border border-slate-200/90 bg-white p-4 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.45)] sm:p-5">
-                <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-cyan-700">Interactive evidence canvas</p><h2 className="mt-1 text-xl font-bold tracking-tight text-slate-950">Карта выбранного ледника</h2><p className="mt-1 max-w-2xl text-sm text-slate-600">Все отображаемые объекты названы по источнику. Выбор на карте и в очереди открывает одинаковую доказательную карточку.</p></div><div className="rounded-xl bg-slate-950 px-3 py-2 text-right text-xs text-slate-100"><p className="font-semibold">{selected?.name_ru || selected?.name || "Выберите ледник"}</p><p className="mt-0.5 text-slate-300">{year} · {evidenceObjects.length} real evidence objects</p></div></div>
+            <section className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(340px,0.85fr)]">
+              <div id="risk-twin-map" className="min-w-0 space-y-3 rounded-3xl border border-slate-200/90 bg-white p-4 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.45)] sm:p-5">
+                <div className="flex flex-wrap items-end justify-between gap-3"><div className="min-w-0"><p className="text-xs font-bold uppercase tracking-[0.14em] text-cyan-700">Interactive evidence canvas</p><h2 className="mt-1 text-xl font-bold tracking-tight text-slate-950">Карта выбранного ледника</h2><p className="mt-1 max-w-2xl text-sm text-slate-600">На карте показаны все локальные объекты выбранного 10-км контекста. Выбор на карте и в очереди открывает один и тот же проверяемый кейс.</p></div><div className="max-w-full rounded-xl bg-slate-950 px-3 py-2 text-right text-xs text-slate-100"><p className="truncate font-semibold">{selected?.name_ru || selected?.name || "Выберите ледник"}</p><p className="mt-0.5 text-slate-300">{year} сегментация · озёра {scanInventoryYear}{context?.query.previous_lake_inventory_year ? ` → ${context.query.previous_lake_inventory_year}` : ""}</p></div></div>
                 <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:grid-cols-[1fr_auto]">
                   <div className="flex flex-wrap gap-2" aria-label="Map modes">
                     {(["evidence", "route", "people"] as const).map((mode) => <button key={mode} type="button" aria-pressed={mapMode === mode} onClick={() => { setMapMode(mode); replaceMapQuery({ mode }); }} className={`min-h-10 rounded-xl border px-3 text-sm font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-700 ${mapMode === mode ? "border-cyan-700 bg-cyan-700 text-white" : "border-slate-300 bg-white text-slate-700 hover:bg-cyan-50"}`}>{mode === "evidence" ? "Доказательства" : mode === "route" ? "Пространственный путь" : "Люди и объекты"}</button>)}
                   </div>
                   <label className="text-sm font-bold text-slate-800">Сравнить с годом
-                    <select value={comparisonYear ?? ""} onChange={(event) => { const next = event.target.value ? Number(event.target.value) : null; setComparisonYear(next); replaceMapQuery({ compare: next ? String(next) : null }); }} className="ml-2 min-h-10 rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium outline-none focus:border-cyan-700 focus:ring-4 focus:ring-cyan-100"><option value="">Без сравнения</option>{years.filter((item) => item !== year).map((item) => <option key={item} value={item}>{item}</option>)}</select>
+                    <select aria-label="Сравнить карту с годом" value={comparisonYear ?? ""} onChange={(event) => { const next = event.target.value ? Number(event.target.value) : null; setComparisonYear(next); replaceMapQuery({ compare: next ? String(next) : null }); }} className="ml-2 min-h-10 rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium outline-none focus:border-cyan-700 focus:ring-4 focus:ring-cyan-100"><option value="">Без сравнения</option>{years.filter((item) => item !== year).map((item) => <option key={item} value={item}>{item}</option>)}</select>
                   </label>
                 </div>
-                {comparisonError && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900">{comparisonError}</p>}
-                {!context && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">Локальный пространственный контекст недоступен. Граница RGI и годовой слой остаются доступны.</p>}
-                <RiskTwinMap glacier={selected} objects={evidenceObjects} selectedObjectId={selectedEvidenceId} onSelectObject={selectEvidence} mode={mapMode} yearLayer={yearLayer} comparisonLayer={comparisonLayer} />
+                {comparisonError && <p role="status" aria-live="polite" className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900">{comparisonError}</p>}
+                {!context && <p role="status" aria-live="polite" className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">Локальный пространственный контекст недоступен. Граница RGI и годовой слой остаются доступны.</p>}
+                <RiskTwinMap glacier={selected} objects={evidenceObjects} selectedObjectId={selectedEvidenceId} onSelectObject={selectEvidence} mode={mapMode} yearLayer={yearLayer} comparisonLayer={comparisonLayer} mlEvidence={mlEvidence} />
                 <EvidenceRouteRibbon objects={evidenceObjects} mode={mapMode} />
               </div>
-              <aside className="space-y-4">
+              <aside className="min-w-0 space-y-4">
                 <EvidenceIssueQueue issues={evidenceIssues} selectedId={selectedIssueId} onSelect={selectIssue} />
                 <EvidenceInspector object={selectedEvidenceObject} issue={selectedEvidenceIssue} />
                 <div id="evidence-ledger" className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_20px_50px_-32px_rgba(15,23,42,0.42)]">
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-cyan-700">Evidence ledger</p><h2 className="mt-1 flex items-center gap-2 text-xl font-bold tracking-tight"><Database className="h-5 w-5 text-cyan-700" />Данные для проверки</h2>
                   <p className="mt-2 text-xs leading-5 text-slate-600">Добавляйте только известные значения. Введённые вручную данные остаются в этом браузере и требуют проверки источника.</p>
                   <div className="mt-4 space-y-2">
-                    {observations.map((item) => <div key={item.observation_id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 p-3 text-sm"><div><strong>{LABELS[item.variable] ?? item.variable}</strong><span className="ml-2 text-slate-600">{item.value.toLocaleString(undefined, { maximumFractionDigits: 2 })} ± {item.uncertainty_std.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span><p className="mt-1 text-xs text-slate-500">Источник: {item.sensor}</p></div><button aria-label={`Удалить ${LABELS[item.variable] ?? item.variable}`} onClick={() => { setObservations((rows) => rows.filter((row) => row.observation_id !== item.observation_id)); setResult(null); }} className="text-xs font-medium text-red-700 underline">Удалить</button></div>)}
+                    {observations.map((item) => <div key={item.observation_id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 p-3 text-sm"><div><strong>{LABELS[item.variable] ?? item.variable}</strong><span className="ml-2 text-slate-600">{item.value.toLocaleString(undefined, { maximumFractionDigits: 2 })} ± {item.uncertainty_std.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span><p className="mt-1 text-xs text-slate-500">Источник: {item.sensor}</p></div><button type="button" aria-label={`Удалить ${LABELS[item.variable] ?? item.variable}`} onClick={() => { setObservations((rows) => rows.filter((row) => row.observation_id !== item.observation_id)); setResult(null); }} className="min-h-11 rounded-lg px-3 text-xs font-medium text-red-700 underline hover:bg-red-50">Удалить</button></div>)}
                   </div>
                   <div className="mt-4 space-y-2 border-t border-slate-200 pt-4">
                     <label htmlFor="risk-twin-observation-variable" className="text-sm font-bold">Добавить измерение</label><select id="risk-twin-observation-variable" value={form.variable} onChange={(e) => setForm({ ...form, variable: e.target.value })} className="min-h-11 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-cyan-700 focus:ring-4 focus:ring-cyan-100">{REQUIRED.map((item) => <option key={item} value={item}>{LABELS[item]}</option>)}</select>
@@ -431,6 +491,8 @@ export default function RiskTwinPage() {
               </aside>
             </section>
 
+            <CaseActionPlan glacier={selected} candidate={selectedCandidate} object={selectedEvidenceObject} year={year} />
+
             <section className="grid gap-4 lg:grid-cols-3">
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-5"><h2 className="flex items-center gap-2 font-semibold text-amber-950"><AlertTriangle className="h-5 w-5" />Data gaps ({gaps.length})</h2><ul className="mt-3 space-y-1 text-sm text-amber-900">{gaps.map((gap) => <li key={gap}>• {LABELS[gap] ?? gap}</li>)}</ul></div>
               <div className="rounded-xl bg-white p-5 shadow-sm"><h2 className="font-semibold">Next evidence actions</h2><ol className="mt-3 space-y-2 text-sm">{result?.observation_ranking?.slice(0, 4).map((action) => <li key={action.action_id}><strong>{action.label}</strong>{action.model_based_uncertainty_reduction_fraction !== undefined && <span className="block text-slate-500">Expected uncertainty reduction: {(action.model_based_uncertainty_reduction_fraction * 100).toFixed(0)}%</span>}</li>) ?? <li className="text-slate-500">Evaluate the ledger to rank evidence collection.</li>}</ol></div>
@@ -438,13 +500,13 @@ export default function RiskTwinPage() {
             </section>
 
             <section className="grid gap-4 lg:grid-cols-3">
-              <div className="rounded-xl bg-white p-5 shadow-sm"><h2 className="font-semibold">Nearby lake inventories</h2><p className="mt-3 text-3xl font-bold text-blue-700">{context?.layers.tien_shan_lakes_2023.features.length ?? "—"}</p><p className="mt-1 text-sm text-slate-600">2023 polygons inside the 10 km context. HMA GLI 2015–2018: {context?.layers.hma_gli_2015_2018.features.length ?? "—"}. Это географическая близость, не подтверждённая связь с ледником.</p></div>
-              <div className="rounded-xl bg-white p-5 shadow-sm"><h2 className="font-semibold">Historical records</h2><p className="mt-3 text-3xl font-bold text-red-700">{context?.layers.historical_glof_events.features.length ?? "—"}</p><p className="mt-1 text-sm text-slate-600">HMAGLOFDB records in the spatial context; all remain pending primary-source review.</p></div>
+              <div className="rounded-xl bg-white p-5 shadow-sm"><h2 className="font-semibold">Nearby lake inventories</h2><p className="mt-3 text-3xl font-bold text-blue-700">{context?.layers?.tien_shan_lakes?.features?.length ?? "—"}</p><p className="mt-1 text-sm text-slate-600">Полигоны {context?.query.lake_inventory_year ?? scanInventoryYear} внутри 10-км контекста. HMA GLI 2015–2018: {context?.layers?.hma_gli_2015_2018?.features?.length ?? "—"}. Это географическая близость, не подтверждённая связь с ледником.</p></div>
+              <div className="rounded-xl bg-white p-5 shadow-sm"><h2 className="font-semibold">Historical records</h2><p className="mt-3 text-3xl font-bold text-red-700">{context?.layers?.historical_glof_events?.features?.length ?? "—"}</p><p className="mt-1 text-sm text-slate-600">HMAGLOFDB records in the spatial context; all remain pending primary-source review.</p></div>
               <div className="rounded-xl bg-white p-5 shadow-sm"><h2 className="font-semibold">Local raster context</h2><dl className="mt-3 space-y-1 text-sm text-slate-700"><div><dt className="inline font-medium">Mean elevation:</dt> <dd className="inline">{context?.terrain.bands?.elevation_m ?? "not available"} m</dd></div><div><dt className="inline font-medium">Mean slope:</dt> <dd className="inline">{context?.terrain.bands?.slope_degrees ?? "not available"}°</dd></div><div><dt className="inline font-medium">Sentinel‑1 VV/VH:</dt> <dd className="inline">{context?.sentinel1.bands ? `${context.sentinel1.bands.VV_x100 ?? "—"} / ${context.sentinel1.bands.VH_x100 ?? "—"}` : "not available"}</dd></div></dl></div>
             </section>
 
             <section className="grid gap-4 lg:grid-cols-3">
-              <div className="rounded-xl border border-cyan-100 bg-cyan-50 p-5"><h2 className="font-semibold text-cyan-950">Hydrographic context</h2><p className="mt-2 text-3xl font-bold text-cyan-800">{context?.layers.hydrorivers.features.length ?? "—"}</p><p className="mt-1 text-sm text-cyan-900">HydroRIVERS segments and {context?.layers.hydrobasins_level06.features.length ?? "—"} HydroBASINS level‑06 polygons are selectable on the map.</p><p className="mt-2 text-xs text-cyan-800">These are real hydrographic references, not a routed flow path, inundation model or downstream-impact calculation.</p></div>
+              <div className="rounded-xl border border-cyan-100 bg-cyan-50 p-5"><h2 className="font-semibold text-cyan-950">Hydrographic context</h2><p className="mt-2 text-3xl font-bold text-cyan-800">{context?.layers?.hydrorivers?.features?.length ?? "—"}</p><p className="mt-1 text-sm text-cyan-900">HydroRIVERS segments and {context?.layers?.hydrobasins_level06?.features?.length ?? "—"} HydroBASINS level‑06 polygons are selectable on the map.</p><p className="mt-2 text-xs text-cyan-800">These are real hydrographic references, not a routed flow path, inundation model or downstream-impact calculation.</p></div>
               <div className="rounded-xl border border-teal-100 bg-teal-50 p-5"><h2 className="font-semibold text-teal-950">JRC surface-water context</h2>{context?.jrc_surface_water.available ? <><p className="mt-2 text-sm text-teal-900">Occurrence: <strong>{context.jrc_surface_water.bands?.occurrence_percent ?? "—"}%</strong> · seasonality: <strong>{context.jrc_surface_water.bands?.seasonality_months ?? "—"} months</strong> · recurrence: <strong>{context.jrc_surface_water.bands?.recurrence_percent ?? "—"}%</strong>.</p><p className="mt-2 text-xs text-teal-800">{context.jrc_surface_water.scope}</p></> : <p className="mt-2 text-sm text-teal-900">Local JRC water artifact unavailable: {context?.jrc_surface_water.reason ?? "loading"}.</p>}</div>
               <div className="rounded-xl border border-sky-100 bg-sky-50 p-5"><h2 className="font-semibold text-sky-950">ERA5-Land catalog</h2>{context?.climate_context.available ? <><p className="mt-2 text-sm text-sky-900">{context.climate_context.years?.[0]}–{context.climate_context.years?.at(-1)} · {context.climate_context.variables?.join(", ")}.</p><p className="mt-2 text-xs text-sky-800">{context.climate_context.interpretation}</p></> : <p className="mt-2 text-sm text-sky-900">Local climate catalog unavailable: {context?.climate_context.reason ?? "loading"}.</p>}</div>
             </section>
@@ -452,9 +514,9 @@ export default function RiskTwinPage() {
             <section className="rounded-xl border border-violet-100 bg-violet-50 p-5"><h2 className="font-semibold text-violet-950">Люди и инфраструктура: planning context</h2>{context?.impact_assets.available ? <><p className="mt-2 text-sm text-violet-900">Публичные OSM-объекты в радиусе {context.impact_assets.planning_radius_km} км: {Object.entries(context.impact_assets.summary).map(([kind, count]) => `${kind}: ${count}`).join(" · ") || "нет объектов в extract"}.</p>{context.population_planning_context.available && <p className="mt-2 text-sm text-violet-900">GHSL modelled population-grid sum в {context.population_planning_context.planning_radius_km} км: <strong>{Math.round(context.population_planning_context.modelled_population_grid_sum ?? 0).toLocaleString()}</strong> (reference year {context.population_planning_context.reference_year}).</p>}<p className="mt-2 text-xs text-violet-800">{context.impact_assets.interpretation} {context.population_planning_context.scope}</p></> : <><p className="mt-2 text-sm text-violet-900">Локальный атрибутированный OSM extract ещё не загружен, поэтому Twin не показывает вымышленные населённые пункты или инфраструктуру.</p><code className="mt-3 block rounded bg-white px-3 py-2 text-xs text-slate-700">python scripts/fetch_osm_critical_assets.py</code></>}</section>
 
             <section className="rounded-xl bg-white p-5 shadow-sm">
-              <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wider text-cyan-800">Where to inspect next</p><h2 className="mt-1 text-lg font-semibold">Реальные кандидаты для проверки озёр</h2><p className="mt-1 max-w-3xl text-sm text-slate-600">Полигоны озёр 2023 года в 10 км от выбранного ледника: изменение относительно геометрически ближайшего полигона 2020 года, расстояние до RGI-границы и причины приоритета.</p></div><span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">Приоритет наблюдения ≠ риск GLOF</span></div>
-              {!context ? <p className="mt-4 text-sm text-slate-500">Загрузка кандидатов…</p> : context.screening_candidates.length === 0 ? <p className="mt-4 rounded-lg bg-slate-50 p-4 text-sm text-slate-600">В текущем 10-км контексте нет полигонов, пригодных для сравнения 2020–2023.</p> : <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200"><table className="min-w-[920px] w-full text-left text-sm"><caption className="sr-only">Реальные кандидаты озёр для проверки: площадь, изменение к предыдущему инвентарю, расстояние до RGI и причина приоритета.</caption><thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-600"><tr><th scope="col" className="px-3 py-3">Кандидат</th><th scope="col" className="px-3 py-3">Площадь 2023</th><th scope="col" className="px-3 py-3">Изм. к 2020</th><th scope="col" className="px-3 py-3">До границы RGI</th><th scope="col" className="px-3 py-3">Почему проверить</th><th scope="col" className="px-3 py-3">Приоритет</th></tr></thead><tbody>{context.screening_candidates.map((item) => <tr key={item.lake_id_2023 ?? `${item.latitude}-${item.longitude}`} className="border-b border-slate-100 align-top transition hover:bg-cyan-50/40"><td className="px-3 py-3 font-medium"><span className="block">{item.lake_id_2023 ?? "ID отсутствует"}</span><span className="mt-1 block text-xs font-normal text-slate-500">{item.latitude.toFixed(4)}, {item.longitude.toFixed(4)} · {item.elevation_m ?? "—"} м</span></td><td className="px-3 py-3">{(item.area_2023_m2 / 1_000_000).toFixed(3)} км²</td><td className="px-3 py-3">{item.area_change_2020_2023_percent === null ? <span className="text-amber-700">нет надёжного match</span> : <span className={item.area_change_2020_2023_percent >= 20 ? "font-semibold text-amber-700" : "text-slate-700"}>{item.area_change_2020_2023_percent > 0 ? "+" : ""}{item.area_change_2020_2023_percent.toFixed(1)}%<span className="block text-xs text-slate-500">match {item.geometric_match_distance_m?.toFixed(0)} м</span></span>}</td><td className="px-3 py-3">{item.distance_to_rgi_boundary_m.toFixed(0)} м</td><td className="px-3 py-3"><div className="flex max-w-xs flex-wrap gap-1">{item.flags.map((flag) => <span key={flag} className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{flag.replaceAll("_", " ")}</span>)}</div></td><td className="px-3 py-3"><span className="rounded-full bg-cyan-100 px-2 py-1 font-semibold text-cyan-900">{item.observation_priority_0_100.toFixed(0)}/100</span></td></tr>)}</tbody></table></div>}
-              <p className="mt-4 text-xs text-slate-500">Сопоставление 2020–2023 — геометрическая эвристика с порогом 300 м, потому что идентификаторы инвентарей различаются. Изменение площади требует проверки по исходным снимкам; оно не доказывает связь с ледником, состояние морены или вероятность события.</p>
+              <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wider text-cyan-800">Where to inspect next</p><h2 className="mt-1 text-lg font-semibold">Реальные кандидаты для проверки озёр</h2><p className="mt-1 max-w-3xl text-sm text-slate-600">Полигоны озёр {context?.query.lake_inventory_year ?? scanInventoryYear} в 10 км от выбранного ледника: сравнение с {context?.query.previous_lake_inventory_year ?? "более ранним выбранным"} инвентарём, расстояние до RGI-границы и причины приоритета.</p></div><span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">Приоритет наблюдения ≠ риск GLOF</span></div>
+              {!context ? <p className="mt-4 text-sm text-slate-500">Загрузка кандидатов…</p> : context.screening_candidates.length === 0 ? <p className="mt-4 rounded-lg bg-slate-50 p-4 text-sm text-slate-600">В текущем 10-км контексте нет полигонов выбранного инвентаря.</p> : <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200"><table className="min-w-[920px] w-full text-left text-sm"><caption className="sr-only">Реальные кандидаты озёр для проверки: площадь, изменение к предыдущему инвентарю, расстояние до RGI и причина приоритета.</caption><thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-600"><tr><th scope="col" className="px-3 py-3">Кандидат</th><th scope="col" className="px-3 py-3">Площадь {context.query.lake_inventory_year}</th><th scope="col" className="px-3 py-3">Изм. к {context.query.previous_lake_inventory_year ?? "—"}</th><th scope="col" className="px-3 py-3">До границы RGI</th><th scope="col" className="px-3 py-3">Почему проверить</th><th scope="col" className="px-3 py-3">Приоритет</th></tr></thead><tbody>{context.screening_candidates.map((item) => <tr key={item.lake_id ?? `${item.latitude}-${item.longitude}`} className="border-b border-slate-100 align-top transition hover:bg-cyan-50/40 focus-within:bg-cyan-50"><td className="px-3 py-3 font-medium"><button type="button" onClick={() => item.lake_id && openLakeCase(selected?.rgi_id ?? "", item.lake_id, item.inventory_year)} className="min-h-11 rounded-lg px-2 text-left underline decoration-cyan-300 underline-offset-4 hover:bg-cyan-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-700">{item.lake_id ?? "ID отсутствует"}</button><span className="mt-1 block text-xs font-normal text-slate-500">{item.latitude.toFixed(4)}, {item.longitude.toFixed(4)} · {item.elevation_m ?? "—"} м</span></td><td className="px-3 py-3">{(item.area_current_m2 / 1_000_000).toFixed(3)} км²</td><td className="px-3 py-3">{item.area_change_percent === null ? <span className="text-amber-700">нет надёжного match</span> : <span className={item.area_change_percent >= 20 ? "font-semibold text-amber-700" : "text-slate-700"}>{item.area_change_percent > 0 ? "+" : ""}{item.area_change_percent.toFixed(1)}%<span className="block text-xs text-slate-500">match {item.geometric_match_distance_m?.toFixed(0)} м</span></span>}</td><td className="px-3 py-3">{item.distance_to_rgi_boundary_m.toFixed(0)} м</td><td className="px-3 py-3"><div className="flex max-w-xs flex-wrap gap-1">{item.flags.map((flag) => <span key={flag} className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{flag.replaceAll("_", " ")}</span>)}</div></td><td className="px-3 py-3"><span className="rounded-full bg-cyan-100 px-2 py-1 font-semibold text-cyan-900">{item.observation_priority_0_100.toFixed(0)}/100</span></td></tr>)}</tbody></table></div>}
+              <p className="mt-4 text-xs text-slate-500">Сопоставление — геометрическая эвристика с порогом 300 м, потому что идентификаторы инвентарей различаются. Изменение площади требует проверки по исходным снимкам; оно не доказывает связь с ледником, состояние морены или вероятность события.</p>
             </section>
 
             <section className="rounded-xl border border-blue-100 bg-blue-50 p-5 text-sm text-blue-950"><h2 className="font-semibold">Lake-context time series</h2><div className="mt-3 grid grid-cols-5 gap-2">{context?.lake_timeseries.map((point) => <div key={point.year} className="rounded-lg bg-white p-3"><strong>{point.year}</strong><span className="mt-1 block">{point.lake_count} lakes</span><span className="block text-xs text-slate-600">{(point.total_area_m2 / 1_000_000).toFixed(3)} km²</span></div>)}</div><p className="mt-3 text-xs">Counts and areas are inventory summaries within the selected glacier’s spatial buffer. They do not prove that a lake is glacier-connected or quantify its hazard.</p></section>

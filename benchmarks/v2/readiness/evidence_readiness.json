@@ -1,0 +1,32 @@
+{
+  "schema": "glaciernet-kz.evidence-readiness.v1",
+  "created_at": "2026-07-29T22:32:58.291453+00:00",
+  "input_dir": "data/external/real_inputs",
+  "claims": [
+    {
+      "id": "C4",
+      "claim": "Independent expert gold-label accuracy",
+      "automated_input_ready": false,
+      "status": "file missing"
+    },
+    {
+      "id": "C5",
+      "claim": "Independent Zhetysu Alatau generalisation",
+      "automated_input_ready": false,
+      "status": "needs authoritative boundary and adjudicated external labels"
+    },
+    {
+      "id": "C6",
+      "claim": "Operational GLOF warning or calibrated event probability",
+      "automated_input_ready": false,
+      "status": "file missing"
+    },
+    {
+      "id": "C7",
+      "claim": "Validated 2000-2020 glacier-loss trend or 2050 area forecast",
+      "automated_input_ready": false,
+      "status": "file missing"
+    }
+  ],
+  "provisional_machine_assisted_labels": "Not accepted as gold labels by this report."
+}

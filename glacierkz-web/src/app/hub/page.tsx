@@ -3,28 +3,54 @@
 import Link from "next/link";
 import {
   Mountain,
-  LayoutDashboard,
-  FlaskConical,
-  BookOpen,
-  Bot,
+  BrainCircuit,
   HeartPulse,
-  Monitor,
-  ExternalLink,
-  CalendarRange,
   MapPinned,
+  ClipboardCheck,
+  MessageSquareText,
+  ShieldCheck,
 } from "lucide-react";
 import { useI18n } from "@/lib/I18nProvider";
 
 const SERVICES = [
-  { href: "/dashboard", key: "hub.dashboard", icon: LayoutDashboard, external: false },
-  { href: "/explore", key: "hub.explore", icon: CalendarRange, external: false },
-  { href: "/glaciers", key: "hub.glaciers", icon: MapPinned, external: false },
-  { href: "/predict", key: "hub.predict", icon: Mountain, external: false },
-  { href: "/demo", key: "hub.demo", icon: FlaskConical, external: true },
-  { href: "/docs", key: "hub.api", icon: BookOpen, external: true },
-  { href: "/mcp/tools", key: "hub.mcp", icon: Bot, external: true },
-  { href: "/legacy", key: "hub.legacy", icon: Monitor, external: true },
-  { href: "/health", key: "hub.health", icon: HeartPulse, external: true },
+  {
+    href: "/ml",
+    key: "hub.ml",
+    icon: BrainCircuit,
+  },
+  {
+    href: "/risk-twin",
+    key: "hub.risk",
+    icon: HeartPulse,
+  },
+  {
+    href: "/operations",
+    key: "hub.operations",
+    icon: ClipboardCheck,
+  },
+  {
+    href: "/analysis",
+    key: "hub.analysis",
+    icon: MessageSquareText,
+  },
+  {
+    href: "/jury",
+    key: "hub.jury",
+    icon: ShieldCheck,
+  },
+  {
+    href: "/glaciers",
+    key: "hub.glaciers",
+    icon: MapPinned,
+  },
+] as const;
+
+const SECONDARY_LINKS = [
+  ["/explore", "hub.explore"],
+  ["/predict", "hub.predict"],
+  ["/pilot", "hub.pilot"],
+  ["/dashboard", "hub.dashboard"],
+  ["/reports", "reports.title"],
 ] as const;
 
 export default function HubPage() {
@@ -32,7 +58,7 @@ export default function HubPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-blue-50">
-      <div className="mx-auto max-w-4xl px-4 py-12">
+      <main id="main-content" className="mx-auto max-w-4xl px-4 py-12">
         <div className="mb-10 text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-1 text-sm font-medium text-blue-800">
             <Mountain className="h-4 w-4" />
@@ -40,27 +66,35 @@ export default function HubPage() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t("hub.title")}</h1>
           <p className="mt-3 text-slate-600">{t("hub.subtitle")}</p>
-          <p className="mt-2 font-mono text-sm text-blue-700">http://localhost:8080</p>
+          <p className="mt-2 text-sm text-blue-700">Web workspace. API endpoints are configured through NEXT_PUBLIC_API_URL.</p>
+        </div>
+
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-700">{t("hub.primary_eyebrow")}</p>
+            <h2 className="mt-1 text-xl font-bold text-slate-950">{t("hub.primary_title")}</h2>
+          </div>
+          <span className="hidden rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 sm:inline">
+            {t("hub.real_artifacts")}
+          </span>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          {SERVICES.map(({ href, key, icon: Icon, external }) => (
+          {SERVICES.map(({ href, key, icon: Icon }, index) => (
             <Link
               key={href}
               href={href}
-              target={external ? "_blank" : undefined}
-              rel={external ? "noopener noreferrer" : undefined}
               className="group flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md"
             >
-              <div className="rounded-lg bg-blue-50 p-3 text-blue-600 group-hover:bg-blue-100">
+              <div className="relative rounded-lg bg-blue-50 p-3 text-blue-600 group-hover:bg-blue-100">
                 <Icon className="h-6 w-6" />
+                <span className="absolute -right-2 -top-2 grid h-5 w-5 place-items-center rounded-full bg-slate-950 text-[10px] font-bold text-white">
+                  {index + 1}
+                </span>
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="font-semibold text-slate-900">{t(key)}</h2>
-                  {external && <ExternalLink className="h-3.5 w-3.5 text-slate-400" />}
-                </div>
-                <p className="mt-1 text-sm text-slate-500">{t(`${key}.desc`)}</p>
+                <h3 className="font-semibold text-slate-900">{t(key)}</h3>
+                <p className="mt-1 text-sm leading-6 text-slate-600">{t(`${key}.desc`)}</p>
                 <p className="mt-2 font-mono text-xs text-slate-400">{href}</p>
               </div>
             </Link>
@@ -68,13 +102,19 @@ export default function HubPage() {
         </div>
 
         <div className="mt-10 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
-          <h3 className="font-semibold text-slate-900">{t("hub.stack")}</h3>
-          <ul className="mt-3 space-y-1 font-mono text-xs">
-            <li>gateway :8080 → web + api + demo</li>
-            <li>redis (internal) · tensorflow · fastapi · next.js · gradio</li>
-          </ul>
+          <h3 className="font-semibold text-slate-900">{t("hub.supporting")}</h3>
+          <p className="mt-1 text-xs leading-5 text-slate-500">
+            {t("hub.supporting.desc")}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {SECONDARY_LINKS.map(([href, key]) => (
+              <Link key={href} href={href} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-800">
+                {t(key)}
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

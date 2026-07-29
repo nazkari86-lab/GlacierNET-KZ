@@ -46,6 +46,8 @@ results/tables/*
 !results/ablation_unet_sentinel2_terrain_control_2017_2024.json
 !results/ablation_unet_sentinel2_terrain_s1_2017_2024.json
 !results/ablation_sentinel1_2017_2024.json
+!results/enhanced_provisional_spatial_holdout_evaluation.json
+!results/training_log_unet_enhanced_provisional_spatial_holdout.csv
 predictions/
 glacierkz-api/results/
 **/build/
@@ -74,6 +76,17 @@ data/rgi/*.cpg
 data/processed/patches/**/*.npy
 data/processed/masks/*.tif
 data/ancillary/**/*.tif
+data/ancillary/terrain/
+data/climate/
+data/external/real_inputs/
+data/hydrology/
+data/impact_assets/
+data/population/
+data/results/
+data/water/
+glacierkz-api/data/
+glacierkz-api/experiments/
+*.aux.xml
 data/external/glathida/**
 # Third-party source archives stay local. Compact derived GeoPackages and
 # machine-readable provenance manifests remain publishable.
@@ -86,6 +99,10 @@ models/*.pkl
 models/*
 !models/.gitkeep
 !models/trusted_artifacts.json
+
+# Local QA screenshots, generated decks, and presentation exports.
+artifacts/
+outputs/
 
 # OS
 .DS_Store

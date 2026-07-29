@@ -7,7 +7,10 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-ROOT = Path(__file__).resolve().parents[1]
+# CORE_DIR is the repository root (data/, results/, predictions/), not the
+# FastAPI package directory.  Keeping this exact prevents collection-order
+# dependent failures in services imported later in the full test suite.
+ROOT = Path(__file__).resolve().parents[2]
 os.environ.setdefault("CORE_DIR", str(ROOT))
 
 from app.main import app  # noqa: E402

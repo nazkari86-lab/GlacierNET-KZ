@@ -104,7 +104,7 @@ export default function ActivityFeed({
                     key={type}
                     onClick={() => setFilter(filter === type ? null : type)}
                     className={cn(
-                      "flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-full transition-colors",
+                      "flex min-h-9 min-w-9 items-center justify-center gap-1 px-2 py-1 text-[10px] rounded-full transition-colors",
                       filter === type ? "bg-gray-800 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     )}
                   >

@@ -1,35 +1,40 @@
 #!/usr/bin/env python3
 """Генерация всех фигур для статьи GlacierNET-KZ."""
-import sys
-sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parent.parent))
 
+import sys
+
+sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent.parent))
+
+import matplotlib
 import numpy as np
 import pandas as pd
-import matplotlib
+
 matplotlib.use("Agg")
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
-from pathlib import Path
-import json
 
-from src.config import FIGURES_DIR, RESULTS_DIR, TABLES_DIR
+from src.config import FIGURES_DIR, RESULTS_DIR
 
 FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── Стиль ──────────────────────────────────────────────────────────
-plt.rcParams.update({
-    "font.family": "serif",
-    "font.size": 11,
-    "axes.titlesize": 12,
-    "axes.labelsize": 11,
-    "xtick.labelsize": 9,
-    "ytick.labelsize": 9,
-    "legend.fontsize": 9,
-    "figure.dpi": 300,
-    "savefig.dpi": 300,
-    "savefig.bbox": "tight",
-    "savefig.pad_inches": 0.1,
-})
+plt.rcParams.update(
+    {
+        "font.family": "serif",
+        "font.size": 11,
+        "axes.titlesize": 12,
+        "axes.labelsize": 11,
+        "xtick.labelsize": 9,
+        "ytick.labelsize": 9,
+        "legend.fontsize": 9,
+        "figure.dpi": 300,
+        "savefig.dpi": 300,
+        "savefig.bbox": "tight",
+        "savefig.pad_inches": 0.1,
+    }
+)
 
 # ═══════════════════════════════════════════════════════════════════
 # FIGURE 1: Trend + Forecast to 2050
@@ -59,7 +64,7 @@ se = np.sqrt(np.sum(residuals**2) / (len(years) - 2))
 t_val = 2.0  # approximate for 95% CI
 x_mean = np.mean(years)
 ss_x = np.sum((years - x_mean) ** 2)
-ci = t_val * se * np.sqrt(1 + 1/len(years) + (forecast_years - x_mean)**2 / ss_x)
+ci = t_val * se * np.sqrt(1 + 1 / len(years) + (forecast_years - x_mean) ** 2 / ss_x)
 
 # ── Plot ──
 fig, ax = plt.subplots(figsize=(8, 4.5))
@@ -69,24 +74,44 @@ ax.plot(years, areas, "ko-", markersize=5, linewidth=1.2, label="Observed (RF)")
 
 # NDSI overlay
 if len(ndsi) > 0:
-    ax.plot(ndsi["year"], ndsi["area_km2"], "s--", color="steelblue", markersize=4,
-            linewidth=1, alpha=0.8, label="Observed (NDSI)")
+    ax.plot(
+        ndsi["year"],
+        ndsi["area_km2"],
+        "s--",
+        color="steelblue",
+        markersize=4,
+        linewidth=1,
+        alpha=0.8,
+        label="Observed (NDSI)",
+    )
 
 # Regression line (observed range)
 reg_x = np.linspace(years.min(), years.max(), 50)
-ax.plot(reg_x, slope * reg_x + intercept, "r--", linewidth=1, alpha=0.6,
-        label=f"Linear trend (slope={slope:.2f} km²/yr, R²={r2:.2f})")
+ax.plot(
+    reg_x,
+    slope * reg_x + intercept,
+    "r--",
+    linewidth=1,
+    alpha=0.6,
+    label=f"Linear trend (slope={slope:.2f} km²/yr, R²={r2:.2f})",
+)
 
 # Forecast
 ax.plot(forecast_years, forecast_areas, "r-", linewidth=1.5, label="Forecast (extrapolation)")
-ax.fill_between(forecast_years, forecast_areas - ci, forecast_areas + ci,
-                color="red", alpha=0.12, label="95% confidence")
+ax.fill_between(
+    forecast_years, forecast_areas - ci, forecast_areas + ci, color="red", alpha=0.12, label="95% confidence"
+)
 
 # 2050 annotation
 ax.axhline(y=forecast_areas[-1], color="gray", linestyle=":", linewidth=0.8, alpha=0.5)
-ax.annotate(f"2050: {forecast_areas[-1]:.0f} km²",
-            xy=(2050, forecast_areas[-1]), xytext=(2042, forecast_areas[-1] + 40),
-            arrowprops=dict(arrowstyle="->", color="gray"), fontsize=9, color="gray")
+ax.annotate(
+    f"2050: {forecast_areas[-1]:.0f} km²",
+    xy=(2050, forecast_areas[-1]),
+    xytext=(2042, forecast_areas[-1] + 40),
+    arrowprops=dict(arrowstyle="->", color="gray"),
+    fontsize=9,
+    color="gray",
+)
 
 ax.set_xlabel("Year")
 ax.set_ylabel("Glacier area (km²)")
@@ -121,8 +146,14 @@ for i, (metric, label, color) in enumerate(zip(metrics, metric_labels, colors)):
     vals = [mc[mc["model"] == m][metric].values[0] for m in models]
     bars = ax.bar(x + i * width, vals, width, label=label, color=color, alpha=0.85)
     for bar, v in zip(bars, vals):
-        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.005,
-                f"{v:.3f}", ha="center", va="bottom", fontsize=7)
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 0.005,
+            f"{v:.3f}",
+            ha="center",
+            va="bottom",
+            fontsize=7,
+        )
 
 ax.set_xticks(x + width * 1.5)
 ax.set_xticklabels(
@@ -182,6 +213,7 @@ print(f"  → {out}")
 print("[4/4] Glacier maps mosaic …")
 try:
     import rasterio
+
     HAS_RASTERIO = True
 except ImportError:
     HAS_RASTERIO = False
@@ -189,13 +221,12 @@ except ImportError:
 
 if HAS_RASTERIO:
     from matplotlib.colors import ListedColormap
+
     cmap = ListedColormap(["#2d2d2d", "#00bcd4"])  # dark=non-glacier, cyan=glacier
 
     # Available years with RF masks (use absolute path)
     pred_dir = Path(__file__).resolve().parent.parent / "predictions"
-    years_with_rf = sorted([
-        int(p.parent.name) for p in pred_dir.glob("*/rf_mask.tif")
-    ])
+    years_with_rf = sorted([int(p.parent.name) for p in pred_dir.glob("*/rf_mask.tif")])
 
     n = len(years_with_rf)
     if n == 0:

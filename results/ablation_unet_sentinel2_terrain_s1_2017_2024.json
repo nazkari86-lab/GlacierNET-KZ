@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-07-26T17:22:21+00:00",
+  "created_at": "2026-07-29T11:42:35+00:00",
   "benchmark_protocol_version": "2.0",
   "evaluation_protocol": "untouched temporal test-year holdout",
   "split_strategy": "year_holdout",
@@ -344,6 +344,51 @@
     "area_bias_percent": -4.559515820565531,
     "area_error_percent": 4.559515820565531
   },
-  "boundary_metrics_status": "blocked: glacier-aware non-overlapping test geometry is required",
+  "probability_calibration": {
+    "brier_score": 0.027813354280151855,
+    "negative_log_likelihood": 0.11589524478638882,
+    "expected_calibration_error": 0.026970134383987876,
+    "calibration_bins": 15,
+    "occupied_bins": 15
+  },
+  "selective_error_curve": [
+    {
+      "coverage": 1.0,
+      "abstained_fraction": 0.0,
+      "pixel_error_rate": 0.03567171096801758,
+      "mean_entropy": 0.1923629010664605
+    },
+    {
+      "coverage": 0.9,
+      "abstained_fraction": 0.09999999999999998,
+      "pixel_error_rate": 0.010560352477989993,
+      "mean_entropy": 0.1565715868260791
+    },
+    {
+      "coverage": 0.75,
+      "abstained_fraction": 0.25,
+      "pixel_error_rate": 0.005091667175292969,
+      "mean_entropy": 0.1394798912630953
+    },
+    {
+      "coverage": 0.5,
+      "abstained_fraction": 0.5,
+      "pixel_error_rate": 0.00244903564453125,
+      "mean_entropy": 0.11990578314293465
+    }
+  ],
+  "patch_boundary_diagnostic": {
+    "status": "diagnostic_only_overlapping_patch_units",
+    "n_patches": 64,
+    "n_finite_patches": 61,
+    "n_missing_boundary_patches": 3,
+    "mean_boundary_f1": 0.7145194005313779,
+    "median_boundary_f1": 0.6765477111073244,
+    "mean_hausdorff95": 237.6191669730429,
+    "median_hausdorff95": 84.8528137423857,
+    "mean_assd": 51.509001939597496,
+    "median_assd": 22.739558776267014
+  },
+  "boundary_metrics_status": "patch diagnostic available; claim-grade glacier boundary metrics remain blocked until non-overlapping glacier geometry is present",
   "bootstrap_status": "blocked: glacier_id is absent from the current silver patch manifest"
 }

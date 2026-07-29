@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src import config
-from src.metrics import evaluate_segmentation
+from src import config  # noqa: E402
+from src.metrics import evaluate_segmentation  # noqa: E402
 
 
 def load_patches(year: int = 2020):

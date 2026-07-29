@@ -16,7 +16,7 @@ def _local_context(*_args, **_kwargs):
             "geometry": {"type": "Polygon", "coordinates": []},
         },
         "layers": {
-            "tien_shan_lakes_2023": {
+            "tien_shan_lakes": {
                 "type": "FeatureCollection",
                 "features": [
                     {

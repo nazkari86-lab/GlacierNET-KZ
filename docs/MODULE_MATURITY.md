@@ -19,27 +19,25 @@ validated, or production-ready.
 The following modules are prototypes or research utilities and are not part of
 the validated scientific claim surface:
 
-`anomaly`, `callbacks`, `clustering`, `datasets`, `diffusion_model`,
-`distributed_training`, `domain_adaptation`, `evaluation`,
-`feature_engineering`, `federated_learning`, `graph_neural_network`,
-`interpretability`, `multi_task_learning`, `postprocessing`, `reporting`,
-`schedulers`, `self_supervised`, `time_series`, `uncertainty`, and
-`vision_transformer`.
+`anomaly`, `datasets`, `diffusion_model`, `distributed_training`, `evaluation`,
+`federated_learning`, `graph_neural_network`, `multi_task_learning`,
+`postprocessing`, `reporting`, `schedulers`, `self_supervised`, `time_series`,
+`uncertainty`, and `vision_transformer`.
 
 Some have unit tests and some remain low-coverage. None should be described as
-validated merely because an MCP wrapper exists. MCP tools that can construct an
-untrained model or produce synthetic demonstration data are disabled by default
-through `GLACIERKZ_ENABLE_UNVALIDATED_RESEARCH_TOOLS`. Enabling that variable is
-for local research demonstrations only and does not upgrade evidence maturity.
+validated merely because it is importable. The public MCP catalog contains only
+physical-data readers and the trusted glacier-first inference workflow.
+Synthetic/random fallbacks and wrappers around untrained architectures were
+removed rather than hidden behind a feature flag.
 
 ## Coverage policy
 
 CI measures the entire Python source and API package, including research
-scaffolds, and currently enforces a 35% repository-wide floor. This lower bound
-is intentionally not presented as strong coverage. It is a ratchet against
-regression while tests are added to the low-coverage research surface. Core API
-paths have materially higher per-file coverage, visible in the XML/terminal
-coverage report.
+scaffolds. It enforces both a 45% repository-wide floor and a 55% production
+scope floor. The machine-readable classification is
+`config/coverage_scopes.json`; CI publishes the full JSON, XML, and scoped
+report as one evidence artifact. Research coverage remains visible as its own
+number and is never subtracted from the repository-wide metric.
 
 No module is omitted from the repository-wide metric solely to make the total
 look better.

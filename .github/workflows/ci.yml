@@ -21,8 +21,8 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
       - run: pip install ruff
-      - run: ruff check src/ glacierkz-api/app/ --select E,F,W,I --ignore E501
-      - run: ruff format src/ glacierkz-api/app/ --check --diff
+      - run: ruff check src/ glacierkz-api/app/ scripts/ --select E,F,W,I --ignore E501
+      - run: ruff format src/ glacierkz-api/app/ scripts/ --check --diff
 
   test:
     name: Tests (Python)
@@ -40,13 +40,26 @@ jobs:
           python -m pytest tests/ glacierkz-api/tests/ -v \
             -m "not experimental and not local_data" \
             --cov=src --cov=glacierkz-api/app \
-            --cov-report=xml --cov-report=term-missing \
-            --cov-fail-under=35
+            --cov-report=xml --cov-report=json:coverage.json --cov-report=term-missing \
+            --cov-fail-under=45
+      - name: Enforce transparent production and repository coverage gates
+        run: |
+          python scripts/report_coverage_scopes.py \
+            --coverage coverage.json \
+            --output coverage-scopes.json
       - uses: codecov/codecov-action@v4
         if: always()
         with:
           file: coverage.xml
           fail_ci_if_error: false
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: python-coverage-evidence
+          path: |
+            coverage.xml
+            coverage.json
+            coverage-scopes.json
 
   typecheck:
     name: Type Check (Pyright)
@@ -75,7 +88,8 @@ jobs:
           cache-dependency-path: glacierkz-web/package-lock.json
       - run: npm ci
       - run: npm audit --omit=dev --audit-level=high
-      - run: npm run lint -- --max-warnings 100
+      - run: npm run lint -- --max-warnings 0
+      - run: npx tsc --noEmit
       - run: npm test
       - run: npm run build
 
@@ -150,7 +164,7 @@ jobs:
       - run: python scripts/validate-env.py
 
   docker-build:
-    name: Docker Build (API, Web, Demo)
+    name: Docker Build (Core API and Web)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -158,7 +172,5 @@ jobs:
         run: docker build -f glacierkz-api/Dockerfile.full -t glacierkz-api-test .
       - name: Build Web image
         run: docker build -t glacierkz-web-test ./glacierkz-web
-      - name: Build Gradio demo image
-        run: docker build -f spaces/Dockerfile -t glacierkz-demo-test .
       - name: Validate unified Compose configuration
         run: docker compose config --quiet

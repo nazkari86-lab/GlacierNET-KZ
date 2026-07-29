@@ -22,7 +22,15 @@ async def predict(
     year: Optional[int] = Form(None),
 ):
     image_path = await save_upload(file)
-    result = await asyncio.to_thread(run_segmentation, image_path, model_name, use_tta, use_crf, ndsi_threshold)
+    result = await asyncio.to_thread(
+        run_segmentation,
+        image_path,
+        model_name,
+        use_tta,
+        use_crf,
+        ndsi_threshold,
+        year,
+    )
     if result["status"] == "completed":
         save_result(
             task_id=result["task_id"],
@@ -35,6 +43,15 @@ async def predict(
         )
         result["mask_path"] = path_to_url(result["mask_path"])
         result["overlay_path"] = path_to_url(result["overlay_path"])
+        for key in (
+            "geotiff_path",
+            "probability_path",
+            "probability_geotiff_path",
+            "entropy_path",
+            "entropy_geotiff_path",
+        ):
+            if result.get(key):
+                result[key] = path_to_url(result[key])
     return result
 
 

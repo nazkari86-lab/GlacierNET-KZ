@@ -24,16 +24,20 @@ import {
 } from "lucide-react";
 import {
   createFieldReport,
+  createInspectionTask,
   fetchGlaciers,
-  fetchOperationsDemo,
   fetchOperationsOverview,
+  fetchRegionalObservationScan,
+  regionalObservationCandidateKey,
   type ChangeCandidate,
   type FieldReportInput,
   type GlacierRecord,
   type OperationsAsset,
   type OperationsObservation,
   type OperationsOverview,
+  type RegionalObservationScan,
 } from "@/lib/api";
+import { riskTwinHref } from "@/lib/evidenceCase";
 import { useI18n } from "@/lib/I18nProvider";
 
 const OperationsInventoryMap = dynamic(() => import("@/components/OperationsInventoryMap"), { ssr: false });
@@ -73,9 +77,7 @@ const copy = {
     export: "Export audit snapshot",
     refresh: "Refresh",
     noData: "No operational records yet.",
-    demo: "Synthetic shadow-mode demo — not an operational or hazard claim",
     safety: "Priorities select observations. They are not event probabilities or official warnings.",
-    limitation: "Synthetic comparison preview; replace with linked imagery artifacts in a real pilot.",
     strict: "Comparable observations only",
     all: "Show all observations",
     explain: "Why is this flagged?",
@@ -111,9 +113,7 @@ const copy = {
     export: "Экспорт audit snapshot",
     refresh: "Обновить",
     noData: "Операционных записей пока нет.",
-    demo: "Синтетическая shadow-mode демонстрация — не operational или hazard claim",
     safety: "Приоритеты выбирают наблюдения. Это не вероятность события и не официальное предупреждение.",
-    limitation: "Синтетический preview сравнения; в реальном пилоте он заменяется связанными снимками.",
     strict: "Только сопоставимые наблюдения",
     all: "Показать все наблюдения",
     explain: "Почему это отмечено?",
@@ -149,9 +149,7 @@ const copy = {
     export: "Audit snapshot жүктеу",
     refresh: "Жаңарту",
     noData: "Операциялық жазбалар әлі жоқ.",
-    demo: "Синтетикалық shadow-mode демо — операциялық немесе қауіп мәлімдемесі емес",
     safety: "Басымдықтар бақылауды таңдайды. Олар оқиға ықтималдығы немесе ресми ескерту емес.",
-    limitation: "Синтетикалық салыстыру preview; нақты пилотта байланыстырылған суреттер қолданылады.",
     strict: "Тек салыстырмалы бақылаулар",
     all: "Барлық бақылауларды көрсету",
     explain: "Неге белгіленді?",
@@ -227,7 +225,6 @@ export default function OperationsPage() {
   const [lastRefreshed, setLastRefreshed] = useState("");
   const [selectedAssetId, setSelectedAssetId] = useState("");
   const [detailMode, setDetailMode] = useState<DetailMode>("summary");
-  const [strictOnly, setStrictOnly] = useState(true);
   const [saved, setSaved] = useState(false);
   const [assetQuery, setAssetQuery] = useState("");
   const [assetStatus, setAssetStatus] = useState("all");
@@ -235,29 +232,41 @@ export default function OperationsPage() {
   const [waterLevel, setWaterLevel] = useState("");
   const [notes, setNotes] = useState("");
   const [signature, setSignature] = useState("");
+  const [riskTwinScan, setRiskTwinScan] = useState<RegionalObservationScan | null>(null);
+  const [riskTwinScanError, setRiskTwinScanError] = useState("");
+  const [selectedRiskTwinKey, setSelectedRiskTwinKey] = useState("");
+  const [locationVerification, setLocationVerification] = useState<"unverified" | "gps_verified" | "manually_confirmed">("unverified");
+  const [locationMethod, setLocationMethod] = useState<"device_gps" | "map_selection" | "external_instrument">("map_selection");
+  const [creatingInspection, setCreatingInspection] = useState(false);
+  const [inspectionMessage, setInspectionMessage] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
     setRegistryError("");
     try {
-      const [live, registry] = await Promise.all([
+      const [live, registry, scan] = await Promise.all([
         fetchOperationsOverview(),
         fetchGlaciers("", false, 1000, true).catch((reason) => {
           setRegistryError(reason instanceof Error ? reason.message : "RGI registry unavailable");
           return { glaciers: [], total: 0 };
         }),
+        fetchRegionalObservationScan(500, 10, 2023).catch((reason) => {
+          setRiskTwinScanError(reason instanceof Error ? reason.message : "Risk Twin scan unavailable");
+          return null;
+        }),
       ]);
-      const next = (live.counts.assets ?? 0) > 0 ? live : await fetchOperationsDemo();
-      setData(next);
+      setData(live);
       setGlaciers(registry.glaciers);
+      setRiskTwinScan(scan);
       setLastRefreshed(
         new Intl.DateTimeFormat(locale, {
           hour: "2-digit",
           minute: "2-digit",
         }).format(new Date())
       );
-      setSelectedAssetId((current) => current || next.observation_queue[0]?.asset_id || next.assets[0]?.id || "");
+      setSelectedAssetId((current) => current || live.observation_queue[0]?.asset_id || live.assets[0]?.id || "");
+      setSelectedRiskTwinKey((current) => current || (scan?.candidates[0] ? regionalObservationCandidateKey(scan.candidates[0]) : ""));
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Operations API unavailable");
     } finally {
@@ -268,6 +277,16 @@ export default function OperationsPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    // Risk Twin handoffs return this stable URL. Honor it after the live
+    // registry has loaded instead of silently selecting an unrelated queue item.
+    const requestedAsset = new URLSearchParams(window.location.search).get("asset");
+    if (requestedAsset && data?.assets.some((asset) => asset.id === requestedAsset)) {
+      setSelectedAssetId(requestedAsset);
+      document.getElementById("monitor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [data?.assets]);
 
   const assetsById = useMemo(
     () => Object.fromEntries((data?.assets ?? []).map((asset) => [asset.id, asset])),
@@ -283,7 +302,28 @@ export default function OperationsPage() {
       ),
     [data]
   );
+  const uniqueRiskTwinCandidates = useMemo(
+    () => Array.from(
+      new globalThis.Map(
+        (riskTwinScan?.candidates ?? []).map((candidate) => [
+          regionalObservationCandidateKey(candidate),
+          candidate,
+        ])
+      ).values()
+    ),
+    [riskTwinScan]
+  );
   const selectedAsset = assetsById[selectedAssetId];
+  const selectedRiskTwinCandidate = uniqueRiskTwinCandidates.find((item) => regionalObservationCandidateKey(item) === selectedRiskTwinKey);
+  const selectedRiskTwinHref = selectedRiskTwinCandidate
+    ? riskTwinHref({
+        rgiId: selectedRiskTwinCandidate.glacier.rgi_id,
+        ...(selectedRiskTwinCandidate.lake_id ? { lakeId: selectedRiskTwinCandidate.lake_id } : {}),
+        year: mapYear,
+        lakeInventoryYear: selectedRiskTwinCandidate.inventory_year,
+        sourceScope: "local_inventory",
+      })
+    : "/risk-twin";
   const selectedCandidate = data?.observation_queue.find((item) => item.asset_id === selectedAssetId);
   const selectedObservation = observationsByAsset[selectedAssetId]?.[0];
   const selectedTask = data?.inspection_tasks.find((item) => item.asset_id === selectedAssetId);
@@ -314,29 +354,59 @@ export default function OperationsPage() {
       latitude: selectedAsset.latitude,
       longitude: selectedAsset.longitude,
       measurements: { water_level_m: waterLevel ? Number(waterLevel) : null },
-      checklist: { location_verified: true, shadow_mode: true },
+      checklist: {
+        location_verified: locationVerification !== "unverified",
+        location_verification_status: locationVerification,
+        location_verification_method: locationMethod,
+        shadow_mode: true,
+      },
       notes,
       attachment_manifest: [],
       signature,
       sync_status: "offline_draft",
     };
-    localStorage.setItem("glaciernet-operations-field-draft", JSON.stringify(draft));
+    const storageKey = "glaciernet-operations-field-drafts.v2";
+    const existing = JSON.parse(localStorage.getItem(storageKey) ?? "[]") as FieldReportInput[];
+    localStorage.setItem(storageKey, JSON.stringify([...existing, draft]));
     setSaved(true);
   };
 
   const syncDraft = async () => {
-    if (data?.demo_only) return;
-    const raw = localStorage.getItem("glaciernet-operations-field-draft");
-    if (!raw) return;
-    const draft = JSON.parse(raw) as FieldReportInput;
+    const storageKey = "glaciernet-operations-field-drafts.v2";
+    const drafts = JSON.parse(localStorage.getItem(storageKey) ?? "[]") as FieldReportInput[];
+    const draft = drafts.find((item) => item.task_id === selectedTask?.id);
+    if (!draft) return;
     await createFieldReport({ ...draft, sync_status: "synced" });
-    localStorage.removeItem("glaciernet-operations-field-draft");
+    localStorage.setItem(storageKey, JSON.stringify(drafts.filter((item) => item !== draft)));
     setSaved(false);
     await load();
   };
 
+  const startInspection = async () => {
+    if (!selectedAsset || !selectedCandidate) return;
+    setInspectionMessage("");
+    setCreatingInspection(true);
+    try {
+      const task = await createInspectionTask({
+        asset_id: selectedAsset.id,
+        candidate_id: selectedCandidate.id,
+        action_type: selectedCandidate.next_action,
+        priority_score: selectedCandidate.priority_score,
+        rationale: selectedCandidate.rationale,
+      });
+      setInspectionMessage(`Inspection ${task.id} created. Complete the field report below.`);
+      await load();
+      document.getElementById("inspections")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (reason) {
+      setInspectionMessage(reason instanceof Error ? reason.message : "Could not create inspection");
+    } finally {
+      setCreatingInspection(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f4f6f8] text-slate-950">
+      <a href="#main" aria-label="Skip to main content" className="sr-only rounded-lg bg-slate-950 px-4 py-3 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[1000]">Перейти к Operations</a>
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-[1500px] px-4 sm:px-6">
           <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 py-3">
@@ -371,7 +441,7 @@ export default function OperationsPage() {
         </div>
       </header>
 
-      <main id="main-content" className="mx-auto max-w-[1500px] space-y-6 px-4 py-6 sm:px-6">
+      <main id="main" className="mx-auto max-w-[1500px] space-y-6 px-4 py-6 sm:px-6">
         <section id="overview" aria-labelledby="attention-heading">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -411,15 +481,19 @@ export default function OperationsPage() {
             </div>
           </div>
 
-          {data?.demo_only && (
-            <div className="mt-5 flex items-start gap-3 rounded-xl border border-blue-300 bg-blue-50 p-4 text-sm text-blue-950">
-              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-              <div>
-                <p className="font-semibold">{text.demo}</p>
-                <p className="mt-1">{text.safety}</p>
-              </div>
+          <section id="risk-twin-priorities" aria-labelledby="risk-twin-priorities-heading" className="mt-5 rounded-2xl border border-cyan-200 bg-gradient-to-r from-cyan-50 via-white to-blue-50 p-5 shadow-sm">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-800">Real local Risk Twin screening</p><h2 id="risk-twin-priorities-heading" className="mt-1 text-xl font-semibold">Критические объекты для следующей проверки</h2><p className="mt-1 max-w-3xl text-sm text-slate-600">Автоматически найдены в локальных инвентарях озёр: изменение 2020→2023, размер, близость к границе RGI и отсутствие надёжного геометрического совпадения. Это приоритет сбора доказательств, не прогноз опасности.</p></div>
+              <Link href={selectedRiskTwinHref} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-cyan-800 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-900">Открыть полный Risk Twin<ArrowRight className="h-4 w-4" /></Link>
             </div>
-          )}
+            {riskTwinScanError ? <p role="alert" aria-live="assertive" className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">Risk Twin scan недоступен: {riskTwinScanError}</p> : !riskTwinScan ? <p className="mt-4 text-sm text-slate-600">Сканирование локальных геоданных…</p> : <>
+              <div className="mt-4 grid gap-3 sm:grid-cols-4"><RiskTwinMetric label="Просканировано озёр" value={riskTwinScan.summary.scanned_lakes} /><RiskTwinMetric label="Кандидатов возле RGI" value={riskTwinScan.summary.candidates_with_nearby_rgi} /><RiskTwinMetric label="Крупных изменений площади" value={riskTwinScan.summary.large_change_screening} /><RiskTwinMetric label="Без надёжного match" value={riskTwinScan.summary.unmatched_previous} /></div>
+              <label htmlFor="operations-risk-twin-case" className="mt-4 block max-w-3xl text-sm font-semibold text-slate-800">Выбрать любой реальный случай Risk Twin<select id="operations-risk-twin-case" value={selectedRiskTwinKey} onChange={(event) => setSelectedRiskTwinKey(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border border-cyan-300 bg-white px-3 text-sm font-normal"><option value="">Выберите объект</option>{uniqueRiskTwinCandidates.map((candidate) => { const key = regionalObservationCandidateKey(candidate); return <option key={key} value={key}>{candidate.glacier.name_ru || candidate.glacier.name} · озеро {candidate.lake_id ?? "без ID"} · приоритет {candidate.observation_priority_0_100.toFixed(0)}</option>; })}</select></label>
+              {selectedRiskTwinCandidate && <article className="mt-4 rounded-xl border-2 border-cyan-500 bg-white p-4" aria-live="polite"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-cyan-800">Выбранный реальный case</p><h3 className="mt-1 text-lg font-semibold">{selectedRiskTwinCandidate.glacier.name_ru || selectedRiskTwinCandidate.glacier.name}</h3><p className="mt-1 text-sm text-slate-600">Озеро {selectedRiskTwinCandidate.lake_id ?? "без ID"} · {selectedRiskTwinCandidate.latitude.toFixed(5)}, {selectedRiskTwinCandidate.longitude.toFixed(5)}</p></div><span className="rounded-full bg-cyan-100 px-3 py-1 text-sm font-bold text-cyan-950">Приоритет наблюдения {selectedRiskTwinCandidate.observation_priority_0_100.toFixed(0)}/100</span></div><div className="mt-4 grid gap-3 sm:grid-cols-3"><DecisionFact label="Изменение площади" value={selectedRiskTwinCandidate.area_change_percent === null ? "Нет надёжного match" : `${selectedRiskTwinCandidate.area_change_percent > 0 ? "+" : ""}${selectedRiskTwinCandidate.area_change_percent.toFixed(1)}%`} /><DecisionFact label="До RGI" value={`${selectedRiskTwinCandidate.distance_to_rgi_boundary_m.toFixed(0)} м`} /><DecisionFact label="Архив событий в 10 км" value={String(selectedRiskTwinCandidate.historical_event_count_in_glacier_context)} /></div><div className="mt-3 flex flex-wrap gap-1">{selectedRiskTwinCandidate.flags.map((flag) => <span key={flag} className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-700">{flag.replaceAll("_", " ")}</span>)}</div><div className="mt-4"><Link href={selectedRiskTwinHref} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-cyan-700 px-3 py-2 text-sm font-semibold text-cyan-900 hover:bg-cyan-50">Открыть этот проверяемый case <ArrowRight className="h-4 w-4" /></Link></div><p className="mt-3 text-xs text-slate-500">Откройте полный контекст и исходные слои для проверки; этот case не является утверждением об опасности.</p></article>}
+              <div className="mt-4 grid gap-3 lg:grid-cols-2">{uniqueRiskTwinCandidates.slice(0, 6).map((candidate) => { const key = regionalObservationCandidateKey(candidate); return <button key={key} type="button" onClick={() => setSelectedRiskTwinKey(key)} className={`rounded-xl border bg-white p-4 text-left ${selectedRiskTwinKey === key ? "border-cyan-600 ring-2 ring-cyan-100" : "border-cyan-100 hover:border-cyan-400"}`}><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{candidate.glacier.name_ru || candidate.glacier.name}</p><p className="mt-1 text-xs text-slate-500">Озеро {candidate.lake_id ?? "без ID"} · {candidate.latitude.toFixed(4)}, {candidate.longitude.toFixed(4)}</p></div><span className="rounded-full bg-cyan-100 px-2.5 py-1 text-xs font-bold text-cyan-950">{candidate.observation_priority_0_100.toFixed(0)}/100</span></div><p className="mt-3 text-sm text-slate-800">{candidate.area_change_percent === null ? `Нет надёжного совпадения с ${riskTwinScan.previous_inventory_year ?? "предыдущим"} инвентарём` : `Изменение площади: ${candidate.area_change_percent > 0 ? "+" : ""}${candidate.area_change_percent.toFixed(1)}%`} · до RGI: {candidate.distance_to_rgi_boundary_m.toFixed(0)} м</p></button>; })}</div>
+              <p className="mt-4 text-xs text-slate-500">Сравнение — геометрическая эвристика с порогом 300 м. Она не доказывает связь озера с ледником, состояние морены, вероятность события или основание для предупреждения.</p>
+            </>}
+          </section>
           {error && <div role="alert" aria-live="assertive" className="mt-5 rounded-xl border border-orange-300 bg-orange-50 p-4 text-orange-950">{error}</div>}
 
           <div aria-label="Attention summary" className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -477,7 +551,7 @@ export default function OperationsPage() {
                   <span className="rounded-full border border-slate-300 bg-white/90 px-3 py-1 text-xs shadow-sm">Not a hazard map</span>
                 </div>
                 {registryError && (
-                  <p role="alert" className="absolute bottom-16 left-4 right-4 z-[500] rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+                  <p role="alert" aria-live="assertive" className="absolute bottom-16 left-4 right-4 z-[500] rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
                     RGI geometry unavailable: {registryError}
                   </p>
                 )}
@@ -487,6 +561,9 @@ export default function OperationsPage() {
                   candidates={data?.observation_queue ?? []}
                   selectedAssetId={selectedAssetId}
                   onSelectAsset={setSelectedAssetId}
+                  riskTwinCandidates={uniqueRiskTwinCandidates}
+                  selectedRiskTwinKey={selectedRiskTwinKey}
+                  onSelectRiskTwin={setSelectedRiskTwinKey}
                   selectedYear={mapYear}
                 />
               </div>
@@ -510,13 +587,15 @@ export default function OperationsPage() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setDetailMode("summary")}
+                      onClick={() => void startInspection()}
+                      disabled={creatingInspection}
                       className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700"
                     >
                       <ClipboardCheck className="h-4 w-4" aria-hidden="true" />
-                      Create inspection
+                      {creatingInspection ? "Creating…" : "Create inspection"}
                     </button>
                   </div>
+                  {inspectionMessage && <p role="status" aria-live="polite" className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950">{inspectionMessage}</p>}
                   <div className="mt-5 grid gap-3 lg:grid-cols-4">
                     <DecisionFact label={text.change} value={changeLabel(selectedCandidate)} />
                     <DecisionFact label={text.trust} value={`${trust.label} · ${trust.description}`} />
@@ -557,12 +636,7 @@ export default function OperationsPage() {
                     />
                   )}
                   {detailMode === "compare" && (
-                    <ComparisonWorkspace
-                      candidate={selectedCandidate}
-                      strictOnly={strictOnly}
-                      setStrictOnly={setStrictOnly}
-                      text={text}
-                    />
+                    <ComparisonWorkspace />
                   )}
                   {detailMode === "evidence" && (
                     <EvidenceTimeline
@@ -666,10 +740,13 @@ export default function OperationsPage() {
                 setNotes={setNotes}
                 signature={signature}
                 setSignature={setSignature}
+                locationVerification={locationVerification}
+                setLocationVerification={setLocationVerification}
+                locationMethod={locationMethod}
+                setLocationMethod={setLocationMethod}
                 saved={saved}
                 saveOffline={saveOffline}
                 syncDraft={syncDraft}
-                demoOnly={Boolean(data?.demo_only)}
                 text={text}
               />
             </section>
@@ -727,6 +804,10 @@ function AttentionCard({ icon: Icon, label, value, tone }: { icon: typeof Eye; l
       <p className="mt-3 text-3xl font-semibold">{value}</p>
     </div>
   );
+}
+
+function RiskTwinMetric({ label, value }: { label: string; value: number }) {
+  return <div className="rounded-xl border border-cyan-100 bg-white p-3"><p className="text-xs text-slate-600">{label}</p><p className="mt-1 text-2xl font-bold text-cyan-950">{value}</p></div>;
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -844,128 +925,8 @@ function QualityBar({ label, value }: { label: string; value: number }) {
   );
 }
 
-function ComparisonWorkspace({ candidate, strictOnly, setStrictOnly, text }: { candidate?: ChangeCandidate; strictOnly: boolean; setStrictOnly: (value: boolean) => void; text: OperationsCopy }) {
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-slate-600">{text.limitation}</p>
-        <fieldset>
-          <legend className="sr-only">Observation comparability filter</legend>
-          <label htmlFor="strict-observations" className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-3 text-sm">
-            <input id="strict-observations" type="checkbox" checked={strictOnly} onChange={(event) => setStrictOnly(event.target.checked)} className="h-4 w-4 accent-blue-700" />
-            {strictOnly ? text.strict : text.all}
-          </label>
-        </fieldset>
-      </div>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <SyntheticScene label="Previous comparable observation" variant="before" />
-        <SyntheticScene label="Latest candidate observation" variant="after" />
-      </div>
-      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <DifferenceMap />
-        <ObservationTimeline strictOnly={strictOnly} />
-      </div>
-      <ModelAgreement candidate={candidate} />
-    </div>
-  );
-}
-
-function SyntheticScene({ label, variant }: { label: string; variant: "before" | "after" }) {
-  return (
-    <figure className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
-      <svg viewBox="0 0 500 240" className="h-56 w-full" role="img" aria-label={`${label}, synthetic preview`}>
-        <defs>
-          <pattern id={`uncertainty-${variant}`} width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <line x1="0" y1="0" x2="0" y2="10" stroke="#475569" strokeWidth="3" />
-          </pattern>
-        </defs>
-        <rect width="500" height="240" fill="#dfe7ea" />
-        <path d="M0 205L82 99L156 153L244 46L322 123L405 34L500 124V240H0Z" fill="#aebfc5" />
-        <path d={variant === "before" ? "M150 174 C205 95 298 86 350 166 C292 211 212 217 150 174Z" : "M172 178 C222 112 294 104 334 168 C286 204 225 209 172 178Z"} fill="#f8fafc" stroke="#1d4ed8" strokeWidth="5" strokeDasharray={variant === "after" ? "12 7" : undefined} />
-        <path d="M285 112 C319 106 345 127 353 160 L323 172 C310 149 296 136 275 132Z" fill={`url(#uncertainty-${variant})`} opacity=".55" />
-      </svg>
-      <figcaption className="border-t border-slate-200 bg-white p-3 text-sm font-medium">{label}<span className="ml-2 text-xs font-normal text-slate-500">synthetic UI preview</span></figcaption>
-    </figure>
-  );
-}
-
-function DifferenceMap() {
-  return (
-    <figure className="rounded-xl border border-slate-200 p-4">
-      <h3 className="font-semibold">Difference map</h3>
-      <svg viewBox="0 0 500 210" className="mt-3 h-52 w-full rounded-lg bg-slate-100" role="img" aria-label="Synthetic difference map with changed, unchanged, uncertain and no-data regions">
-        <defs>
-          <pattern id="difference-uncertain" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <line x1="0" y1="0" x2="0" y2="8" stroke="#334155" strokeWidth="2" />
-          </pattern>
-          <pattern id="difference-nodata" width="10" height="10" patternUnits="userSpaceOnUse">
-            <path d="M0 0H10M0 0V10" stroke="#94a3b8" strokeWidth="1" />
-          </pattern>
-        </defs>
-        <path d="M105 157 C169 45 334 55 397 156 C310 207 182 207 105 157Z" fill="#cbd5e1" />
-        <path d="M107 157 C137 117 159 95 196 77 L207 188 C164 183 132 173 107 157Z" fill="#ea580c" />
-        <path d="M320 82 C364 103 384 130 397 156 L353 174 C339 141 329 107 320 82Z" fill="#1d4ed8" />
-        <path d="M250 66 C294 66 326 78 352 100 L320 127 L273 106Z" fill="url(#difference-uncertain)" />
-        <rect x="430" y="0" width="70" height="210" fill="url(#difference-nodata)" />
-      </svg>
-      <figcaption className="mt-3 flex flex-wrap gap-3 text-xs">
-        <LegendSquare className="bg-blue-700" label="New area" />
-        <LegendSquare className="bg-orange-600" label="Disappeared area" />
-        <LegendSquare className="bg-slate-300" label="Unchanged" />
-        <LegendSquare className="striped" label="Uncertain" />
-        <LegendSquare className="grid-pattern" label="No data" />
-      </figcaption>
-    </figure>
-  );
-}
-
-function LegendSquare({ className, label }: { className: string; label: string }) {
-  const style = className === "striped"
-    ? { backgroundImage: "repeating-linear-gradient(45deg,#475569 0,#475569 2px,#f8fafc 2px,#f8fafc 6px)" }
-    : className === "grid-pattern"
-      ? { backgroundImage: "linear-gradient(#94a3b8 1px,transparent 1px),linear-gradient(90deg,#94a3b8 1px,white 1px)", backgroundSize: "5px 5px" }
-      : undefined;
-  return <span className="inline-flex items-center gap-1.5"><span className={`h-3 w-3 border border-slate-400 ${className.includes("-") ? className : ""}`} style={style} aria-hidden="true" />{label}</span>;
-}
-
-function ObservationTimeline({ strictOnly }: { strictOnly: boolean }) {
-  return (
-    <figure className="rounded-xl border border-slate-200 p-4">
-      <h3 className="font-semibold">Observation history</h3>
-      <svg viewBox="0 0 500 210" className="mt-3 h-52 w-full" role="img" aria-label="Synthetic area timeline showing confidence interval and an excluded observation">
-        <rect x="280" y="20" width="62" height="150" fill="#f1f5f9" />
-        <path d="M45 75 L145 83 L245 105 L375 118 L455 127 L455 151 L375 143 L245 130 L145 106 L45 96Z" fill="#bfdbfe" opacity=".75" />
-        <path d="M45 85 L145 94 L245 117 L375 130 L455 138" fill="none" stroke="#1d4ed8" strokeWidth="4" />
-        {[["45","85"],["145","94"],["245","117"],["375","130"],["455","138"]].map(([x,y]) => <circle key={x} cx={x} cy={y} r="6" fill="#1d4ed8" stroke="white" strokeWidth="3" />)}
-        {!strictOnly && <circle cx="310" cy="78" r="7" fill="white" stroke="#ea580c" strokeWidth="4" />}
-        <path d="M45 170H455" stroke="#64748b" />
-        <text x="40" y="192" fontSize="14" fill="#475569">2017</text>
-        <text x="230" y="192" fontSize="14" fill="#475569">2021</text>
-        <text x="430" y="192" fontSize="14" fill="#475569">2026</text>
-      </svg>
-      <figcaption className="text-xs text-slate-500">
-        ● comparable observation · ○ excluded for snow/cloud · blue band confidence interval
-      </figcaption>
-    </figure>
-  );
-}
-
-function ModelAgreement({ candidate }: { candidate?: ChangeCandidate }) {
-  const disagreement = Math.round((candidate?.model_disagreement ?? 1) * 100);
-  const agreement = 100 - disagreement;
-  return (
-    <section className="rounded-xl border border-slate-200 p-4">
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div><p className="text-sm text-slate-500">Model agreement</p><h3 className="text-2xl font-semibold">{agreement}%</h3></div>
-        <p className="max-w-lg text-sm text-slate-600">The disputed share is shown separately from observation quality; it is not hidden inside one score.</p>
-      </div>
-      <div className="mt-4 flex h-6 overflow-hidden rounded-full" role="img" aria-label={`${agreement}% model agreement, ${disagreement}% disputed`}>
-        <div className="bg-blue-700" style={{ width: `${agreement}%` }} />
-        <div style={{ width: `${disagreement}%`, backgroundImage: "repeating-linear-gradient(45deg,#475569 0,#475569 3px,#e2e8f0 3px,#e2e8f0 7px)" }} />
-      </div>
-      <div className="mt-2 flex justify-between text-xs text-slate-500"><span>Agreement {agreement}%</span><span>Disputed {disagreement}%</span></div>
-    </section>
-  );
+function ComparisonWorkspace() {
+  return <section className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-950"><h3 className="font-semibold">Сравнение требует связанных исходных артефактов</h3><p className="mt-2">В Operations не показываются искусственные изображения или графики. Откройте годовой screening layer на карте и полный Risk Twin case, чтобы проверить реальные локальные инвентари и ограничения данных.</p><Link href="/risk-twin" className="mt-3 inline-flex font-semibold text-blue-800 underline">Открыть Risk Twin</Link></section>;
 }
 
 function EvidenceTimeline({ observation, evidenceCase, candidate, auditEvents }: { observation?: OperationsObservation; evidenceCase?: OperationsOverview["evidence_cases"][number]; candidate?: ChangeCandidate; auditEvents: OperationsOverview["audit_events"] }) {
@@ -1024,7 +985,7 @@ function ScienceItem({ label, value }: { label: string; value: string }) {
   return <div className="rounded-xl border border-slate-200 p-4"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p><p className="mt-2 break-words text-sm font-medium">{value}</p></div>;
 }
 
-function FieldDraft({ selectedTask, selectedAsset, observer, setObserver, waterLevel, setWaterLevel, notes, setNotes, signature, setSignature, saved, saveOffline, syncDraft, demoOnly, text }: {
+function FieldDraft({ selectedTask, selectedAsset, observer, setObserver, waterLevel, setWaterLevel, notes, setNotes, signature, setSignature, locationVerification, setLocationVerification, locationMethod, setLocationMethod, saved, saveOffline, syncDraft, text }: {
   selectedTask?: OperationsOverview["inspection_tasks"][number];
   selectedAsset?: OperationsAsset;
   observer: string;
@@ -1035,27 +996,34 @@ function FieldDraft({ selectedTask, selectedAsset, observer, setObserver, waterL
   setNotes: (value: string) => void;
   signature: string;
   setSignature: (value: string) => void;
+  locationVerification: "unverified" | "gps_verified" | "manually_confirmed";
+  setLocationVerification: (value: "unverified" | "gps_verified" | "manually_confirmed") => void;
+  locationMethod: "device_gps" | "map_selection" | "external_instrument";
+  setLocationMethod: (value: "device_gps" | "map_selection" | "external_instrument") => void;
   saved: boolean;
   saveOffline: () => void;
   syncDraft: () => Promise<void>;
-  demoOnly: boolean;
   text: OperationsCopy;
 }) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <div className="flex items-center gap-2"><WifiOff className="h-5 w-5 text-blue-700" aria-hidden="true" /><h2 className="text-xl font-semibold">Offline field report</h2></div>
-      <p className="mt-2 text-sm text-slate-500">Drafts remain on this device until an analyst synchronises a persisted task.</p>
+      <p className="mt-2 text-sm text-slate-500">Drafts remain on this device until an analyst synchronises a persisted task. Location is unverified until you explicitly record how it was checked.</p>
       <div className="mt-5 space-y-4">
         <label htmlFor="field-task" className="block text-sm font-medium">Assigned task<input id="field-task" readOnly value={selectedTask?.id ?? ""} className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-slate-50 px-3 text-sm" /></label>
         <label htmlFor="field-observer" className="block text-sm font-medium">Observer<input id="field-observer" value={observer} onChange={(event) => setObserver(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 text-sm focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-100" /></label>
         <label htmlFor="field-water-level" className="block text-sm font-medium">Water level, m<input id="field-water-level" type="number" inputMode="decimal" value={waterLevel} onChange={(event) => setWaterLevel(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 text-sm focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-100" /></label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label htmlFor="location-verification" className="block text-sm font-medium">Location verification<select id="location-verification" value={locationVerification} onChange={(event) => setLocationVerification(event.target.value as typeof locationVerification)} className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"><option value="unverified">Unverified</option><option value="gps_verified">GPS verified</option><option value="manually_confirmed">Manually confirmed</option></select></label>
+          <label htmlFor="location-method" className="block text-sm font-medium">Verification method<select id="location-method" value={locationMethod} onChange={(event) => setLocationMethod(event.target.value as typeof locationMethod)} className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"><option value="map_selection">Map selection</option><option value="device_gps">Device GPS</option><option value="external_instrument">External instrument</option></select></label>
+        </div>
         <label htmlFor="field-notes" className="block text-sm font-medium">Notes<textarea id="field-notes" rows={3} value={notes} onChange={(event) => setNotes(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-100" /></label>
         <label htmlFor="field-signature" className="block text-sm font-medium">Signature<input id="field-signature" value={signature} onChange={(event) => setSignature(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 px-3 text-sm focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-100" /></label>
         <button type="button" onClick={saveOffline} disabled={!selectedTask || !selectedAsset || !observer || !signature} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40">
           <Save className="h-4 w-4" aria-hidden="true" />{text.save}
         </button>
         <div aria-live="polite">{saved && <p className="flex items-center gap-2 text-sm text-emerald-700"><CheckCircle2 className="h-4 w-4" aria-hidden="true" />{text.saved}</p>}</div>
-        {!demoOnly && saved && <button type="button" onClick={() => void syncDraft()} className="min-h-11 w-full rounded-lg border border-blue-700 px-4 py-2 text-sm font-semibold text-blue-800">Synchronise signed report</button>}
+        {saved && <button type="button" onClick={() => void syncDraft()} className="min-h-11 w-full rounded-lg border border-blue-700 px-4 py-2 text-sm font-semibold text-blue-800">Synchronise signed report</button>}
       </div>
     </section>
   );

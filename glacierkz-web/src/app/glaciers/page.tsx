@@ -180,6 +180,12 @@ export default function GlaciersPage() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Link
+                        href={`/ml?rgi=${encodeURIComponent(selected.rgi_id)}`}
+                        className="inline-flex items-center gap-2 rounded-lg bg-cyan-700 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-800"
+                      >
+                        <Mountain className="h-4 w-4" /> Run ML
+                      </Link>
+                      <Link
                         href={`/analysis?glacier=${encodeURIComponent(selected.rgi_id)}&method=${method}`}
                         className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700"
                       >
@@ -231,8 +237,8 @@ export default function GlaciersPage() {
                     </select>
                   </div>
 
-                  <div className="h-80" data-testid="glacier-series-chart">
-                    <ResponsiveContainer width="100%" height="100%">
+                  <div className="h-80 min-w-0" data-testid="glacier-series-chart">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} initialDimension={{ width: 320, height: 320 }}>
                       <LineChart data={series.points}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
                         <XAxis dataKey="year" />

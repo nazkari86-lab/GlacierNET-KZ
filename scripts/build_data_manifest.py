@@ -72,7 +72,9 @@ def main() -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"Wrote {len(records)} records to {args.output}")
-    print(f"Files: {payload['file_count']}; symlinks: {payload['symlink_count']}; unresolved: {payload['unresolved_count']}")
+    print(
+        f"Files: {payload['file_count']}; symlinks: {payload['symlink_count']}; unresolved: {payload['unresolved_count']}"
+    )
     return 0
 
 

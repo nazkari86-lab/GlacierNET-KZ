@@ -44,11 +44,21 @@ class TestRateLimitConfig:
         assert "/health" in cfg.exempt_paths
 
     def test_get_client_key_with_x_forwarded_for(self, monkeypatch):
+        monkeypatch.setenv("TRUSTED_PROXY_HOSTS", "10.0.0.10")
         cfg = RateLimitConfig()
         request = MagicMock()
         request.headers = {"x-forwarded-for": "1.2.3.4, 5.6.7.8"}
-        request.client = None
+        request.client = MagicMock()
+        request.client.host = "10.0.0.10"
         assert cfg.get_client_key(request) == "1.2.3.4"
+
+    def test_does_not_trust_forwarded_for_from_an_unconfigured_peer(self):
+        cfg = RateLimitConfig()
+        request = MagicMock()
+        request.headers = {"x-forwarded-for": "1.2.3.4"}
+        request.client = MagicMock()
+        request.client.host = "198.51.100.1"
+        assert cfg.get_client_key(request) == "198.51.100.1"
 
     def test_get_client_key_with_client(self):
         cfg = RateLimitConfig()

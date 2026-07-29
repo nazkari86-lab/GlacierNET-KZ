@@ -1,7 +1,7 @@
 // GlacierNET-KZ Settings Page
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/I18nProvider";
 import { type Locale } from "@/lib/i18n";
 import { toast } from "@/components/Toast";
@@ -35,7 +35,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("general");
 
   // General
-  const [apiUrl, setApiUrl] = useState("http://localhost:8000");
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
   const [workspaceName, setWorkspaceName] = useState("GlacierNET-KZ");
   const [darkMode, setDarkMode] = useState(false);
   const [autoSave, setAutoSave] = useState(true);
@@ -50,18 +50,40 @@ export default function SettingsPage() {
   const [webhookUrl, setWebhookUrl] = useState("");
 
   // Security
-  const [apiKeyVisible, setApiKeyVisible] = useState(false);
-  const apiKey = "gkz-••••••••••••••••••••••••";
   const [sessionTimeout, setSessionTimeout] = useState("60");
   const [mfaEnabled, setMfaEnabled] = useState(false);
 
   // Data Management
-  const [cacheSize] = useState(256);
-  const [storageUsed] = useState(42);
+  const [cacheSize, setCacheSize] = useState<number | null>(null);
+  const [storageUsed, setStorageUsed] = useState<number | null>(null);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem("glaciernet-kz.preferences");
+    if (stored) {
+      try {
+        const value = JSON.parse(stored) as Record<string, unknown>;
+        if (typeof value.workspaceName === "string") setWorkspaceName(value.workspaceName);
+        if (typeof value.darkMode === "boolean") setDarkMode(value.darkMode);
+        if (typeof value.autoSave === "boolean") setAutoSave(value.autoSave);
+        if (typeof value.timezone === "string") setTimezone(value.timezone);
+        if (typeof value.emailAlerts === "boolean") setEmailAlerts(value.emailAlerts);
+        if (typeof value.slackNotifs === "boolean") setSlackNotifs(value.slackNotifs);
+        if (typeof value.webhookUrl === "string") setWebhookUrl(value.webhookUrl);
+        if (typeof value.sessionTimeout === "string") setSessionTimeout(value.sessionTimeout);
+        if (typeof value.mfaEnabled === "boolean") setMfaEnabled(value.mfaEnabled);
+      } catch { /* Ignore malformed local preference data. */ }
+    }
+    void navigator.storage?.estimate?.().then((estimate) => {
+      setCacheSize(Math.round((estimate.usage || 0) / 1024 / 1024));
+      setStorageUsed(estimate.quota ? Math.round(((estimate.usage || 0) / estimate.quota) * 100) : null);
+    });
+  }, []);
 
   const handleSave = () => {
     setLocale(selectedLang);
-    toast.success(t("settings.save_success"));
+    document.documentElement.classList.toggle("dark", darkMode);
+    window.localStorage.setItem("glaciernet-kz.preferences", JSON.stringify({ workspaceName, darkMode, autoSave, timezone, emailAlerts, slackNotifs, webhookUrl, sessionTimeout, mfaEnabled }));
+    toast.success("Browser workspace preferences saved. API URL and credentials are deployment settings, not stored here.");
   };
 
   return (
@@ -83,16 +105,7 @@ export default function SettingsPage() {
             {/* General Tab */}
             <TabPanel active={activeTab} tab="general">
               <div className="space-y-6 max-w-2xl">
-                <FieldGroup label="API Base URL" htmlFor="api-url">
-                  <input
-                    id="api-url"
-                    type="url"
-                    value={apiUrl}
-                    onChange={(e) => setApiUrl(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="http://localhost:8000"
-                  />
-                </FieldGroup>
+                <div className="rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900"><strong>API endpoint:</strong> {apiUrl || "same-origin / NEXT_PUBLIC_API_URL"}<p className="mt-1 text-xs">Set this when building or deploying the web app. It is intentionally not changeable from the browser.</p></div>
 
                 <FieldGroup label="Workspace Name" htmlFor="workspace-name">
                   <input
@@ -176,21 +189,7 @@ export default function SettingsPage() {
             {/* Security Tab */}
             <TabPanel active={activeTab} tab="security">
               <div className="space-y-6 max-w-2xl">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("settings.api_key")}</label>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 bg-gray-100 rounded-lg px-3 py-2 text-sm font-mono text-gray-700">
-                      {apiKeyVisible ? "gkz-a3f8b2c1d4e5f6a7b8c9d0e1f2a3b4c5" : apiKey}
-                    </code>
-                    <button
-                      type="button"
-                      onClick={() => setApiKeyVisible(!apiKeyVisible)}
-                      className="px-3 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-                    >
-                      {apiKeyVisible ? t("common.hide") : t("common.show")}
-                    </button>
-                  </div>
-                </div>
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><strong>{t("settings.api_key")}:</strong> credentials are not stored or displayed in this browser. Configure API keys through the server environment or authenticated secret management.</div>
 
                 <FieldGroup label={t("settings.timeout")} htmlFor="session-timeout">
                   <input
@@ -218,11 +217,11 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                   <div>
                     <p className="text-sm font-medium text-gray-700">{t("settings.cache_size")}</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{cacheSize} MB</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">{cacheSize === null ? "—" : `${cacheSize} MB`}</p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => toast.info(t("settings.clear_cache"))}
+                    onClick={() => { window.localStorage.removeItem("glaciernet-kz.preferences"); toast.info("Saved browser preferences cleared. Browser HTTP cache is controlled by your browser."); }}
                     className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
                   >
                     <RotateCcw className="w-4 h-4" />
@@ -236,20 +235,20 @@ export default function SettingsPage() {
                     <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-blue-500 rounded-full transition-all"
-                        style={{ width: `${storageUsed}%` }}
+                        style={{ width: `${storageUsed ?? 0}%` }}
                       />
                     </div>
-                    <span className="text-sm font-semibold text-gray-900">{storageUsed}%</span>
+                    <span className="text-sm font-semibold text-gray-900">{storageUsed === null ? "Unavailable" : `${storageUsed}%`}</span>
                   </div>
                 </div>
 
                 <button
                   type="button"
-                  onClick={() => toast.success("Export started")}
+                  onClick={() => { const payload = window.localStorage.getItem("glaciernet-kz.preferences") || "{}"; const blob = new Blob([payload], { type: "application/json" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "glaciernet-kz-browser-preferences.json"; link.click(); URL.revokeObjectURL(url); }}
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                 >
                   <Database className="w-4 h-4" />
-                  Export All Data
+                  Export browser preferences
                 </button>
               </div>
             </TabPanel>
@@ -293,6 +292,7 @@ function ToggleRow({ label, checked, onChange, description }: { label: string; c
       <button
         type="button"
         role="switch"
+        aria-label={label}
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${

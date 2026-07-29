@@ -13,10 +13,9 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src import config
-from src.metrics import evaluate_segmentation
-from src.models import build_data_generator, build_model_by_name, get_custom_objects
-
+from src import config  # noqa: E402
+from src.metrics import evaluate_segmentation  # noqa: E402
+from src.models import build_model_by_name  # noqa: E402
 
 MODELS = [
     ("unet", "U-Net (Baseline)"),
@@ -33,7 +32,6 @@ def load_test_data(year: int = 2020):
 
 
 def evaluate_keras_model(model_name: str, X_test: np.ndarray, y_test: np.ndarray) -> dict:
-    import tensorflow as tf
 
     weights = config.MODELS_DIR / f"{model_name}_best.h5"
     if not weights.exists():
@@ -43,7 +41,6 @@ def evaluate_keras_model(model_name: str, X_test: np.ndarray, y_test: np.ndarray
     model = build_model_by_name(model_name, input_shape)
     model.load_weights(str(weights))
 
-    GlacierDataGenerator = build_data_generator()
     # predict on full array to avoid generator sample-count mismatch
     y_pred_probs = model.predict(X_test, batch_size=config.BATCH_SIZE, verbose=0)
     if y_pred_probs.ndim == 4 and y_pred_probs.shape[-1] == 1:

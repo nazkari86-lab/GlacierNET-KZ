@@ -45,7 +45,7 @@ export default function UploadZone({ onFileSelected, disabled }: UploadZoneProps
         disabled && "cursor-not-allowed opacity-50"
       )}
     >
-      <input {...getInputProps()} />
+      <input {...getInputProps({ "aria-label": "Satellite GeoTIFF file" })} />
       {preview ? (
         <div className="flex flex-col items-center gap-3">
           <img src={preview} alt="Preview" className="max-h-48 rounded-lg object-contain" />

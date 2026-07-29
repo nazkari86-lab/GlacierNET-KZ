@@ -107,7 +107,9 @@ def parse_fog_csv(path: Path) -> dict[int, float]:
         name_cols = [field_map[f] for f in fields if "name" in f and "glacier" in f]
         if not name_cols:
             name_cols = [field_map[f] for f in fields if f == "glacier_name"]
-        year_cols = [field_map[f] for f in fields if f in ("year", "survey_year", "reference_year", "start_year", "date")]
+        year_cols = [
+            field_map[f] for f in fields if f in ("year", "survey_year", "reference_year", "start_year", "date")
+        ]
         area_cols = [
             field_map[f]
             for f in fields
@@ -202,8 +204,7 @@ def write_template() -> None:
     tpl_path.write_text(json.dumps(template, indent=2) + "\n", encoding="utf-8")
     readme = DATA_WGMS / "README.txt"
     readme.write_text(
-        "Замените значения в tuyuksu_areas.template.json данными с wgms.ch\n"
-        "и сохраните как tuyuksu_areas.json\n",
+        "Замените значения в tuyuksu_areas.template.json данными с wgms.ch\nи сохраните как tuyuksu_areas.json\n",
         encoding="utf-8",
     )
     print(f"Шаблон (значения-примеры!) → {tpl_path}")

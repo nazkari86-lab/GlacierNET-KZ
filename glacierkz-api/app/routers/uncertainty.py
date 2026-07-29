@@ -14,9 +14,10 @@ async def uncertainty(
     file: UploadFile = File(...),
     model_name: str = Form("unet"),
     n_samples: int = Form(10),
+    year: int | None = Form(None),
 ):
     image_path = await save_upload(file)
-    result = await asyncio.to_thread(run_uncertainty, image_path, model_name, n_samples)
+    result = await asyncio.to_thread(run_uncertainty, image_path, model_name, n_samples, year)
     for key in ("mean_path", "std_path", "entropy_path"):
         if result.get(key):
             result[key] = path_to_url(result[key])

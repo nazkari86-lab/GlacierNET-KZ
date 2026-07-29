@@ -3,7 +3,7 @@
 #
 # Usage:
 #   ./scripts/start.sh          # Docker (recommended)
-#   ./scripts/start.sh --native # Local processes + Caddy in Docker
+#   ./scripts/start.sh --native # Local processes; Caddy gateway when Docker is available
 #   ./scripts/start.sh --stop     # Stop native processes
 
 set -euo pipefail
@@ -17,6 +17,7 @@ GATEWAY_PORT="${GATEWAY_PORT:-8080}"
 API_PORT=8000
 WEB_PORT=3000
 DEMO_PORT=7860
+ENABLE_LEGACY_DEMO="${ENABLE_LEGACY_DEMO:-0}"
 
 mkdir -p "$PID_DIR" "$LOG_DIR"
 
@@ -53,7 +54,7 @@ fi
 stop_native
 
 pick_python() {
-  if [[ -x "$ROOT/.venv/bin/python" ]]; then
+  if [[ -x "$ROOT/.venv/bin/python" ]] && "$ROOT/.venv/bin/python" -c "import uvicorn" 2>/dev/null; then
     echo "$ROOT/.venv/bin/python"
   elif [[ -x "/Users/dulatnurlanuly/miniforge3/envs/glaciers/bin/python" ]]; then
     echo "/Users/dulatnurlanuly/miniforge3/envs/glaciers/bin/python"
@@ -86,13 +87,17 @@ echo ""
   echo $! >"$PID_DIR/api.pid"
 )
 
-# Gradio demo
-(
-  cd "$ROOT/spaces"
-  GRADIO_ROOT_PATH=/demo DEMO_PORT="$DEMO_PORT" \
-    "$PYTHON" app.py >"$LOG_DIR/demo.log" 2>&1 &
-  echo $! >"$PID_DIR/demo.pid"
-)
+# The Gradio app duplicates the primary Next.js workflow and costs memory.
+# Keep it available for explicit compatibility checks, but do not start it as
+# part of the default product stack.
+if [[ "$ENABLE_LEGACY_DEMO" == "1" ]]; then
+  (
+    cd "$ROOT/spaces"
+    GRADIO_ROOT_PATH=/demo DEMO_PORT="$DEMO_PORT" \
+      "$PYTHON" app.py >"$LOG_DIR/demo.log" 2>&1 &
+    echo $! >"$PID_DIR/demo.pid"
+  )
+fi
 
 # Next.js
 if [[ -d "$ROOT/glacierkz-web/node_modules" ]]; then
@@ -105,39 +110,96 @@ if [[ -d "$ROOT/glacierkz-web/node_modules" ]]; then
     echo $! >"$PID_DIR/web.pid"
   )
 else
-  echo "⚠️  glacierkz-web/node_modules missing — run: cd glacierkz-web && npm ci"
+  echo "glacierkz-web/node_modules is missing — run: cd glacierkz-web && npm ci"
+  stop_native
+  exit 1
 fi
 
-# Wait for backends
-for i in $(seq 1 40); do
-  curl -sf "http://127.0.0.1:${API_PORT}/health" >/dev/null 2>&1 && break
-  sleep 1
-done
+wait_for_service() {
+  local name="$1"
+  local url="$2"
+  local pid_file="$3"
+  local log_file="$4"
+  local attempts="${5:-40}"
+  for _ in $(seq 1 "$attempts"); do
+    if curl -sf "$url" >/dev/null 2>&1; then
+      echo "    ✓ $name ready"
+      return 0
+    fi
+    if [[ ! -f "$pid_file" ]] || ! kill -0 "$(cat "$pid_file")" 2>/dev/null; then
+      echo "$name stopped before becoming ready."
+      tail -n 30 "$log_file" 2>/dev/null || true
+      return 1
+    fi
+    sleep 1
+  done
+  echo "$name did not become ready at $url."
+  tail -n 30 "$log_file" 2>/dev/null || true
+  return 1
+}
 
-# Caddy gateway (Docker, routes to host)
-docker rm -f glacierkz-gateway 2>/dev/null || true
-GATEWAY_CID=$(docker run -d --name glacierkz-gateway \
-  -p "${GATEWAY_PORT}:8080" \
-  -v "$ROOT/gateway/Caddyfile.native:/etc/caddy/Caddyfile:ro" \
-  --add-host=host.docker.internal:host-gateway \
-  caddy:2-alpine 2>"$LOG_DIR/gateway.log")
-echo "$GATEWAY_CID" >"$PID_DIR/gateway.cid"
+if ! wait_for_service "API" "http://127.0.0.1:${API_PORT}/health" "$PID_DIR/api.pid" "$LOG_DIR/api.log"; then
+  stop_native
+  exit 1
+fi
+if ! wait_for_service "Web" "http://127.0.0.1:${WEB_PORT}/" "$PID_DIR/web.pid" "$LOG_DIR/web.log"; then
+  stop_native
+  exit 1
+fi
+if [[ "$ENABLE_LEGACY_DEMO" == "1" ]] && \
+  ! wait_for_service "Legacy demo" "http://127.0.0.1:${DEMO_PORT}/" "$PID_DIR/demo.pid" "$LOG_DIR/demo.log"; then
+  stop_native
+  exit 1
+fi
+
+PUBLIC_URL="http://localhost:${WEB_PORT}"
+GATEWAY_NOTE="Docker is unavailable; use the Next.js URL directly."
+
+# Caddy is convenient but optional in native development.  Do not leave the
+# API and web processes stranded merely because Docker Desktop is closed.
+if docker info >/dev/null 2>&1; then
+  docker rm -f glacierkz-gateway 2>/dev/null || true
+  GATEWAY_CID=$(docker run -d --name glacierkz-gateway \
+    -p "${GATEWAY_PORT}:8080" \
+    -v "$ROOT/gateway/Caddyfile.native:/etc/caddy/Caddyfile:ro" \
+    --add-host=host.docker.internal:host-gateway \
+    caddy:2-alpine 2>"$LOG_DIR/gateway.log")
+  echo "$GATEWAY_CID" >"$PID_DIR/gateway.cid"
+  PUBLIC_URL="http://localhost:${GATEWAY_PORT}"
+  GATEWAY_NOTE="Caddy gateway is running."
+else
+  echo "⚠️  Docker Desktop is not running; continuing without the optional Caddy gateway."
+fi
 
 cat <<EOF
 
 ✅ All services started
 
-  Dashboard    http://localhost:${GATEWAY_PORT}/
-  Gradio demo  http://localhost:${GATEWAY_PORT}/demo
-  API docs     http://localhost:${GATEWAY_PORT}/docs
-  MCP tools    http://localhost:${GATEWAY_PORT}/mcp/tools
-  Classic UI   http://localhost:${GATEWAY_PORT}/legacy
-  Health       http://localhost:${GATEWAY_PORT}/health
+  Dashboard    ${PUBLIC_URL}/
+  API docs     http://127.0.0.1:${API_PORT}/docs
+  Health       http://127.0.0.1:${API_PORT}/health
+  ${GATEWAY_NOTE}
+  Legacy demo  ${ENABLE_LEGACY_DEMO} (set ENABLE_LEGACY_DEMO=1 to enable)
 
   Stop: ./scripts/start.sh --stop
 
 EOF
 
-# Keep script alive while services run (Ctrl+C to stop)
+# Keep the launcher attached and fail visibly if a required service exits.
 trap 'stop_native; exit 0' INT TERM
-while true; do sleep 3600; done
+while true; do
+  sleep 5
+  for service in api web; do
+    if [[ ! -f "$PID_DIR/$service.pid" ]] || ! kill -0 "$(cat "$PID_DIR/$service.pid")" 2>/dev/null; then
+      echo "Required service '$service' stopped. See $LOG_DIR/$service.log"
+      stop_native
+      exit 1
+    fi
+  done
+  if [[ "$ENABLE_LEGACY_DEMO" == "1" ]] && \
+    { [[ ! -f "$PID_DIR/demo.pid" ]] || ! kill -0 "$(cat "$PID_DIR/demo.pid")" 2>/dev/null; }; then
+    echo "Legacy demo stopped. See $LOG_DIR/demo.log"
+    stop_native
+    exit 1
+  fi
+done

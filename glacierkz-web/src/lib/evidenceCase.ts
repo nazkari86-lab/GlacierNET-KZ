@@ -5,6 +5,7 @@ export interface EvidenceCaseRef {
   rgiId: string;
   lakeId?: string;
   year?: number;
+  lakeInventoryYear?: number;
   sourceScope: EvidenceSourceScope;
 }
 
@@ -18,16 +19,20 @@ export function parseEvidenceCase(search: string | URLSearchParams): EvidenceCas
   const lakeId = params.get("lake")?.trim();
   const scope = params.get("scope") ?? "local_inventory";
   const yearValue = params.get("year");
+  const lakeYearValue = params.get("lake_year");
   if (!rgiId || !isKnownSourceScope(scope)) return null;
   const year = yearValue === null ? undefined : Number(yearValue);
+  const lakeInventoryYear = lakeYearValue === null ? undefined : Number(lakeYearValue);
   if (year !== undefined && (!Number.isInteger(year) || year < 1900 || year > 2100)) return null;
-  return { rgiId, ...(lakeId ? { lakeId } : {}), ...(year !== undefined ? { year } : {}), sourceScope: scope };
+  if (lakeInventoryYear !== undefined && (!Number.isInteger(lakeInventoryYear) || lakeInventoryYear < 1900 || lakeInventoryYear > 2100)) return null;
+  return { rgiId, ...(lakeId ? { lakeId } : {}), ...(year !== undefined ? { year } : {}), ...(lakeInventoryYear !== undefined ? { lakeInventoryYear } : {}), sourceScope: scope };
 }
 
 export function serializeEvidenceCase(reference: EvidenceCaseRef): string {
   const params = new URLSearchParams({ rgi: reference.rgiId, scope: reference.sourceScope });
   if (reference.lakeId) params.set("lake", reference.lakeId);
   if (reference.year !== undefined) params.set("year", String(reference.year));
+  if (reference.lakeInventoryYear !== undefined) params.set("lake_year", String(reference.lakeInventoryYear));
   return params.toString();
 }
 

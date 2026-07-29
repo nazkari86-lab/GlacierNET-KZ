@@ -76,8 +76,7 @@ def build_manifest() -> dict[str, object]:
                 "evaluation_report_sha256": sha256_file(report_path),
                 "release_asset": release_asset,
                 "release_asset_url": (
-                    f"https://github.com/nazkari86-lab/GlacierNET-KZ/releases/download/"
-                    f"{RELEASE_TAG}/{release_asset}"
+                    f"https://github.com/nazkari86-lab/GlacierNET-KZ/releases/download/{RELEASE_TAG}/{release_asset}"
                 ),
                 "release_asset_size_bytes": published["size_bytes"],
                 "release_asset_sha256": published["sha256"],

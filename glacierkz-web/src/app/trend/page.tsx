@@ -76,7 +76,7 @@ export default function TrendPage() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <Mountain className="h-5 w-5 text-blue-600" aria-hidden="true" />
-          <span className="font-bold">{t("trend.title")}</span>
+          <h1 className="font-bold">{t("trend.title")}</h1>
         </div>
       </header>
       <main id="main-content" className="mx-auto max-w-5xl space-y-6 px-4 py-8">

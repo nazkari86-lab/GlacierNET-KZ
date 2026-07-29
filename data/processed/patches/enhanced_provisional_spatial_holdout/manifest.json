@@ -1,0 +1,217 @@
+{
+  "schema": "glaciernet-kz.enhanced-provisional-training.v1",
+  "created_at": "2026-07-29T20:13:44+00:00",
+  "dataset_role": "machine_assisted_training_only_not_gold_benchmark",
+  "annotation_status": "provisional_not_gold",
+  "split_strategy": "glacier_group_spatial_holdout",
+  "split_guarantee": "All years of each glacier are assigned to exactly one split.",
+  "evaluation_limit": "Validation and test labels are provisional; metrics are internal development evidence only.",
+  "seed": 42,
+  "patch_size": 256,
+  "stride": 128,
+  "channel_count": 11,
+  "feature_schema": [
+    "B2",
+    "B3",
+    "B4",
+    "B8",
+    "B8A",
+    "B11",
+    "B12",
+    "NDSI",
+    "NDWI",
+    "BSI",
+    "EVI"
+  ],
+  "feature_dtype": "float16",
+  "label_dtype": "uint8",
+  "weight_dtype": "float16",
+  "eligible_confidence": "high_provisional",
+  "eligible_tasks": 25,
+  "excluded_tasks": {
+    "total": 29,
+    "by_confidence": {
+      "medium_provisional": 16,
+      "low_provisional": 13
+    },
+    "handling": "retained in active-review queue; never used as training truth"
+  },
+  "source_annotation_manifest": {
+    "path": "benchmarks/v2/annotations/enhanced_provisional/manifest.json",
+    "sha256": "4795a9507a568254e2e525bd65baf69aa9dc0217abdd29e78aa65e2a059a4cc3",
+    "label_tier": "enhanced_provisional_multievidence"
+  },
+  "weight_policy": {
+    "positive": 1.0,
+    "background": 0.45,
+    "review_zone_multiplier": 0.2,
+    "quality_score_multiplier": "quality_score / 100",
+    "invalid_pixels": 0.0
+  },
+  "splits": {
+    "train": {
+      "glaciers": [
+        "RGI2000-v7.0-G-13-33532",
+        "RGI2000-v7.0-G-13-33547",
+        "RGI2000-v7.0-G-13-33725",
+        "RGI2000-v7.0-G-13-33790",
+        "RGI2000-v7.0-G-13-33845"
+      ],
+      "glacier_count": 5,
+      "patch_count": 33,
+      "years": [
+        2022,
+        2023,
+        2024
+      ],
+      "area_classes": {
+        "medium": 5,
+        "large": 28
+      },
+      "glacier_pixel_fraction": 0.3203397808652936,
+      "mean_training_weight": 0.55517578125
+    },
+    "val": {
+      "glaciers": [
+        "RGI2000-v7.0-G-13-33521",
+        "RGI2000-v7.0-G-13-34170"
+      ],
+      "glacier_count": 2,
+      "patch_count": 6,
+      "years": [
+        2022,
+        2023,
+        2024
+      ],
+      "area_classes": {
+        "large": 3,
+        "medium": 3
+      },
+      "glacier_pixel_fraction": 0.046084086100260414,
+      "mean_training_weight": 0.45556640625
+    },
+    "test": {
+      "glaciers": [
+        "RGI2000-v7.0-G-13-33716",
+        "RGI2000-v7.0-G-13-34144"
+      ],
+      "glacier_count": 2,
+      "patch_count": 6,
+      "years": [
+        2022,
+        2023,
+        2024
+      ],
+      "area_classes": {
+        "medium": 3,
+        "large": 3
+      },
+      "glacier_pixel_fraction": 0.059232076009114586,
+      "mean_training_weight": 0.4619140625
+    }
+  },
+  "coverage": {
+    "records": 25,
+    "minimum_geometry_coverage": 1.0
+  },
+  "qa_preview": {
+    "path": "data/processed/patches/enhanced_provisional_spatial_holdout/training_qa_preview.png",
+    "cases": [
+      {
+        "split": "train",
+        "glacier_id": "RGI2000-v7.0-G-13-33790",
+        "year": 2022,
+        "patch_index": 6
+      },
+      {
+        "split": "val",
+        "glacier_id": "RGI2000-v7.0-G-13-33521",
+        "year": 2022,
+        "patch_index": 0
+      },
+      {
+        "split": "test",
+        "glacier_id": "RGI2000-v7.0-G-13-34144",
+        "year": 2022,
+        "patch_index": 1
+      }
+    ]
+  },
+  "outputs": [
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/X_train.npy",
+      "sha256": "5ba73fb13e352bfd90c021fdf6949b3e09d35f298b34abb8b4ddb816d2bc297c",
+      "size_bytes": 47579264
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/y_train.npy",
+      "sha256": "0ed0d21b0f305996a670788f2625033c82e126e256cce84e6d014764d2b4c7ee",
+      "size_bytes": 2162816
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/w_train.npy",
+      "sha256": "1cbb3b2b75e945c117a3b4db6377c35fbe38493d51a9165054e4a27c99a47cf1",
+      "size_bytes": 4325504
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/metadata_train.csv",
+      "sha256": "1c851f90f7615cfa9e3293fbb117df8540842a7c27086c1934907e2abc264de4",
+      "size_bytes": 10096
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/X_val.npy",
+      "sha256": "c626d38454f6276f92fdfbd4f98bcb349addc51ef81aab91d095e31ed91bd34c",
+      "size_bytes": 8650880
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/y_val.npy",
+      "sha256": "da43b617f9ada3d3a117ce5ccf45c3599d6d65cf6faf40259f610a04e9cd2677",
+      "size_bytes": 393344
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/w_val.npy",
+      "sha256": "358a4ed1199eccd8706ac37c596f05a5623d43242830620f5bcef07a3824c6a3",
+      "size_bytes": 786560
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/metadata_val.csv",
+      "sha256": "93693b184c6f19d7fe05eb1b19e07c84d3832609ed774e21fbdb5f5a89c70a90",
+      "size_bytes": 2003
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/X_test.npy",
+      "sha256": "b0b45b9f4cdafe307449c39febdccf70157a07ad3c058a00831717d979254d6b",
+      "size_bytes": 8650880
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/y_test.npy",
+      "sha256": "6f7ed228909d6192f2359b3909193cbe96acf767e12af292603ecd77b310a124",
+      "size_bytes": 393344
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/w_test.npy",
+      "sha256": "b27547e51468ff207cbe52db2cc9e0f11eb1d97069333565cdc512ce9bdc213d",
+      "size_bytes": 786560
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/metadata_test.csv",
+      "sha256": "88876f24e8a36f4eec4886c6fd79423aa9c1183abfec02e2f0615746bba84ecd",
+      "size_bytes": 2023
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/coverage.csv",
+      "sha256": "f366e7b7843201b04fc262ee9f95770ab58b163a6688465125c665eaf7a70566",
+      "size_bytes": 1055
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/training_qa_preview.png",
+      "sha256": "717db1580f046759d55d7c90c4ba32bc07b6b30645ea340be2e63e309033a9f8",
+      "size_bytes": 1977646
+    }
+  ],
+  "prohibited_claims": [
+    "independent expert gold-label accuracy",
+    "independent external generalisation",
+    "operational hazard probability"
+  ]
+}

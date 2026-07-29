@@ -11,7 +11,6 @@ import geopandas as gpd
 import pandas as pd
 from shapely.geometry import box
 
-
 ROOT = Path(__file__).resolve().parents[1]
 AOI_BBOX = (75.5, 42.2, 78.2, 43.8)
 AOI = gpd.GeoDataFrame(geometry=[box(*AOI_BBOX)], crs="EPSG:4326")

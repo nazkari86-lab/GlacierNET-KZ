@@ -3,12 +3,22 @@ import type { NextConfig } from "next";
 const apiOrigin = process.env.API_INTERNAL_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 const nextConfig: NextConfig = {
+  // Lets CI or a local verification build run alongside the developer server
+  // without touching its active .next cache or HMR state.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   turbopack: {
     root: __dirname,
   },
   allowedDevOrigins: [
+    // Next.js compares the request origin host in development. Keep the
+    // hostname variants as well as legacy URL entries so HMR works whether the
+    // local UI is opened as localhost or 127.0.0.1 on a non-default port.
+    "localhost",
+    "127.0.0.1",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:3100",
+    "http://127.0.0.1:3100",
     "http://localhost:8080",
     "http://127.0.0.1:8080",
   ],

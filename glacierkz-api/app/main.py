@@ -28,6 +28,8 @@ from app.routers import (
     export,
     glaciers,
     history,
+    jury,
+    ml_workspace,
     models,
     monitoring,
     operations,
@@ -103,19 +105,15 @@ app = FastAPI(
             "description": "Shadow-mode observation planning, field work, and evidence cases",
         },
         {
+            "name": "ml-workspace",
+            "description": "Glacier-first multimodal inference and reviewable ML evidence cases",
+        },
+        {
             "name": "evidence-cases",
             "description": "Fail-closed local packages for canonical glacier and lake evidence cases",
         },
     ],
     lifespan=lifespan,
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
 )
 
 app.add_middleware(SecurityHeadersMiddleware, config=SecurityHeadersConfig())
@@ -137,9 +135,23 @@ app.add_middleware(
     config=RateLimitConfig(
         requests_per_minute=120,
         requests_per_hour=5000,
+        # A single operations view makes several independent, read-only requests.
+        # Keep the sustained limit conservative while avoiding false 429s during a
+        # normal page load or a map-layer switch.
+        burst_size=60,
     ),
 )
 app.add_middleware(AdminAuthMiddleware)
+# Starlette applies middleware in reverse registration order.  CORS must be
+# outermost so that configuration/authentication errors are still readable by
+# the browser (including an OPTIONS preflight to /api/admin/*).
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.mount("/static/results", StaticFiles(directory=str(RESULTS_DIR)), name="results")
 app.mount("/static/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
@@ -162,10 +174,12 @@ app.include_router(trend.router)
 app.include_router(history.router)
 app.include_router(export.router)
 app.include_router(analysis.router)
+app.include_router(jury.router)
 app.include_router(tasks.router)
 app.include_router(training.router)
 app.include_router(datasets.router)
 app.include_router(monitoring.router)
+app.include_router(ml_workspace.router)
 app.include_router(dashboard.router)
 app.include_router(data.router)
 app.include_router(pipeline.router)

@@ -8,6 +8,13 @@ export interface ModelInfo {
   supports_tta: boolean;
   supports_crf: boolean;
   supports_uncertainty: boolean;
+  channel_count?: number;
+  feature_schema?: string[];
+  decision_threshold?: number;
+  inference_variant?: string;
+  evidence_tier?: string;
+  recommended?: boolean;
+  year_range?: [number | null, number | null] | null;
 }
 
 export interface PredictResult {
@@ -19,6 +26,16 @@ export interface PredictResult {
   error?: string;
   model_name?: string;
   image_path?: string;
+  geotiff_path?: string;
+  probability_path?: string;
+  probability_geotiff_path?: string;
+  entropy_path?: string;
+  entropy_geotiff_path?: string;
+  decision_threshold?: number;
+  inference_variant?: string;
+  feature_schema?: string[];
+  uncertain_pixel_fraction?: number;
+  warnings?: string[];
 }
 
 export interface YearMethodResult {
@@ -112,6 +129,197 @@ export interface GlacierTimeSeries {
   caveat: string;
 }
 
+export interface MlBenchmark {
+  protocol?: string | null;
+  test_years: number[];
+  hard_dice?: number | null;
+  hard_iou?: number | null;
+  precision?: number | null;
+  recall?: number | null;
+  area_bias_percent?: number | null;
+  label_quality_tier?: string | null;
+  generalisation_scope?: string | null;
+}
+
+export interface MlReadinessModel extends ModelInfo {
+  available: boolean;
+  trusted_artifact: boolean;
+  benchmark: MlBenchmark;
+}
+
+export interface MlReadinessYear {
+  year: number;
+  sentinel2: boolean;
+  terrain: boolean;
+  sentinel1: boolean;
+  compatible_models: string[];
+  recommended_model?: string | null;
+}
+
+export interface MlTrainingDatasetSplit {
+  patch_count: number;
+  glacier_count: number;
+  glaciers: string[];
+  years: number[];
+  glacier_pixel_fraction?: number | null;
+  mean_training_weight?: number | null;
+}
+
+export interface MlSpatialEvaluation {
+  status: string;
+  created_at?: string;
+  reason?: string;
+  claim_scope?: string;
+  annotation_status?: string;
+  split_strategy?: string;
+  patches?: Partial<Record<"train" | "val" | "test", number>>;
+  glacier_counts?: Partial<Record<"train" | "val" | "test", number>>;
+  epochs_requested?: number;
+  epochs_completed?: number;
+  baseline_test?: Partial<MlBenchmark> & { threshold?: number; area_bias_percent?: number };
+  candidate_test?: Partial<MlBenchmark> & { threshold?: number; area_bias_percent?: number };
+  candidate_minus_baseline_hard_iou?: number;
+  promotion?: { status?: string; rule?: string };
+  model_artifact_present?: boolean;
+  claims_allowed?: string[];
+  claims_not_allowed?: string[];
+  limitations?: string[];
+}
+
+export interface MlTrainingDataset {
+  status: "ready" | "blocked";
+  dataset_id: string;
+  schema?: string;
+  created_at?: string;
+  annotation_status?: string;
+  dataset_role?: string;
+  split_strategy?: string;
+  channel_count?: number;
+  patch_size?: number;
+  feature_schema?: string[];
+  eligible_tasks?: number;
+  patch_count?: number;
+  storage_bytes?: number;
+  minimum_geometry_coverage?: number | null;
+  excluded_tasks?: {
+    total: number;
+    by_confidence: Record<string, number>;
+    handling?: string | null;
+  };
+  splits: Partial<Record<"train" | "val" | "test", MlTrainingDatasetSplit>>;
+  membership: Record<string, "train" | "val" | "test">;
+  review_queue: Array<{
+    glacier_id: string;
+    year: number;
+    confidence: string;
+    quality_score: number;
+    review_priority: number;
+    flags: string[];
+    next_action: string;
+  }>;
+  spatial_evaluation?: MlSpatialEvaluation;
+  weight_policy?: Record<string, string | number>;
+  preview_url?: string | null;
+  manifest_url: string;
+  training_command?: string;
+  integrity?: {
+    required_arrays_present: boolean;
+    declared_outputs_size_matched: boolean;
+    full_sha256_validation: string;
+  };
+  limitations: string[];
+  reason?: string;
+}
+
+export interface MlTrainingPipelineCheck {
+  schema: string;
+  status: "verified";
+  created_at: string;
+  dataset_id: string;
+  dataset_manifest_sha256: string;
+  purpose: string;
+  architecture: string;
+  batch: {
+    features: number[];
+    labels: number[];
+    weights: number[];
+    weight_min: number;
+    weight_max: number;
+    nonzero_weight_fraction: number;
+  };
+  metrics: Record<string, number>;
+  runtime: {
+    duration_seconds: number;
+    tensorflow: string;
+    python: string;
+    devices: string[];
+  };
+  claims_allowed: string[];
+  claims_not_allowed: string[];
+  cache: { hit: boolean };
+}
+
+export interface MlReadiness {
+  status: "ready" | "blocked";
+  recommended_model?: string | null;
+  years: MlReadinessYear[];
+  models: MlReadinessModel[];
+  training_dataset: MlTrainingDataset;
+  workflow: string[];
+  interpretation: string;
+}
+
+export interface MlEvidenceCase {
+  schema: string;
+  case_id: string;
+  created_at: string;
+  glacier: GlacierRecord;
+  year: number;
+  model: ModelInfo & {
+    artifact_sha256?: string | null;
+    benchmark_protocol?: string | null;
+    test_years?: number[];
+    label_quality_tier?: string | null;
+  };
+  inference: {
+    variant: string;
+    use_tta: boolean;
+    decision_threshold: number;
+    duration_seconds: number;
+    window_shape: [number, number];
+    context_m: number;
+    feature_schema: string[];
+  };
+  source: {
+    sentinel2_file: string;
+    sentinel2_size_bytes: number;
+    source_crop_sha256: string;
+    terrain_file: string;
+    sentinel1_file?: string | null;
+  };
+  metrics: {
+    predicted_area_km2: number;
+    rgi_rasterized_area_km2: number;
+    area_delta_percent?: number | null;
+    rgi_overlap_iou: number;
+    mean_probability_in_selected_component: number;
+    uncertain_fraction_in_review_zone: number;
+    mean_boundary_entropy_nats?: number | null;
+    review_priority_0_100: number;
+  };
+  map: {
+    bounds: [[number, number], [number, number]];
+    rgi_geometry: { type: string; coordinates: unknown };
+    model_geometry?: { type: string; coordinates: unknown } | null;
+  };
+  artifacts: Record<string, string | null>;
+  review: { status: string; next_action: string; risk_twin_url: string };
+  claims_allowed: string[];
+  claims_not_allowed: string[];
+  warnings: string[];
+  cache: { hit: boolean; case_id: string };
+}
+
 export async function fetchGlaciers(
   search = "",
   namedOnly = true,
@@ -135,6 +343,68 @@ export async function fetchGlacierSeries(
   const res = checkResponse(
     await fetch(apiUrl(`/api/glaciers/${encodeURIComponent(rgiId)}/timeseries?method=${method}`))
   );
+  return res.json();
+}
+
+export async function fetchMlReadiness(): Promise<MlReadiness> {
+  const res = checkResponse(await fetch(apiUrl("/api/ml/readiness"), { cache: "no-store" }));
+  return res.json();
+}
+
+export async function fetchMlTrainingDataset(): Promise<MlTrainingDataset> {
+  const res = checkResponse(await fetch(apiUrl("/api/ml/training-dataset"), { cache: "no-store" }));
+  return res.json();
+}
+
+export async function verifyMlTrainingDataset(refresh = false): Promise<MlTrainingPipelineCheck> {
+  const response = await fetch(apiUrl("/api/ml/training-dataset/verify"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh }),
+  });
+  if (!response.ok) {
+    let detail = `API ${response.status}: ${response.statusText}`;
+    try {
+      const body = await response.json();
+      if (typeof body.detail === "string") detail = body.detail;
+    } catch {
+      // Preserve the status fallback when the response is not JSON.
+    }
+    throw new Error(detail);
+  }
+  return response.json();
+}
+
+export async function analyzeMlGlacier(
+  rgiId: string,
+  request: {
+    year: number;
+    model_name: string;
+    use_tta: boolean;
+    context_m?: number;
+    refresh?: boolean;
+  }
+): Promise<MlEvidenceCase> {
+  const response = await fetch(apiUrl(`/api/ml/glaciers/${encodeURIComponent(rgiId)}/analyze`), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+  if (!response.ok) {
+    let detail = `API ${response.status}: ${response.statusText}`;
+    try {
+      const body = await response.json();
+      if (typeof body.detail === "string") detail = body.detail;
+    } catch {
+      // Preserve the status fallback when the response is not JSON.
+    }
+    throw new Error(detail);
+  }
+  return response.json();
+}
+
+export async function fetchMlCase(caseId: string): Promise<MlEvidenceCase> {
+  const res = checkResponse(await fetch(apiUrl(`/api/ml/cases/${encodeURIComponent(caseId)}`)));
   return res.json();
 }
 
@@ -162,12 +432,13 @@ export interface CompareSegment {
   model_name: string;
   mask_path: string;
   overlay_path: string;
-  area_km2: number;
+  area_km2: number | null;
 }
 
 export interface CompareResult {
   task_id: string;
   segments: CompareSegment[];
+  failures?: { model_name: string; error: string }[];
 }
 
 export interface TrendResult {
@@ -178,6 +449,41 @@ export interface TrendResult {
   r_squared: number;
   p_value?: number;
   significant?: boolean;
+}
+
+export interface TrendEvidencePoint {
+  year: number;
+  area_km2: number;
+  sensor: string;
+  quality_score: number;
+  confidence: string;
+  included_in_exploratory_trend: boolean;
+  caveat: string;
+}
+
+export interface TrendEvidence {
+  title: string;
+  status: "exploratory_not_adjudicated";
+  primary_table: string;
+  points: TrendEvidencePoint[];
+  exploratory_points: TrendEvidencePoint[];
+  exploratory_linear_trend: {
+    n_observations: number;
+    first_year: number;
+    last_year: number;
+    slope_km2_per_year: number;
+    slope_interval_95_approx: [number, number];
+    r_squared: number;
+    net_change_km2: number;
+    net_change_percent: number | null;
+  } | null;
+  flagged_temporal_anomalies: { year: number; status: string; relative_change_percent: number; reason: string }[];
+  limitations: string[];
+}
+
+export async function fetchTrendEvidence(): Promise<TrendEvidence> {
+  const res = checkResponse(await fetch(apiUrl("/api/analysis/evidence/trend")));
+  return res.json();
 }
 
 export interface HistoryItem {
@@ -233,13 +539,15 @@ export async function compareModels(
   file: File,
   modelNames: string[],
   useTta: boolean,
-  useCrf: boolean
+  useCrf: boolean,
+  year?: number,
 ): Promise<CompareResult> {
   const form = new FormData();
   form.append("file", file);
   form.append("model_names", modelNames.join(","));
   form.append("use_tta", String(useTta));
   form.append("use_crf", String(useCrf));
+  if (year !== undefined) form.append("year", String(year));
   const res = checkResponse(await fetch(apiUrl("/api/compare"), { method: "POST", body: form }));
   return res.json();
 }
@@ -302,13 +610,15 @@ export async function fetchAnalysisModels(): Promise<LLMProviderInfo[]> {
 }
 
 export async function fetchProviderModels(provider: string, apiKey: string): Promise<LLMModelInfo[]> {
-  const res = checkResponse(
-    await fetch(apiUrl("/api/analysis/models/fetch"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ provider, api_key: apiKey }),
-    })
-  );
+  const res = await fetch(apiUrl("/api/analysis/models/fetch"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ provider, api_key: apiKey }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(typeof body.detail === "string" ? body.detail : `API ${res.status}: ${res.statusText}`);
+  }
   return res.json();
 }
 
@@ -483,6 +793,318 @@ export interface DecisionReadiness {
 
 export async function fetchDecisionReadiness(): Promise<DecisionReadiness> {
   const res = checkResponse(await fetch(apiUrl("/api/data/decision-readiness")));
+  return res.json();
+}
+
+// --- Active Cryosphere Risk Twin (research screening, never an official warning) ---
+export interface RiskTwinReadiness {
+  status: string;
+  available: string[];
+  blocked: string[];
+  safety_statement: string;
+}
+
+export interface RiskTwinObservationInput {
+  observation_id: string;
+  variable: string;
+  value: number;
+  uncertainty_std: number;
+  timestamp: string;
+  sensor: string;
+  quality_flags?: string[];
+  spatial_support?: string;
+}
+
+export interface RiskTwinActionInput {
+  action_id: string;
+  label: string;
+  target_variables: string[];
+  expected_observation_variance: Record<string, number>;
+  cost?: number;
+  latency_hours?: number;
+  available?: boolean;
+}
+
+export interface RiskTwinRequest {
+  basin_id: string;
+  observations: RiskTwinObservationInput[];
+  actions?: RiskTwinActionInput[];
+  required_variables?: string[];
+  priority_inputs?: {
+    current_anomaly: number;
+    resilience_vulnerability?: number;
+    potential_consequence: number;
+    staleness?: number;
+  };
+}
+
+export interface RiskTwinResult {
+  maturity: string;
+  state: {
+    basin_id: string;
+    state: Record<string, { mean: number; std: number; ci95: [number, number]; observation_count: number; updated_at: string }>;
+    data_gaps: string[];
+    provenance: Array<Record<string, unknown>>;
+  };
+  observation_ranking: Array<{
+    action_id: string;
+    label: string;
+    available: boolean;
+    model_based_uncertainty_reduction_fraction?: number;
+    [key: string]: unknown;
+  }>;
+  decision_support: { abstain: boolean; reasons?: string[]; [key: string]: unknown };
+  priorities: { status?: string; hazard_priority?: { score?: number; status?: string } | null; observation_priority?: { score?: number; status?: string } | null; [key: string]: unknown };
+  cascade_graph: { nodes: Array<Record<string, unknown>>; edges: Array<Record<string, unknown>> };
+  claims_not_allowed: string[];
+  [key: string]: unknown;
+}
+
+export async function fetchRiskTwinReadiness(): Promise<RiskTwinReadiness> {
+  const res = checkResponse(await fetch(apiUrl("/api/risk-twin/readiness")));
+  return res.json();
+}
+
+export async function evaluateRiskTwin(payload: RiskTwinRequest): Promise<RiskTwinResult> {
+  const res = checkResponse(await fetch(apiUrl("/api/risk-twin/evaluate"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  }));
+  return res.json();
+}
+
+export interface GeoJsonFeatureCollection {
+  type: "FeatureCollection";
+  features: Array<{ type: "Feature"; properties: Record<string, unknown>; geometry: { type: string; coordinates: unknown } }>;
+}
+
+export interface RiskTwinSpatialContext {
+  schema: string;
+  query: { year: number; buffer_km: number; lake_inventory_year: number; previous_lake_inventory_year: number | null };
+  layers: {
+    hma_gli_2015_2018: GeoJsonFeatureCollection;
+    tien_shan_lakes: GeoJsonFeatureCollection;
+    historical_glof_events: GeoJsonFeatureCollection;
+    hydrorivers: GeoJsonFeatureCollection;
+    hydrobasins_level06: GeoJsonFeatureCollection;
+  };
+  lake_timeseries: Array<{ year: number; lake_count: number; total_area_m2: number }>;
+  screening_candidates: Array<{
+    lake_id: string | null;
+    inventory_year: number;
+    previous_inventory_year: number | null;
+    latitude: number;
+    longitude: number;
+    area_current_m2: number;
+    area_previous_m2: number | null;
+    area_change_percent: number | null;
+    geometric_match_distance_m: number | null;
+    distance_to_rgi_boundary_m: number;
+    elevation_m: number | null;
+    observation_priority_0_100: number;
+    flags: string[];
+    interpretation: string;
+  }>;
+  impact_assets: {
+    available: boolean;
+    planning_radius_km: number;
+  features: GeoJsonFeatureCollection;
+  summary: Record<string, number>;
+  nearby_asset_count?: number;
+  returned_feature_count?: number;
+  map_feature_limit?: number;
+    reason?: string;
+    source?: string;
+    interpretation: string;
+  };
+  terrain: { available: boolean; path: string; bands?: Record<string, number | null>; scope?: string; reason?: string };
+  sentinel1: { available: boolean; path: string; bands?: Record<string, number | null>; scope?: string; reason?: string };
+  jrc_surface_water: { available: boolean; path: string; bands?: Record<string, number | null>; scope?: string; reason?: string };
+  climate_context: {
+    available: boolean;
+    path: string;
+    dataset?: string;
+    variables?: string[];
+    years?: string[];
+    bbox_wgs84?: number[];
+    scope?: string;
+    interpretation?: string;
+    reason?: string;
+  };
+  population_planning_context: {
+    available: boolean;
+    path: string;
+    reference_year?: number;
+    planning_radius_km: number;
+    modelled_population_grid_sum?: number;
+    non_empty_grid_cells?: number;
+    scope?: string;
+    reason?: string;
+  };
+  interpretation: { allowed: string[]; not_allowed: string[]; event_note: string };
+  sources: string[];
+}
+
+export interface RegionalObservationScan {
+  schema: string;
+  status: string;
+  buffer_km: number;
+  inventory_year: number;
+  previous_inventory_year: number | null;
+  returned: number;
+  summary: { scanned_lakes: number; candidates_with_nearby_rgi: number; unmatched_previous: number; large_change_screening: number };
+  candidates: Array<{
+    lake_id: string | null;
+    inventory_year: number;
+    latitude: number;
+    longitude: number;
+    area_current_m2: number;
+    previous_inventory_year: number | null;
+    area_previous_m2: number | null;
+    area_change_percent: number | null;
+    geometric_match_distance_m: number | null;
+    distance_to_rgi_boundary_m: number;
+    observation_priority_0_100: number;
+    flags: string[];
+    glacier: { rgi_id: string; name: string; name_ru: string; centroid: { latitude: number; longitude: number }; rgi_area_km2: number };
+    historical_event_count_in_glacier_context: number;
+    interpretation: string;
+  }>;
+  limitations: string[];
+}
+
+/**
+ * A candidate can have no upstream lake identifier, so an RGI ID alone is
+ * not a stable UI key. Keep the inventory and exact coordinates in the key
+ * to prevent one real observation from overwriting another in a list or map.
+ */
+export function regionalObservationCandidateKey(candidate: RegionalObservationScan["candidates"][number]): string {
+  return [
+    candidate.glacier.rgi_id,
+    candidate.inventory_year,
+    candidate.lake_id ?? "without-id",
+    candidate.latitude.toFixed(6),
+    candidate.longitude.toFixed(6),
+  ].join(":");
+}
+
+/**
+ * Keep an already-open browser usable across a rolling local API restart.
+ * v2 used a 2023/2020-specific shape; v3 makes the inventory year explicit.
+ * This adapter is deliberately narrow and is removed only after every deployed
+ * API is known to serve v3. It never synthesizes measurements or matches.
+ */
+function normalizeRiskTwinContext(payload: unknown): RiskTwinSpatialContext {
+  const raw = payload as Record<string, unknown>;
+  const rawLayers = (raw.layers ?? {}) as Record<string, unknown>;
+  const emptyLayer: GeoJsonFeatureCollection = { type: "FeatureCollection", features: [] };
+  const rawQuery = (raw.query ?? {}) as Record<string, unknown>;
+  const inventoryYear = Number(rawQuery.lake_inventory_year ?? 2023);
+  const previousYearValue = rawQuery.previous_lake_inventory_year;
+  const previousYear = typeof previousYearValue === "number" ? previousYearValue : inventoryYear === 2023 ? 2020 : null;
+  const rawCandidates = Array.isArray(raw.screening_candidates) ? raw.screening_candidates as Array<Record<string, unknown>> : [];
+  return {
+    ...raw,
+    query: {
+      year: Number(rawQuery.year ?? 2024),
+      buffer_km: Number(rawQuery.buffer_km ?? 10),
+      lake_inventory_year: inventoryYear,
+      previous_lake_inventory_year: previousYear,
+    },
+    layers: {
+      hma_gli_2015_2018: (rawLayers.hma_gli_2015_2018 ?? emptyLayer) as GeoJsonFeatureCollection,
+      tien_shan_lakes: (rawLayers.tien_shan_lakes ?? rawLayers.tien_shan_lakes_2023 ?? emptyLayer) as GeoJsonFeatureCollection,
+      historical_glof_events: (rawLayers.historical_glof_events ?? emptyLayer) as GeoJsonFeatureCollection,
+      hydrorivers: (rawLayers.hydrorivers ?? emptyLayer) as GeoJsonFeatureCollection,
+      hydrobasins_level06: (rawLayers.hydrobasins_level06 ?? emptyLayer) as GeoJsonFeatureCollection,
+    },
+    screening_candidates: rawCandidates.map((candidate) => ({
+      ...candidate,
+      lake_id: candidate.lake_id ?? candidate.lake_id_2023 ?? null,
+      inventory_year: Number(candidate.inventory_year ?? inventoryYear),
+      previous_inventory_year: candidate.previous_inventory_year ?? previousYear,
+      area_current_m2: Number(candidate.area_current_m2 ?? candidate.area_2023_m2 ?? 0),
+      area_previous_m2: candidate.area_previous_m2 ?? candidate.area_2020_m2 ?? null,
+      area_change_percent: candidate.area_change_percent ?? candidate.area_change_2020_2023_percent ?? null,
+    })),
+  } as RiskTwinSpatialContext;
+}
+
+export async function fetchRiskTwinContext(
+  rgiId: string,
+  year = 2024,
+  bufferKm = 10,
+  lakeInventoryYear = 2023,
+): Promise<RiskTwinSpatialContext> {
+  const params = new URLSearchParams({ year: String(year), buffer_km: String(bufferKm), lake_inventory_year: String(lakeInventoryYear) });
+  const res = checkResponse(await fetch(apiUrl(`/api/risk-twin/context/${encodeURIComponent(rgiId)}?${params}`)));
+  return normalizeRiskTwinContext(await res.json());
+}
+
+export async function fetchRegionalObservationScan(limit = 100, bufferKm = 10, inventoryYear = 2023): Promise<RegionalObservationScan> {
+  const params = new URLSearchParams({ limit: String(limit), buffer_km: String(bufferKm), inventory_year: String(inventoryYear) });
+  const res = checkResponse(await fetch(apiUrl(`/api/risk-twin/regional-scan?${params}`)));
+  return res.json();
+}
+
+export interface JuryEvidence {
+  claim_policy: string;
+  release_checks: { local_package_complete: boolean; required_artifact_count: number };
+  claim_status_counts: Record<string, number>;
+  supported_now: { title: string; value: Record<string, number | string | null>; scope: string }[];
+  honest_negative_result: { title: string; hard_dice: { estimate: number; ci_lower: number; ci_upper: number }; area_error_percent: { estimate: number; ci_lower: number; ci_upper: number }; meaning: string };
+  strict_trend: { n_years: number; slope_km2_per_year: number; p_value: number; significant: boolean; meaning: string };
+  blocked_until_external_work: { id: string; claim: string; scope: string; evidence: string[] }[];
+  automation_readiness: {
+    available: boolean;
+    machine_assisted_label_pack: { status: string; tasks: number; glaciers: number; years: number[]; purpose: string };
+    claims: { id: string; claim: string; automated_input_ready: boolean; status: string }[];
+  };
+  scientific_evidence: ScientificEvidence;
+  sources: string[];
+}
+
+export type ClaimEvidenceStatus = "supported_silver" | "supported_provisional" | "refuted_for_current_model" | "blocked_external_evidence";
+
+export interface EvidenceArtifact {
+  path: string;
+  exists: boolean;
+  sha256: string | null;
+}
+
+export interface ScientificEvidence {
+  schema: "glaciernet-kz.scientific-evidence.v1";
+  claim_policy: string;
+  claim_registry: Array<{ id: string; status: ClaimEvidenceStatus; claim: string; scope: string; artifacts: EvidenceArtifact[] }>;
+  temporal_holdout: {
+    evaluation_protocol: string;
+    generalisation_scope: string;
+    label_quality_tier: string;
+    label_provenance: string;
+    splits: { train_years: number[]; validation_years: number[]; test_years: number[] };
+    hard_metrics: Record<string, number | string>;
+    threshold_calibration: { selection_split: string; objective: string; selected_threshold: number };
+    glacier_level_ci_status: string;
+    boundary_metrics_status: string;
+    claims_allowed: string[];
+    claims_not_allowed: string[];
+    artifacts: EvidenceArtifact[];
+  };
+  paired_glacier_diagnostic: {
+    label_quality_tier: string;
+    evaluation_status: string;
+    cohort_selection: { n_glaciers: number; [key: string]: number };
+    metrics: Record<string, { estimate: number; ci_lower: number; ci_upper: number; confidence: number; n_glaciers: number; [key: string]: number }>;
+    paired_tests: Record<string, unknown>;
+    claims_not_allowed: string[];
+    artifacts: EvidenceArtifact[];
+  };
+  external_generalisation: { status: ClaimEvidenceStatus | "external_evidence_available"; test_region: string; label_quality_tier_required: string; blocked_reason?: string | null; artifact: EvidenceArtifact };
+}
+
+export async function fetchJuryEvidence(): Promise<JuryEvidence> {
+  const res = checkResponse(await fetch(apiUrl("/api/jury/evidence")));
   return res.json();
 }
 
@@ -890,6 +1512,44 @@ export interface FieldReportInput {
   sync_status: "offline_draft" | "synced";
 }
 
+export interface InspectionTaskInput {
+  asset_id: string;
+  candidate_id?: string | null;
+  action_type: string;
+  priority_score: number;
+  rationale: string;
+  assigned_to?: string | null;
+  due_at?: string | null;
+}
+
+export interface RiskTwinHandoffInput {
+  rgi_id: string;
+  glacier_name: string;
+  lake_id?: string | null;
+  inventory_year: number;
+  previous_inventory_year?: number | null;
+  latitude: number;
+  longitude: number;
+  area_current_m2: number;
+  area_previous_m2?: number | null;
+  area_change_percent?: number | null;
+  geometric_match_distance_m?: number | null;
+  distance_to_rgi_boundary_m: number;
+  observation_priority_0_100: number;
+  flags: string[];
+  action_summary: string;
+}
+
+export interface RiskTwinHandoffResult {
+  status: "created" | "existing";
+  case_key: string;
+  asset: OperationsAsset;
+  evidence_case: EvidenceCase;
+  inspection_task: InspectionTask | null;
+  operations_url: string;
+  safety_statement: string;
+}
+
 export async function fetchOperationsOverview(): Promise<OperationsOverview> {
   const res = checkResponse(await fetch(apiUrl("/api/operations/overview")));
   return res.json();
@@ -909,6 +1569,28 @@ export async function createFieldReport(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
     })
+  );
+  return res.json();
+}
+
+export async function createInspectionTask(input: InspectionTaskInput): Promise<InspectionTask> {
+  const res = checkResponse(
+    await authFetch(apiUrl("/api/operations/inspection-tasks"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    })
+  );
+  return res.json();
+}
+
+export async function createRiskTwinHandoff(input: RiskTwinHandoffInput): Promise<RiskTwinHandoffResult> {
+  const res = checkResponse(
+    await authFetch(apiUrl("/api/operations/risk-twin-handoffs"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    }),
   );
   return res.json();
 }

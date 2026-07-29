@@ -136,6 +136,76 @@ def area_metrics(
     }
 
 
+def probability_calibration_metrics(
+    y_true: np.ndarray,
+    y_prob: np.ndarray,
+    *,
+    n_bins: int = 15,
+) -> dict[str, float | int]:
+    """Pixel-level Brier, NLL and ECE for the glacier probability map."""
+    if n_bins < 2:
+        raise ValueError("n_bins must be at least 2")
+    true, _ = _validated_masks(y_true, y_prob, 0.5)
+    probability = np.asarray(y_prob, dtype=np.float64)
+    clipped = np.clip(probability, 1e-7, 1 - 1e-7)
+    target = true.astype(np.float64)
+    brier = float(np.mean((probability - target) ** 2))
+    nll = float(-np.mean(target * np.log(clipped) + (1 - target) * np.log(1 - clipped)))
+    edges = np.linspace(0.0, 1.0, n_bins + 1)
+    indices = np.minimum(np.digitize(probability.ravel(), edges[1:-1]), n_bins - 1)
+    ece = 0.0
+    occupied = 0
+    flat_probability = probability.ravel()
+    flat_target = target.ravel()
+    for index in range(n_bins):
+        selected = indices == index
+        if not selected.any():
+            continue
+        occupied += 1
+        ece += float(selected.mean()) * abs(
+            float(flat_probability[selected].mean()) - float(flat_target[selected].mean())
+        )
+    return {
+        "brier_score": brier,
+        "negative_log_likelihood": nll,
+        "expected_calibration_error": float(ece),
+        "calibration_bins": n_bins,
+        "occupied_bins": occupied,
+    }
+
+
+def selective_error_curve(
+    y_true: np.ndarray,
+    y_prob: np.ndarray,
+    *,
+    threshold: float,
+    coverages: Sequence[float] = (1.0, 0.9, 0.75, 0.5),
+) -> list[dict[str, float]]:
+    """Measure error after abstaining on the highest-entropy pixels."""
+    true, pred = _validated_masks(y_true, y_prob, threshold)
+    probability = np.asarray(y_prob, dtype=np.float64)
+    entropy = -probability * np.log(probability + 1e-8) - (1 - probability) * np.log(1 - probability + 1e-8)
+    order = np.argsort(entropy.ravel(), kind="stable")
+    flat_true = true.ravel()
+    flat_pred = pred.ravel()
+    rows: list[dict[str, float]] = []
+    for coverage in coverages:
+        if not 0 < float(coverage) <= 1:
+            raise ValueError("coverages must be in (0, 1]")
+        count = max(1, int(round(len(order) * float(coverage))))
+        selected = order[:count]
+        errors = np.not_equal(flat_true[selected], flat_pred[selected])
+        rows.append(
+            {
+                "coverage": float(coverage),
+                "abstained_fraction": 1.0 - float(coverage),
+                "pixel_error_rate": float(errors.mean()),
+                "mean_entropy": float(entropy.ravel()[selected].mean()),
+            }
+        )
+    return rows
+
+
 def complete_segmentation_metrics(
     y_true: np.ndarray,
     y_prob: np.ndarray,

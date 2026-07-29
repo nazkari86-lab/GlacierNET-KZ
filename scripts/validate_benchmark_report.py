@@ -85,10 +85,7 @@ def main() -> int:
     if all(path.is_file() and path.stat().st_size > 0 for path in required_model_files):
         actual_model_sha = sha256_directory(model_path)
         if report.get("model_artifact_sha256") != actual_model_sha:
-            errors.append(
-                "model_artifact_sha256 does not match the current SavedModel "
-                f"({actual_model_sha})"
-            )
+            errors.append(f"model_artifact_sha256 does not match the current SavedModel ({actual_model_sha})")
 
     patches_dir = ROOT / str(report.get("patches_dir", ""))
     manifest_path = patches_dir / "manifest.json"
@@ -97,10 +94,7 @@ def main() -> int:
     else:
         actual_manifest_sha = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
         if report.get("patch_manifest_sha256") != actual_manifest_sha:
-            errors.append(
-                "patch_manifest_sha256 does not match the current holdout manifest "
-                f"({actual_manifest_sha})"
-            )
+            errors.append(f"patch_manifest_sha256 does not match the current holdout manifest ({actual_manifest_sha})")
     if errors:
         print("BENCHMARK REPORT VALIDATION FAILED")
         print("\n".join(f"- {error}" for error in errors))

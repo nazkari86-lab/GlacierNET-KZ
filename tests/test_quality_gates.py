@@ -44,3 +44,26 @@ def test_year_holdout_validator_passes_current_manifest():
         text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_high_level_temporal_manifest_validation_alias():
+    manifest = ROOT / "benchmarks/v2/manifests/temporal_holdout.json"
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/validate_year_holdout.py"), str(manifest)],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+@pytest.mark.local_data
+def test_inference_variant_promotion_is_reproducible():
+    report = ROOT / "benchmarks/v2/reports/inference_variants_s2_terrain_s1_2017_2024.json"
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/validate_inference_variant_benchmark.py"), str(report)],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

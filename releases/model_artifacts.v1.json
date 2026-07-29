@@ -40,7 +40,7 @@
       "size_bytes": 95967224,
       "sha256_directory": "c874443318bc7079b2580ef18e02782e6324d398459bfd55e20f63bc26b83997",
       "evaluation_report": "results/ablation_unet_sentinel2_terrain_s1_2017_2024.json",
-      "evaluation_report_sha256": "bb57655dc598e9adcf7e09e8e806d8064b52d5ee21c6fd1012d13218d2f234dd",
+      "evaluation_report_sha256": "17eeb875d383296dd7deeecfce56a35a2e7c98c1c948f03fe4a870c4cf3db735",
       "release_asset": "glaciernet-kz-compact_s2_terrain_s1.tar.gz",
       "release_asset_url": "https://github.com/nazkari86-lab/GlacierNET-KZ/releases/download/v0.3.0/glaciernet-kz-compact_s2_terrain_s1.tar.gz",
       "release_asset_size_bytes": 86779400,

@@ -20,6 +20,9 @@ REQUIRED_PATHS = (
     "results/tables/year_quality_scores.csv",
     "results/tables/random_forest_feature_importance.csv",
     "results/tables/eda_sentinel2_2020.csv",
+    "benchmarks/v2/annotations/machine_assisted/manifest.json",
+    "benchmarks/v2/annotations/machine_assisted/machine_assisted_annotation_queue.csv",
+    "benchmarks/v2/readiness/evidence_readiness.json",
 )
 
 

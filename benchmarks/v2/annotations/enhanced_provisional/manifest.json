@@ -1,0 +1,156 @@
+{
+  "schema": "glaciernet-kz.enhanced-provisional-annotations.v1",
+  "created_at": "2026-07-29T19:05:19.398965+00:00",
+  "label_tier": "enhanced_provisional_multievidence",
+  "annotation_status": "provisional_not_gold",
+  "purpose": "Strong machine-assisted annotation bootstrap with explicit visual-review zones",
+  "method": {
+    "annual_source": "Original 11-channel Sentinel-2 stack for each observation year",
+    "spectral_evidence": "NDSI and green reflectance",
+    "temporal_evidence": "clean-ice agreement across [2022, 2023, 2024]",
+    "spatial_prior": "RGI 7.0 selected cohort, constrained to a 70 m outward search",
+    "minimum_component_area_m2": 500,
+    "review_layer": "boundary, RGI disagreement, ambiguous evidence and invalid pixels"
+  },
+  "source_rasters": {
+    "2022": {
+      "path": "data/raw/sentinel2/sentinel2_2022.tif",
+      "sha256": "0b2c8e4043bdf4ef221cc0f0922030ff657ff7e1267bc7e06e00f6f93b443112"
+    },
+    "2023": {
+      "path": "data/raw/sentinel2/sentinel2_2023.tif",
+      "sha256": "3dfd004e8ea238d49819a18b3eeafd8ec0d039d8a2c12da8b93b429132bcff28"
+    },
+    "2024": {
+      "path": "data/raw/sentinel2/sentinel2_2024.tif",
+      "sha256": "40c670eedfa00c35caaed75b59f6a80518a0bf03b7326317d030fb162c13d5b1"
+    }
+  },
+  "excluded_inputs": {
+    "annual_processed_masks": {
+      "reason": "Excluded from annual evidence because all inspected years have identical SHA-256 digests",
+      "sha256_by_year": {
+        "2022": "48026c52f05f03f59ad151792d0de9855470423e05dec729681c86af29a6a987",
+        "2023": "48026c52f05f03f59ad151792d0de9855470423e05dec729681c86af29a6a987",
+        "2024": "48026c52f05f03f59ad151792d0de9855470423e05dec729681c86af29a6a987"
+      }
+    }
+  },
+  "cohort": {
+    "glaciers": 18,
+    "years": [
+      2022,
+      2023,
+      2024
+    ],
+    "tasks": 54,
+    "selection_source": "benchmarks/v2/annotations/machine_assisted/rgi_inventory_provisional_2024.gpkg"
+  },
+  "outputs": [
+    {
+      "path": "benchmarks/v2/annotations/enhanced_provisional/enhanced_labels_2022.gpkg",
+      "sha256": "46079356e6cbd7c2199dc3e9afef8ce4b65102971efec930645a14ab7243b7e9",
+      "size_bytes": 385024
+    },
+    {
+      "path": "benchmarks/v2/annotations/enhanced_provisional/label_classes_2022.tif",
+      "sha256": "2fc0fc1a8bba2d40f2ee6681042573994bd88dc8b90d74a8487d1c2663874033",
+      "size_bytes": 84903
+    },
+    {
+      "path": "benchmarks/v2/annotations/enhanced_provisional/enhanced_labels_2023.gpkg",
+      "sha256": "f1e0a9695bcd061b59d638ed47600c7215e5c92065b391417576979bc4700509",
+      "size_bytes": 389120
+    },
+    {
+      "path": "benchmarks/v2/annotations/enhanced_provisional/label_classes_2023.tif",
+      "sha256": "a6e1c826462f93698cbcc8ff7a8a2657d932eb3cf00604d725fc10bbfe047d73",
+      "size_bytes": 85527
+    },
+    {
+      "path": "benchmarks/v2/annotations/enhanced_provisional/enhanced_labels_2024.gpkg",
+      "sha256": "be37169e003724d4316ff7aa5443a023ec5ecc959d73c23f89be2e069ff3e1c2",
+      "size_bytes": 393216
+    },
+    {
+      "path": "benchmarks/v2/annotations/enhanced_provisional/label_classes_2024.tif",
+      "sha256": "e25be8e0f5c57e88d49fa5741eb991b9840260a332241fff1d15b58d989b36de",
+      "size_bytes": 86011
+    },
+    {
+      "path": "benchmarks/v2/annotations/enhanced_provisional/enhanced_annotation_queue.csv",
+      "sha256": "e59bae630bddf8c79d9d1d66cb9e8b47b50b871f2684921c47416603260a1eb5",
+      "size_bytes": 19570
+    },
+    {
+      "path": "benchmarks/v2/annotations/enhanced_provisional/labels.qml",
+      "sha256": "7630616feb8e08a327ebb4cd3932487c7e67f8a79db3dd606cd7fea0e33c6d23",
+      "size_bytes": 538
+    },
+    {
+      "path": "benchmarks/v2/annotations/enhanced_provisional/review_zones.qml",
+      "sha256": "1db55e908fb22474e7142e755cc0910ce8b21d1bf1ac9cbe54df92a15f1f39c4",
+      "size_bytes": 460
+    },
+    {
+      "path": "benchmarks/v2/annotations/enhanced_provisional/README_QGIS.md",
+      "sha256": "f5d57085b969b00767b64b3e0d36e713ca1f0c34c858bc3a4d8c28181ec306a6",
+      "size_bytes": 1345
+    }
+  ],
+  "quality_summary": {
+    "high_provisional": 25,
+    "medium_provisional": 16,
+    "low_provisional": 13,
+    "pending_human_review": 54
+  },
+  "prohibited_claims": [
+    "independent expert gold-label accuracy",
+    "independent external generalisation",
+    "operational hazard probability"
+  ],
+  "qgis_project": {
+    "path": "benchmarks/v2/annotations/enhanced_provisional/GlacierNET-KZ_Annotation_Workspace.qgz",
+    "sha256": "abd0af527d51e16e0b4057df9cbe80dedcc363ca9e7680d53ec44649a7cc3013",
+    "size_bytes": 42443,
+    "layer_count": 16,
+    "source_rasters_duplicated": false
+  },
+  "qa_preview": {
+    "path": "benchmarks/v2/annotations/enhanced_provisional/annotation_qa_contact_sheet.png",
+    "sha256": "6424fdb8f97c6cd10abaa725d824532528a1fee187f656d800451715d2a809dc",
+    "size_bytes": 1179230,
+    "cases": [
+      {
+        "glacier_id": "RGI2000-v7.0-G-13-33521",
+        "year": 2022,
+        "confidence": "high_provisional"
+      },
+      {
+        "glacier_id": "RGI2000-v7.0-G-13-33521",
+        "year": 2023,
+        "confidence": "high_provisional"
+      },
+      {
+        "glacier_id": "RGI2000-v7.0-G-13-33790",
+        "year": 2022,
+        "confidence": "high_provisional"
+      },
+      {
+        "glacier_id": "RGI2000-v7.0-G-13-33392",
+        "year": 2022,
+        "confidence": "low_provisional"
+      },
+      {
+        "glacier_id": "RGI2000-v7.0-G-13-34028",
+        "year": 2022,
+        "confidence": "low_provisional"
+      },
+      {
+        "glacier_id": "RGI2000-v7.0-G-13-33392",
+        "year": 2023,
+        "confidence": "low_provisional"
+      }
+    ]
+  }
+}

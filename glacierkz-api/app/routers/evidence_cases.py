@@ -16,9 +16,16 @@ def evidence_case(
     rgi_id: str,
     lake_id: str | None = Query(default=None, max_length=160),
     year: int = Query(default=2024, ge=2017, le=2024),
+    lake_inventory_year: int = Query(default=2023, ge=1900, le=2100),
     scope: Literal["local_inventory", "annual_screening", "archive_context", "planning_context"] = Query(
         default="local_inventory"
     ),
 ) -> dict:
     """Return an exact local evidence package or a glacier-only abstention."""
-    return resolve_evidence_case(rgi_id=rgi_id, lake_id=lake_id, year=year, scope=scope)
+    return resolve_evidence_case(
+        rgi_id=rgi_id,
+        lake_id=lake_id,
+        year=year,
+        lake_inventory_year=lake_inventory_year,
+        scope=scope,
+    )

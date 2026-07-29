@@ -12,7 +12,7 @@ import {
   rerunPipelineRun,
   type PipelineRun,
 } from "@/lib/api";
-import { RefreshCw, Plus, LayoutGrid, Rows3 } from "lucide-react";
+import { RefreshCw, LayoutGrid, Rows3 } from "lucide-react";
 import { useI18n } from "@/lib/I18nProvider";
 
 const STATUS_KEYS = {
@@ -72,8 +72,8 @@ export default function PipelinePage() {
     .flatMap((r) => r.stages.filter((s) => s.status === "running"));
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <main id="main-content" className="min-w-0 space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold text-gray-900">{t("pipeline.title")}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
@@ -82,40 +82,39 @@ export default function PipelinePage() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={() => setViewMode(viewMode === "compact" ? "detailed" : "compact")}
-            className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+            className="min-h-11 min-w-11 p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
             title={viewMode === "compact" ? t("pipeline.detailed_view") : t("pipeline.compact_view")}
           >
             {viewMode === "compact" ? <LayoutGrid className="w-4 h-4" /> : <Rows3 className="w-4 h-4" />}
           </button>
           <button
+            type="button"
             onClick={fetchRuns}
-            className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label={t("history.refresh")}
+            className="min-h-11 min-w-11 p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-            <Plus className="w-4 h-4" />
-            {t("pipeline.new_run")}
           </button>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 flex-wrap items-center gap-3">
         <SearchBar
           placeholder={t("pipeline.search_placeholder")}
           value={search}
           onChange={setSearch}
           size="sm"
-          className="w-64"
+          className="w-full min-w-0 sm:w-64"
         />
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+        <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-lg bg-gray-100 p-0.5">
           {(["all", "running", "success", "failed"] as const).map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
               className={cn(
-                "px-3 py-1 text-xs font-medium rounded-md transition-colors",
+                "min-h-10 px-3 py-2 text-xs font-medium rounded-md transition-colors",
                 statusFilter === s ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
               )}
             >
@@ -153,8 +152,17 @@ export default function PipelinePage() {
                 )}
               >
                 <div
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={expandedRun === run.id}
                   className="flex items-center justify-between px-5 py-3 cursor-pointer hover:bg-gray-50/50"
                   onClick={() => setExpandedRun(expandedRun === run.id ? null : run.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setExpandedRun(expandedRun === run.id ? null : run.id);
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-3">
                     <div
@@ -217,7 +225,7 @@ export default function PipelinePage() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleRerun(run.id)}
-                        className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="min-h-11 px-3 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                       >
                         {t("pipeline.rerun")}
                       </button>
@@ -244,6 +252,6 @@ export default function PipelinePage() {
           />
         </div>
       </div>
-    </div>
+    </main>
   );
 }

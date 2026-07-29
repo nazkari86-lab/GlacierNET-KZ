@@ -139,10 +139,7 @@ def main() -> int:
 
     failures: list[str] = []
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        futures = {
-            pool.submit(restore_one, item, destination, args.retries): destination
-            for item, destination in jobs
-        }
+        futures = {pool.submit(restore_one, item, destination, args.retries): destination for item, destination in jobs}
         for future in as_completed(futures):
             destination = futures[future]
             try:
