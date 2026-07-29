@@ -1,0 +1,14 @@
+{
+  "excluded_count": 33,
+  "match_status_counts": {
+    "limited_match": 1,
+    "matched": 552
+  },
+  "passport_count": 553,
+  "passport_verifier_target_rate": 1.0,
+  "surprise_class_counts": {
+    "comparison_inconclusive": 1,
+    "trajectory_consistent": 406,
+    "unexplained_divergence_candidate": 146
+  }
+}

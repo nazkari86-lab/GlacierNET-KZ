@@ -1,0 +1,43 @@
+{
+  "anchor_year": 2016,
+  "builder_version": "1.0.0",
+  "cohort_id": "ile-2016-2024-v1",
+  "eligibility_policy": {
+    "basis": "pre-outcome support of at least 100 positive pixels at the declared 10 m annual-mask resolution",
+    "minimum_anchor_area_km2": 0.01,
+    "outcome_magnitude_filter": false
+  },
+  "eligible_glacier_count": 553,
+  "excluded_glacier_count": 33,
+  "feature_columns": [
+    "rgi_id",
+    "basin_id",
+    "region_id",
+    "split",
+    "anchor_year",
+    "outcome_year",
+    "anchor_area_km2",
+    "annual_precipitation_m",
+    "aspect_cos",
+    "aspect_sin",
+    "elevation_max_m",
+    "elevation_mean_m",
+    "elevation_min_m",
+    "elevation_range_m",
+    "label_tier",
+    "sensor_family",
+    "slope_deg",
+    "snow_depth_m",
+    "summer_temperature_c",
+    "valid_observation_count",
+    "outcome"
+  ],
+  "fixture_mode": false,
+  "git_commit": "b84b3ba50ddc9c9d5a0e70a457808843e1477ecf",
+  "input_glacier_count": 586,
+  "outcome_year": 2024,
+  "passport_count": 553,
+  "random_seed": 0,
+  "schema": "glaciernet-kz.cryogenesis-cohort.v1",
+  "scientific_readiness": "cohort_ready"
+}
