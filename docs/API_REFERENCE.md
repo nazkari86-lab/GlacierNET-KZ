@@ -705,6 +705,23 @@ The server pings all clients every 30 seconds. Clients that haven't responded in
 
 ---
 
+## CryoGenesis
+
+All CryoGenesis endpoints are read-only. Saved passports are verified against
+their canonical SHA-256 before they are returned; the API does not recalculate
+matching or substitute a nearby glacier.
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/api/cryogenesis/status` | Current artifact and passport-file readiness |
+| `GET` | `/api/cryogenesis/cohorts` | Current immutable cohort manifest |
+| `GET` | `/api/cryogenesis/discoveries` | Validated discovery queue; optional `cohort_id`, `status`, and `limit` filters |
+| `GET` | `/api/cryogenesis/glaciers/{rgi_id}/passport` | Exact-ID validated Discovery Passport; optional `cohort_id` |
+
+An absent exact passport returns HTTP 404. An artifact that exists but fails
+schema or hash verification is returned as `invalid_artifact` with explicit
+blocked claims; it is never promoted to a scientific result.
+
 ## MCP Tools
 
 The Model Context Protocol server exposes 10 tools for LLM clients.

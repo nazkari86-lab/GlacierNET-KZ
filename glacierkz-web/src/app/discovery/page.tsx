@@ -169,8 +169,8 @@ export default function DiscoveryPage() {
               CryoGenesis X
             </p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
-              Which similar glaciers diverged—and where should science look
-              next?
+              CryoGenesis: which similar glaciers diverged—and where should
+              science look next?
             </h1>
             <p className="mt-4 max-w-4xl text-base leading-7 text-slate-600">
               Every target is compared with physical, pre-outcome matched

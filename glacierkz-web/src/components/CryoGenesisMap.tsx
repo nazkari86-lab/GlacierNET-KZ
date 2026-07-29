@@ -103,7 +103,7 @@ export default function CryoGenesisMap({
         ref={elementRef}
         className="absolute inset-0"
         role="application"
-        aria-label="Map of exact target glacier and matched twins; names appear after selection"
+        aria-label="CryoGenesis target and matched twins map; names appear after selection"
       />
       <div className="pointer-events-none absolute bottom-3 left-3 z-[500] flex gap-2 text-xs">
         <span className="rounded-full bg-slate-950/90 px-3 py-1 text-cyan-200">
@@ -116,4 +116,3 @@ export default function CryoGenesisMap({
     </div>
   );
 }
-

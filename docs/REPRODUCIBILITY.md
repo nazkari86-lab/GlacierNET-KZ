@@ -105,3 +105,42 @@ Automatic provisional cohorts now include glacier-level paired confidence
 intervals and boundary metrics, but remain non-independent RGI-silver evidence.
 The annotation queue and fail-closed builders in `benchmarks/v2/annotations/`
 make the remaining gaps executable work rather than undocumented promises.
+
+## CryoGenesis Release 1
+
+CryoGenesis builds a retrospective matched-glacier cohort from physical local
+RGI, Copernicus DEM-derived inventory attributes, ERA5-Land, and declared
+annual masks. It never downloads data or substitutes a fixture in physical
+mode.
+
+```bash
+python scripts/build_cryogenesis_cohort.py --preflight
+
+python scripts/build_cryogenesis_cohort.py \
+  --cohort-id ile-2016-2024-v1 \
+  --anchor-year 2016 \
+  --outcome-year 2024 \
+  --output-root results/cryogenesis/current
+
+python scripts/validate_cryogenesis_passports.py \
+  results/cryogenesis/current
+```
+
+The saved bundle contains `manifest.json`, `features.parquet`,
+`eligibility.csv`, `source_assets.json`, `build_report.json`,
+`checksums.sha256`, and one passport per target. Every source and output is
+content-addressed. Matching fails closed on post-anchor features, split
+crossing, missing required values, hard-caliper violations, or insufficient
+comparators.
+
+The engineering fixture is invoked only with `--feature-fixture` and always
+reports `scientific_readiness: insufficient_cohort_size`. It is not product or
+scientific evidence.
+
+API verification:
+
+```bash
+pytest glacierkz-api/tests/test_cryogenesis.py -q --no-cov
+curl -fsS http://127.0.0.1:8000/api/cryogenesis/status
+curl -fsS http://127.0.0.1:8000/api/cryogenesis/discoveries
+```

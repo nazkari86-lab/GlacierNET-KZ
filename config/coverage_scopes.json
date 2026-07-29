@@ -27,6 +27,9 @@
     "src/vision_transformer.py",
     "src/visualization.py"
   ],
+  "validated_production_prefixes": [
+    "src/cryogenesis/"
+  ],
   "policy": {
     "repository_minimum_percent": 45,
     "production_scope_minimum_percent": 55

@@ -17,6 +17,8 @@ from rasterio.warp import transform_geom
 
 from .schemas import FeatureValue, GlacierFeatureRecord, SourceAsset
 
+MINIMUM_ANCHOR_AREA_KM2 = 0.01
+
 
 def _feature(
     value: float | int | str,
@@ -145,7 +147,7 @@ def extract_physical_records(
     project_root: Path,
     anchor_year: int,
     outcome_year: int,
-) -> list[GlacierFeatureRecord]:
+) -> tuple[list[GlacierFeatureRecord], list[dict[str, str]]]:
     """Build glacier rows from RGI, ERA5-Land and declared annual masks."""
 
     root = project_root.resolve()
@@ -159,6 +161,7 @@ def extract_physical_records(
     anchor_path = root / "predictions" / str(anchor_year) / "ndsi_mask.tif"
     outcome_path = root / "predictions" / str(outcome_year) / "ndsi_mask.tif"
     records: list[GlacierFeatureRecord] = []
+    exclusions: list[dict[str, str]] = []
     with rasterio.open(anchor_path) as anchor_mask, rasterio.open(
         outcome_path
     ) as outcome_mask:
@@ -169,7 +172,33 @@ def extract_physical_records(
             outcome_area = _mapped_area_km2(
                 outcome_mask, row.geometry, inventory.crs
             )
-            if not anchor_area or outcome_area is None:
+            # At 10 m resolution this requires at least 100 positive anchor
+            # pixels. Smaller supports are dominated by pixel quantisation and
+            # are excluded using pre-outcome information only.
+            rgi_id = str(row["rgi_id"])
+            if anchor_area is None:
+                exclusions.append(
+                    {
+                        "rgi_id": rgi_id,
+                        "reason": "anchor_observation_unavailable",
+                    }
+                )
+                continue
+            if anchor_area < MINIMUM_ANCHOR_AREA_KM2:
+                exclusions.append(
+                    {
+                        "rgi_id": rgi_id,
+                        "reason": "anchor_support_below_0.01_km2",
+                    }
+                )
+                continue
+            if outcome_area is None:
+                exclusions.append(
+                    {
+                        "rgi_id": rgi_id,
+                        "reason": "outcome_observation_unavailable",
+                    }
+                )
                 continue
             climate_values = _climate_features(
                 climate,
@@ -246,7 +275,7 @@ def extract_physical_records(
             }
             records.append(
                 GlacierFeatureRecord(
-                    rgi_id=str(row["rgi_id"]),
+                    rgi_id=rgi_id,
                     basin_id=str(row["o2region"]),
                     region_id=str(row["o1region"]),
                     split="development",
@@ -262,5 +291,4 @@ def extract_physical_records(
                 )
             )
     climate.close()
-    return records
-
+    return records, exclusions

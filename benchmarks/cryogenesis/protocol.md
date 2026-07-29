@@ -11,6 +11,8 @@ recommendation.
    and annual-mask assets by path, size and SHA-256.
 2. Freeze all matching features at or before the anchor-year cutoff.
 3. Exclude glaciers missing either anchor or outcome mapped-area observation.
+   Require at least 0.01 km² of anchor support (100 pixels at 10 m) so pixel
+   quantisation does not dominate tiny targets; never filter on outcome size.
 4. Match only within the frozen split using declared robust-scaled features.
 5. Return at most five deterministic comparators and abstain below three for
    the primary comparison.

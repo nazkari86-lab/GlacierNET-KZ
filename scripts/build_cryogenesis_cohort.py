@@ -24,6 +24,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.cryogenesis.divergence import estimate_divergence
 from src.cryogenesis.evaluation import cohort_report
 from src.cryogenesis.features import (
+    MINIMUM_ANCHOR_AREA_KM2,
     extract_physical_records,
     load_feature_fixture,
 )
@@ -220,10 +221,13 @@ def _write_bundle(
     anchor_year: int,
     outcome_year: int,
     fixture_mode: bool,
+    exclusions: list[dict[str, str]],
 ) -> None:
     output_root.mkdir(parents=True, exist_ok=True)
     passport_root = output_root / "passports"
     passport_root.mkdir(parents=True, exist_ok=True)
+    for stale_passport in passport_root.glob("*.json"):
+        stale_passport.unlink()
     for passport in passports:
         payload = passport_to_dict(passport)
         verification = verify_passport(payload)
@@ -249,6 +253,15 @@ def _write_bundle(
             }
             for record in sorted(records, key=lambda item: item.rgi_id)
         ]
+        + [
+            {
+                "rgi_id": item["rgi_id"],
+                "eligible": False,
+                "reason": item["reason"],
+            }
+            for item in sorted(exclusions, key=lambda item: item["rgi_id"])
+        ],
+        columns=["rgi_id", "eligible", "reason"],
     ).to_csv(output_root / "eligibility.csv", index=False)
     _json_write(
         output_root / "source_assets.json",
@@ -263,6 +276,8 @@ def _write_bundle(
         "git_commit": _git_commit(),
         "fixture_mode": fixture_mode,
         "eligible_glacier_count": len(records),
+        "excluded_glacier_count": len(exclusions),
+        "input_glacier_count": len(records) + len(exclusions),
         "passport_count": len(passports),
         "scientific_readiness": (
             "cohort_ready"
@@ -271,9 +286,20 @@ def _write_bundle(
         ),
         "random_seed": 0,
         "feature_columns": list(arrow_schema.names),
+        "eligibility_policy": {
+            "minimum_anchor_area_km2": MINIMUM_ANCHOR_AREA_KM2,
+            "basis": (
+                "pre-outcome support of at least 100 positive pixels at "
+                "the declared 10 m annual-mask resolution"
+            ),
+            "outcome_magnitude_filter": False,
+        },
     }
     _json_write(output_root / "manifest.json", manifest)
-    _json_write(output_root / "build_report.json", cohort_report(passports))
+    _json_write(
+        output_root / "build_report.json",
+        cohort_report(passports, excluded_count=len(exclusions)),
+    )
 
     checksum_lines = []
     for path in sorted(
@@ -321,11 +347,12 @@ def main() -> int:
             PROJECT_ROOT,
         )
         fixture_mode = True
+        exclusions: list[dict[str, str]] = []
     else:
         registered = register_required_sources(PROJECT_ROOT)
         verify_sources(registered, PROJECT_ROOT)
         provenance = tuple(source.as_asset() for source in registered)
-        records = extract_physical_records(
+        records, exclusions = extract_physical_records(
             PROJECT_ROOT, args.anchor_year, args.outcome_year
         )
         fixture_mode = False
@@ -341,6 +368,7 @@ def main() -> int:
         args.anchor_year,
         args.outcome_year,
         fixture_mode,
+        exclusions,
     )
     print(
         json.dumps(

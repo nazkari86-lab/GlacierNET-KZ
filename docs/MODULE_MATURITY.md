@@ -76,3 +76,19 @@ defines the evidence required to upgrade these claims. Its structural validator
 passes with `--allow-incomplete`; the strict gate intentionally fails until
 source-reviewed events, non-event controls, immutable pre-event snapshots and
 an external-region cohort are present.
+
+## CryoGenesis X
+
+Release 1 is a tested retrospective matched-comparator research baseline. It
+measures mapped-area divergence from physical local artefacts and emits
+hash-verified Discovery Passports. The local 2016–2024 build contains 553
+eligible RGI glaciers; 552 have at least three matched comparators and all 553
+saved passports pass canonical SHA-256 verification. Thirty-three inventory
+objects are excluded with retained reasons because an annual observation is
+missing or anchor support is below the pre-declared 0.01 km² quantisation gate.
+
+This establishes a reproducible discovery workflow, not a mechanism claim.
+CryoGenesis does not identify causal effects, discover physical laws, forecast
+future retreat, calculate event probability, issue warnings, or recommend an
+intervention. The one limited-match case remains visible as an explicit
+abstention.
