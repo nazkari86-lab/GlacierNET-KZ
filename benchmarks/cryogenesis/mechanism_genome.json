@@ -1,0 +1,62 @@
+[
+  {
+    "id": "temperature_surface_melt",
+    "required_variables": ["summer_temperature_c"],
+    "expected_signature": "mapped-area divergence follows pre-declared temperature exposure",
+    "contradictory_signature": "effect disappears under matched temperature exposure"
+  },
+  {
+    "id": "snow_precipitation_deficit",
+    "required_variables": ["annual_precipitation_m", "snow_depth_m"],
+    "expected_signature": "snow deficit precedes divergence",
+    "contradictory_signature": "no pre-divergence snow or precipitation difference"
+  },
+  {
+    "id": "thin_debris_enhancement",
+    "required_variables": ["debris_fraction", "surface_temperature"],
+    "expected_signature": "thin debris and elevated surface temperature precede divergence",
+    "contradictory_signature": "debris is absent or insulating"
+  },
+  {
+    "id": "thick_debris_insulation",
+    "required_variables": ["debris_fraction", "debris_thickness"],
+    "expected_signature": "thick debris corresponds to reduced mapped-area response",
+    "contradictory_signature": "measured debris is thin"
+  },
+  {
+    "id": "proglacial_lake_contact",
+    "required_variables": ["lake_contact", "lake_area_series"],
+    "expected_signature": "lake contact precedes terminus divergence",
+    "contradictory_signature": "no source-reviewed contact"
+  },
+  {
+    "id": "dynamic_acceleration",
+    "required_variables": ["surface_velocity"],
+    "expected_signature": "velocity increase precedes mapped-area divergence",
+    "contradictory_signature": "velocity remains stable within uncertainty"
+  },
+  {
+    "id": "terrain_shading",
+    "required_variables": ["slope_deg", "aspect_sin", "aspect_cos", "shadow_fraction"],
+    "expected_signature": "radiation exposure separates target and twins",
+    "contradictory_signature": "exposure is balanced after matching"
+  },
+  {
+    "id": "fragmentation_geometry",
+    "required_variables": ["perimeter_area_ratio", "fragment_count"],
+    "expected_signature": "fragmentation precedes accelerated mapped-area change",
+    "contradictory_signature": "geometry remains connected"
+  },
+  {
+    "id": "observation_or_label_artifact",
+    "required_variables": ["sensor_family", "label_tier", "valid_observation_count"],
+    "expected_signature": "divergence follows sensor or label disagreement",
+    "contradictory_signature": "independent observations agree"
+  },
+  {
+    "id": "unresolved_mechanism",
+    "required_variables": [],
+    "expected_signature": "declared mechanisms remain insufficient after quality checks",
+    "contradictory_signature": "a declared mechanism explains and replicates the divergence"
+  }
+]

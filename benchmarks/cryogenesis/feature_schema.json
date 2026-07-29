@@ -1,0 +1,24 @@
+{
+  "schema": "glaciernet-kz.cryogenesis-features.v1",
+  "required": [
+    {"name": "anchor_area_km2", "unit": "km2", "source": "annual_mask"},
+    {"name": "elevation_min_m", "unit": "m", "source": "rgi_copdem"},
+    {"name": "elevation_mean_m", "unit": "m", "source": "rgi_copdem"},
+    {"name": "elevation_max_m", "unit": "m", "source": "rgi_copdem"},
+    {"name": "elevation_range_m", "unit": "m", "source": "derived_pre_outcome"},
+    {"name": "slope_deg", "unit": "degree", "source": "rgi_copdem"},
+    {"name": "aspect_sin", "unit": "unitless", "source": "derived_pre_outcome"},
+    {"name": "aspect_cos", "unit": "unitless", "source": "derived_pre_outcome"},
+    {"name": "summer_temperature_c", "unit": "degree_celsius", "source": "era5_land"},
+    {"name": "annual_precipitation_m", "unit": "m", "source": "era5_land"},
+    {"name": "snow_depth_m", "unit": "m", "source": "era5_land"},
+    {"name": "valid_observation_count", "unit": "count", "source": "annual_mask_provenance"},
+    {"name": "label_tier", "unit": "category", "source": "annual_mask_provenance"},
+    {"name": "sensor_family", "unit": "category", "source": "annual_mask_provenance"}
+  ],
+  "outcome": {
+    "name": "mapped_area_change_fraction",
+    "unit": "fraction",
+    "source": "anchor_and_outcome_annual_masks"
+  }
+}
