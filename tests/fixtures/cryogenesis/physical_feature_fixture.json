@@ -1,0 +1,17 @@
+{
+  "schema": "glaciernet-kz.cryogenesis-feature-fixture.v1",
+  "source_assets": [
+    {
+      "source_id": "fixture",
+      "relative_path": "tests/fixtures/cryogenesis/physical_feature_fixture.json",
+      "sha256": "computed_at_runtime",
+      "size_bytes": "computed_at_runtime"
+    }
+  ],
+  "records": [
+    {"rgi_id": "RGI-A", "basin_id": "B1", "region_id": "R1", "split": "development", "anchor_year": 2020, "outcome_year": 2024, "area_km2": 2.0, "elevation_m": 3500, "outcome_fraction": -0.20},
+    {"rgi_id": "RGI-B", "basin_id": "B1", "region_id": "R1", "split": "development", "anchor_year": 2020, "outcome_year": 2024, "area_km2": 2.1, "elevation_m": 3510, "outcome_fraction": -0.10},
+    {"rgi_id": "RGI-C", "basin_id": "B1", "region_id": "R1", "split": "development", "anchor_year": 2020, "outcome_year": 2024, "area_km2": 1.9, "elevation_m": 3490, "outcome_fraction": -0.08},
+    {"rgi_id": "RGI-D", "basin_id": "B1", "region_id": "R1", "split": "development", "anchor_year": 2020, "outcome_year": 2024, "area_km2": 2.2, "elevation_m": 3530, "outcome_fraction": -0.12}
+  ]
+}
