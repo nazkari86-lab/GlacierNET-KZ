@@ -1,5 +1,9 @@
 import { apiUrl } from "./utils";
 import { authFetch } from "./auth";
+import type {
+  CryoGenesisDiscoveryList,
+  DiscoveryPassport,
+} from "./cryogenesis";
 
 export interface ModelInfo {
   name: string;
@@ -333,6 +337,40 @@ export async function fetchGlaciers(
     include_geometry: String(includeGeometry),
   });
   const res = checkResponse(await fetch(apiUrl(`/api/glaciers?${params}`)));
+  return res.json();
+}
+
+export async function fetchGlacier(
+  rgiId: string,
+): Promise<GlacierRecord> {
+  const res = checkResponse(
+    await fetch(
+      apiUrl(`/api/glaciers/${encodeURIComponent(rgiId)}?include_geometry=true`),
+    ),
+  );
+  return res.json();
+}
+
+export async function fetchCryoGenesisDiscoveries(): Promise<CryoGenesisDiscoveryList> {
+  const res = checkResponse(
+    await fetch(apiUrl("/api/cryogenesis/discoveries"), {
+      cache: "no-store",
+    }),
+  );
+  return res.json();
+}
+
+export async function fetchCryoGenesisPassport(
+  rgiId: string,
+): Promise<DiscoveryPassport> {
+  const res = checkResponse(
+    await fetch(
+      apiUrl(
+        `/api/cryogenesis/glaciers/${encodeURIComponent(rgiId)}/passport`,
+      ),
+      { cache: "no-store" },
+    ),
+  );
   return res.json();
 }
 

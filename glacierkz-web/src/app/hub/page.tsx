@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   MessageSquareText,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 import { useI18n } from "@/lib/I18nProvider";
 
@@ -80,6 +81,29 @@ export default function HubPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
+          <Link
+            href="/discovery"
+            className="group flex items-start gap-4 rounded-xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-violet-50 p-5 shadow-sm transition hover:border-cyan-400 hover:shadow-md sm:col-span-2"
+          >
+            <div className="rounded-lg bg-slate-950 p-3 text-cyan-300">
+              <Sparkles className="h-6 w-6" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-violet-700">
+                New scientific workspace
+              </p>
+              <h3 className="mt-1 font-semibold text-slate-950">
+                CryoGenesis matched-glacier discovery
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                Compare physical glacier twins, inspect divergence, source
+                hashes, uncertainty, and explicit non-causal claim boundaries.
+              </p>
+              <p className="mt-2 font-mono text-xs text-slate-500">
+                /discovery
+              </p>
+            </div>
+          </Link>
           {SERVICES.map(({ href, key, icon: Icon }, index) => (
             <Link
               key={href}
