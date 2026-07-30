@@ -202,6 +202,8 @@ pydantic==2.13.4
     #   fastapi
 pydantic-core==2.46.4
     # via pydantic
+pyarrow==23.0.1
+    # via -r requirements.txt
 pyogrio==0.13.0
     # via geopandas
 pyparsing==3.3.2
