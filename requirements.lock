@@ -32,6 +32,8 @@ certifi==2026.7.22
     #   pyproj
     #   rasterio
     #   requests
+cftime==1.6.5
+    # via netcdf4
 cffi==2.1.0
     # via cryptography
 charset-normalizer==3.4.9
@@ -135,15 +137,19 @@ matplotlib==3.8.2
     #   seaborn
 ml-dtypes==0.3.2
     # via tensorflow
+netcdf4==1.7.4
+    # via -r requirements.txt
 numpy==1.26.4
     # via
     #   -r glacierkz-api/requirements-api.txt
     #   -r requirements.txt
     #   contourpy
+    #   cftime
     #   geopandas
     #   h5py
     #   matplotlib
     #   ml-dtypes
+    #   netcdf4
     #   opencv-python
     #   pandas
     #   pyogrio
@@ -153,6 +159,7 @@ numpy==1.26.4
     #   seaborn
     #   shapely
     #   tensorboard
+    #   xarray
     #   tensorflow
 oauthlib==3.3.1
     # via requests-oauthlib
@@ -326,3 +333,5 @@ wheel==0.47.0
     # via astunparse
 wrapt==1.14.2
     # via tensorflow
+xarray==2025.1.1
+    # via -r requirements.txt
