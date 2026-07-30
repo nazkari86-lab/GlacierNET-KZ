@@ -56,8 +56,19 @@ export interface DiscoveryPassport {
 
 export interface CryoGenesisDiscoveryList {
   status: "ready" | "unavailable" | "invalid_artifact";
-  items: DiscoveryPassport[];
+  items: CryoGenesisDiscoverySummary[];
   count: number;
   invalid_artifact_count: number;
 }
 
+export interface CryoGenesisDiscoverySummary {
+  schema: "glaciernet-kz.cryogenesis-discovery-summary.v1";
+  cohort_id: string;
+  target_rgi_id: string;
+  claim_tier: string;
+  match_status: CryoGenesisMatchStatus;
+  twin_count: number;
+  surprise_class: CryoGenesisSurpriseClass;
+  raw_divergence: number | null;
+  payload_sha256: string;
+}

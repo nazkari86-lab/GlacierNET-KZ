@@ -22,6 +22,7 @@ import {
   type GlacierTimeSeries,
 } from "@/lib/api";
 import type {
+  CryoGenesisDiscoverySummary,
   CryoGenesisTwinMatch,
   DiscoveryPassport,
 } from "@/lib/cryogenesis";
@@ -32,7 +33,9 @@ const CryoGenesisMap = dynamic(
 );
 
 export default function DiscoveryPage() {
-  const [discoveries, setDiscoveries] = useState<DiscoveryPassport[]>([]);
+  const [discoveries, setDiscoveries] = useState<
+    CryoGenesisDiscoverySummary[]
+  >([]);
   const [passport, setPassport] = useState<DiscoveryPassport | null>(null);
   const [selectedRgiId, setSelectedRgiId] = useState("");
   const [geometries, setGeometries] = useState<Record<string, GlacierRecord>>(
@@ -229,7 +232,7 @@ export default function DiscoveryPage() {
                       #{index + 1}
                     </span>
                     <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide">
-                      {item.match.status.replaceAll("_", " ")}
+                      {item.match_status.replaceAll("_", " ")}
                     </span>
                   </div>
                   <p className="mt-3 break-all font-mono text-xs font-bold">
@@ -239,9 +242,9 @@ export default function DiscoveryPage() {
                     {item.surprise_class.replaceAll("_", " ")}
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
-                    {item.match.twins.length} comparators · divergence{" "}
-                    {item.divergence
-                      ? `${(item.divergence.raw_divergence * 100).toFixed(2)}%`
+                    {item.twin_count} comparators · divergence{" "}
+                    {item.raw_divergence !== null
+                      ? `${(item.raw_divergence * 100).toFixed(2)}%`
                       : "abstained"}
                   </p>
                 </button>

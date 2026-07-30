@@ -349,7 +349,10 @@ def main() -> int:
         fixture_mode = True
         exclusions: list[dict[str, str]] = []
     else:
-        registered = register_required_sources(PROJECT_ROOT)
+        registered = register_required_sources(
+            PROJECT_ROOT,
+            prediction_years=(args.anchor_year, args.outcome_year),
+        )
         verify_sources(registered, PROJECT_ROOT)
         provenance = tuple(source.as_asset() for source in registered)
         records, exclusions = extract_physical_records(

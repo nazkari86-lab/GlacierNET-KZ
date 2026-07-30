@@ -16,13 +16,24 @@ test("CryoGenesis shows physical twins and never promotes a causal claim", async
   const passport = JSON.parse(
     readFileSync(resolve(passportRoot, passportFile), "utf8"),
   );
+  const summary = {
+    schema: "glaciernet-kz.cryogenesis-discovery-summary.v1",
+    cohort_id: passport.cohort_id,
+    target_rgi_id: passport.target_rgi_id,
+    claim_tier: passport.claim_tier,
+    match_status: passport.match.status,
+    twin_count: passport.match.twins.length,
+    surprise_class: passport.surprise_class,
+    raw_divergence: passport.divergence?.raw_divergence ?? null,
+    payload_sha256: passport.payload_sha256,
+  };
 
   await page.route("**/api/cryogenesis/discoveries", async (route) => {
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
         status: "ready",
-        items: [passport],
+        items: [summary],
         count: 1,
         invalid_artifact_count: 0,
       }),
@@ -53,4 +64,3 @@ test("CryoGenesis shows physical twins and never promotes a causal claim", async
     page.locator('[data-evidence-tier="synthetic"]'),
   ).toHaveCount(0);
 });
-

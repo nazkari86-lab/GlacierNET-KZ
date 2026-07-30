@@ -133,7 +133,25 @@ def list_discoveries(
             payload.get("match", {}).get("status"),
         }:
             continue
-        items.append(payload)
+        divergence = payload.get("divergence")
+        match = payload.get("match", {})
+        items.append(
+            {
+                "schema": "glaciernet-kz.cryogenesis-discovery-summary.v1",
+                "cohort_id": payload["cohort_id"],
+                "target_rgi_id": payload["target_rgi_id"],
+                "claim_tier": payload["claim_tier"],
+                "match_status": match.get("status"),
+                "twin_count": len(match.get("twins", [])),
+                "surprise_class": payload["surprise_class"],
+                "raw_divergence": (
+                    divergence.get("raw_divergence")
+                    if isinstance(divergence, dict)
+                    else None
+                ),
+                "payload_sha256": payload["payload_sha256"],
+            }
+        )
         if len(items) >= limit:
             break
     return {
@@ -142,4 +160,3 @@ def list_discoveries(
         "count": len(items),
         "invalid_artifact_count": invalid_count,
     }
-

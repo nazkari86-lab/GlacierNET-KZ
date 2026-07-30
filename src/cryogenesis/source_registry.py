@@ -82,6 +82,7 @@ def verify_sources(
 
 def register_required_sources(
     project_root: Path,
+    prediction_years: tuple[int, ...] = (),
 ) -> tuple[RegisteredSource, ...]:
     """Register all required files, including every RGI sidecar."""
 
@@ -93,6 +94,15 @@ def register_required_sources(
             paths = [
                 absolute.with_suffix(suffix) for suffix in _SHAPEFILE_SUFFIXES
             ]
+        elif source_id == "predictions" and prediction_years:
+            paths = sorted(
+                path
+                for year in prediction_years
+                for path in (
+                    absolute / str(year) / "ndsi_mask.tif",
+                    absolute / str(year) / "provenance.json",
+                )
+            )
         elif absolute.is_dir():
             paths = sorted(path for path in absolute.rglob("*") if path.is_file())
         else:
