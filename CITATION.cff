@@ -9,8 +9,8 @@ authors:
 repository-code: 'https://github.com/nazkari86-lab/GlacierNET-KZ'
 url: 'https://github.com/nazkari86-lab/GlacierNET-KZ'
 license: MIT
-version: 0.3.0
-date-released: '2026-07-26'
+version: 0.4.0
+date-released: '2026-07-31'
 keywords:
   - glacier
   - remote-sensing

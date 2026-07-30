@@ -13,8 +13,9 @@ interface EvidenceRouteRibbonProps {
 const routeKinds: Array<{ kind: EvidenceMapObject["kind"]; label: string; status: string }> = [
   { kind: "glacier", label: "Ледник", status: "инвентарь" },
   { kind: "lake", label: "Озеро", status: "контекст" },
-  { kind: "river", label: "Русло", status: "справочный слой" },
-  { kind: "asset", label: "Объект рядом", status: "планировочный контекст" },
+  { kind: "river", label: "Маршрут", status: "NEXT_DOWN topology" },
+  { kind: "corridor", label: "Коридор", status: "область проверки" },
+  { kind: "asset", label: "Объект", status: "проверить назначение" },
 ];
 
 export default function EvidenceRouteRibbon({ objects, mode }: EvidenceRouteRibbonProps) {
@@ -28,7 +29,7 @@ export default function EvidenceRouteRibbon({ objects, mode }: EvidenceRouteRibb
   }, []);
 
   const route = useMemo(() => routeKinds.flatMap((step) => {
-    const object = objects.find((item) => item.kind === step.kind);
+    const object = objects.find((item) => item.kind === step.kind && (step.kind !== "river" || item.isRoute));
     return object ? [{ ...step, object }] : [];
   }), [objects]);
 

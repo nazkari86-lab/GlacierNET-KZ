@@ -29,6 +29,9 @@ HYDROBASINS = CORE_DIR / "data/hydrology/subsets/hydrobasins_level06_study_area.
 JRC_SURFACE_WATER = CORE_DIR / "data/water/jrc_gsw_context_100m.tif"
 ERA5_MANIFEST = CORE_DIR / "data/climate/manifest.json"
 POPULATION_2025 = CORE_DIR / "data/population/kaz_pop_2025_CN_100m_R2025A_v1.tif"
+OGGM_STATISTICS = CORE_DIR / "data/external/centralasia_glacierbench/oggm/glacier_statistics_13.csv"
+ITSLIVE_SAMPLES = CORE_DIR / "data/external/centralasia_glacierbench/itslive/velocity_samples.parquet"
+ITSLIVE_CATALOG = CORE_DIR / "data/external/centralasia_glacierbench/itslive/stac_cubes.json"
 LAKE_INVENTORY_YEARS = (1990, 2000, 2010, 2020, 2023)
 
 
@@ -160,6 +163,148 @@ def _impact_assets(glacier_shape: Any, planning_radius_km: float = 10.0, map_fea
     }
 
 
+def _trace_downstream_route(
+    rivers: Any,
+    glacier_shape: Any,
+    *,
+    max_route_km: float = 100.0,
+    corridor_width_m: float = 750.0,
+    map_feature_limit: int = 25,
+) -> dict[str, Any]:
+    """Follow the real HydroRIVERS NEXT_DOWN graph from the nearest reach.
+
+    The result is a hydrographic planning route, not a glacier-to-channel
+    hydrodynamic connection, travel-time model, flood footprint or warning.
+    """
+    import geopandas as gpd
+    from shapely.geometry import mapping
+    from shapely.ops import unary_union
+
+    if rivers is None or rivers.empty:
+        return {
+            "available": False,
+            "status": "hydrorivers_unavailable",
+            "features": {"type": "FeatureCollection", "features": []},
+            "corridor": None,
+            "planning_assets": {"type": "FeatureCollection", "features": []},
+        }
+    metric_rivers = rivers.to_crs(METRIC_CRS)
+    glacier_metric = gpd.GeoDataFrame({"geometry": [glacier_shape]}, crs=WGS84).to_crs(METRIC_CRS).geometry.iloc[0]
+    distances = metric_rivers.geometry.distance(glacier_metric)
+    start_index = distances.idxmin()
+    start_distance_m = float(distances.loc[start_index])
+    by_id = {int(row["HYRIV_ID"]): index for index, row in rivers.iterrows()}
+    route_indices: list[Any] = []
+    seen: set[int] = set()
+    current_index = start_index
+    total_km = 0.0
+    status = "left_local_study_area_subset"
+    next_downstream_id: int | None = None
+    while current_index is not None:
+        row = rivers.loc[current_index]
+        reach_id = int(row["HYRIV_ID"])
+        if reach_id in seen:
+            status = "topology_loop_detected"
+            break
+        seen.add(reach_id)
+        route_indices.append(current_index)
+        declared_length = _clean(row.get("LENGTH_KM"))
+        total_km += (
+            float(declared_length)
+            if declared_length is not None
+            else float(metric_rivers.loc[current_index].geometry.length / 1000)
+        )
+        next_downstream_id = int(row.get("NEXT_DOWN") or 0)
+        if next_downstream_id == 0:
+            status = "reached_hydrorivers_terminal"
+            break
+        if total_km >= max_route_km:
+            status = "distance_cap_reached"
+            break
+        current_index = by_id.get(next_downstream_id)
+        if current_index is None:
+            break
+
+    route_metric = metric_rivers.loc[route_indices]
+    route_union = unary_union(route_metric.geometry.tolist())
+    corridor_metric = route_union.buffer(corridor_width_m)
+    corridor_wgs84 = gpd.GeoDataFrame({"geometry": [corridor_metric]}, crs=METRIC_CRS).to_crs(WGS84).geometry.iloc[0]
+    route_features = []
+    for sequence, index in enumerate(route_indices, start=1):
+        row = rivers.loc[index]
+        route_features.append(
+            _feature(
+                row,
+                {
+                    "source": "HydroSHEDS HydroRIVERS v1.0 NEXT_DOWN topology",
+                    "hyriv_id": row.get("HYRIV_ID"),
+                    "next_downstream_id": row.get("NEXT_DOWN"),
+                    "route_sequence": sequence,
+                    "length_km": row.get("LENGTH_KM"),
+                    "discharge_cms": row.get("DIS_AV_CMS"),
+                    "stream_order": row.get("ORD_STRA"),
+                    "relation": "graph_derived_downstream_planning_route",
+                },
+            )
+        )
+
+    planning_assets: list[dict[str, Any]] = []
+    asset_counts: dict[str, int] = {}
+    total_corridor_assets = 0
+    if CRITICAL_ASSETS.is_file():
+        assets = gpd.read_file(CRITICAL_ASSETS).to_crs(WGS84)
+        metric_assets = assets.to_crs(METRIC_CRS)
+        inside = assets.loc[metric_assets.intersects(corridor_metric)].copy()
+        total_corridor_assets = int(len(inside))
+        for _, row in inside.iterrows():
+            asset_type = str(row.get("asset_type") or "other_public_asset")
+            asset_counts[asset_type] = asset_counts.get(asset_type, 0) + 1
+        for _, row in inside.head(map_feature_limit).iterrows():
+            planning_assets.append(
+                _feature(
+                    row,
+                    {
+                        "asset_type": row.get("asset_type") or "other_public_asset",
+                        "name": row.get("name"),
+                        "source": row.get("source") or "OpenStreetMap",
+                        "source_id": row.get("source_id"),
+                        "relation": "inside_hydrographic_planning_corridor",
+                    },
+                )
+            )
+
+    return {
+        "available": True,
+        "status": status,
+        "start_reach_id": int(rivers.loc[start_index]["HYRIV_ID"]),
+        "start_distance_to_rgi_boundary_m": round(start_distance_m, 1),
+        "connector_quality": "near" if start_distance_m <= 1000 else "screening_only",
+        "route_length_km": round(total_km, 2),
+        "route_segment_count": len(route_indices),
+        "next_downstream_id_after_subset": next_downstream_id,
+        "max_route_km": max_route_km,
+        "corridor_width_m": corridor_width_m,
+        "features": {"type": "FeatureCollection", "features": route_features},
+        "corridor": {
+            "type": "Feature",
+            "properties": {
+                "relation": "planning_buffer_around_hydrorivers_route",
+                "width_m": corridor_width_m,
+            },
+            "geometry": mapping(corridor_wgs84),
+        },
+        "planning_assets": {"type": "FeatureCollection", "features": planning_assets},
+        "planning_asset_summary": asset_counts,
+        "planning_asset_count": total_corridor_assets,
+        "returned_planning_asset_count": len(planning_assets),
+        "interpretation": (
+            "The line follows HydroRIVERS NEXT_DOWN topology from the nearest mapped reach. "
+            "The shaded corridor only identifies public objects to verify. It is not a "
+            "glacier-to-channel connector, inundation footprint, travel-time model, affected-asset count or warning."
+        ),
+    }
+
+
 def _raster_summary(path: Path, geometry: dict[str, Any], labels: tuple[str, ...]) -> dict[str, Any]:
     if not path.is_file():
         return {"available": False, "path": str(path.relative_to(CORE_DIR)), "reason": "local_artifact_missing"}
@@ -252,6 +397,96 @@ def _climate_catalog_context() -> dict[str, Any]:
         }
     except Exception as error:
         return {"available": False, "path": str(ERA5_MANIFEST.relative_to(CORE_DIR)), "reason": type(error).__name__}
+
+
+@lru_cache(maxsize=1)
+def _benchmark_physical_tables() -> dict[str, Any]:
+    """Load compact, read-only benchmark tables used by per-glacier context."""
+    import json
+
+    import pandas as pd
+
+    output: dict[str, Any] = {}
+    if OGGM_STATISTICS.is_file():
+        columns = [
+            "rgi_id",
+            "inv_volume_km3",
+            "vas_volume_km3",
+            "dem_mean_elev",
+            "main_flowline_length",
+            "reference_mb",
+            "reference_mb_err",
+            "reference_period",
+        ]
+        output["oggm"] = pd.read_csv(OGGM_STATISTICS, usecols=columns).set_index("rgi_id")
+    if ITSLIVE_SAMPLES.is_file():
+        output["itslive"] = pd.read_parquet(ITSLIVE_SAMPLES).set_index("rgi_id")
+    if ITSLIVE_CATALOG.is_file():
+        output["itslive_catalog"] = json.loads(ITSLIVE_CATALOG.read_text(encoding="utf-8")).get("features", [])
+    return output
+
+
+def _benchmark_physical_context(glacier: dict[str, Any]) -> dict[str, Any]:
+    """Attach exact RGI7 model context and real ITS_LIVE point observations."""
+    tables = _benchmark_physical_tables()
+    rgi_id = glacier["rgi_id"]
+    longitude = float(glacier["centroid"]["longitude"])
+    latitude = float(glacier["centroid"]["latitude"])
+    oggm = None
+    if "oggm" in tables and rgi_id in tables["oggm"].index:
+        row = tables["oggm"].loc[rgi_id]
+        oggm = {
+            "inventory_based_volume_km3": _clean(row["inv_volume_km3"]),
+            "volume_area_scaling_km3": _clean(row["vas_volume_km3"]),
+            "dem_mean_elevation_m": _clean(row["dem_mean_elev"]),
+            "main_flowline_length_m": _clean(row["main_flowline_length"]),
+            "calibration_reference_mass_balance_kg_m2_year": _clean(row["reference_mb"]),
+            "calibration_reference_error_kg_m2_year": _clean(row["reference_mb_err"]),
+            "calibration_reference_period": _clean(row["reference_period"]),
+            "evidence_type": "OGGM physics-model output and calibration context; not direct observation",
+        }
+    itslive = None
+    if "itslive" in tables and rgi_id in tables["itslive"].index:
+        row = tables["itslive"].loc[rgi_id]
+        itslive = {
+            "observations_valid": int(row["observations_valid"]),
+            "velocity_m_per_year_median": _clean(row["velocity_m_per_year_median"]),
+            "velocity_m_per_year_p90": _clean(row["velocity_m_per_year_p90"]),
+            "velocity_m_per_year_max": _clean(row["velocity_m_per_year_max"]),
+            "sampling_geometry": "nearest 120 m ITS_LIVE grid point to the RGI7 centroid",
+            "evidence_type": "NASA ITS_LIVE observed image-pair velocity point time series",
+        }
+    coverage = [
+        {
+            "cube_id": feature["id"],
+            "bbox": feature["bbox"],
+            "zarr_url": feature["assets"]["zarr"]["href"],
+        }
+        for feature in tables.get("itslive_catalog", [])
+        if feature["bbox"][0] <= longitude <= feature["bbox"][2]
+        and feature["bbox"][1] <= latitude <= feature["bbox"][3]
+    ]
+    allowed = [
+        message
+        for message in (
+            "modelled OGGM context for the exact RGI7 identifier" if oggm else None,
+            "observed ITS_LIVE point velocity for the exact RGI7 identifier" if itslive else None,
+            "cloud cube coverage discovery" if coverage else None,
+        )
+        if message is not None
+    ]
+    return {
+        "available": bool(oggm or itslive or coverage),
+        "oggm": oggm,
+        "itslive_point_sample": itslive,
+        "itslive_cloud_coverage": coverage,
+        "claim_allowed": allowed,
+        "claim_not_allowed": [
+            "field-validated glacier volume",
+            "whole-glacier velocity from a centroid point",
+            "instability, collapse, discharge or event probability",
+        ],
+    }
 
 
 def _lake_identifier(row: Any) -> Any:
@@ -587,8 +822,15 @@ def risk_twin_context(
             f"Mean JRC surface-water raster values inside the selected {buffer_km:g} km straight-line spatial context; not lake bathymetry, flow state, or a risk estimate."
         )
     impact_assets = _impact_assets(glacier_shape)
+    downstream_route = _trace_downstream_route(
+        sources.get("rivers"),
+        glacier_shape,
+        max_route_km=100.0,
+        corridor_width_m=750.0,
+    )
     population_context = _population_planning_context(glacier_shape)
     climate_context = _climate_catalog_context()
+    benchmark_context = _benchmark_physical_context(glacier)
     source_catalog = [
         "HMA_GLI v1 (2015-2018 local subset)",
         "Tien Shan glacial lakes and GLOF inventory (1990-2023 local subset)",
@@ -604,8 +846,10 @@ def risk_twin_context(
         source_catalog.append("ERA5-Land monthly climate-context catalog (2000-2025)")
     if population_context["available"]:
         source_catalog.append("GHSL modelled population-grid planning context (2025)")
+    if benchmark_context["available"]:
+        source_catalog.append("CentralAsia-GlacierBench OGGM and NASA ITS_LIVE physical context")
     return {
-        "schema": "glaciernet-kz.risk-twin-context.v3",
+        "schema": "glaciernet-kz.risk-twin-context.v4",
         "glacier": glacier,
         "query": {
             "year": year,
@@ -623,11 +867,13 @@ def risk_twin_context(
         "lake_timeseries": yearly_summary,
         "screening_candidates": screening_candidates,
         "impact_assets": impact_assets,
+        "downstream_route": downstream_route,
         "terrain": terrain,
         "sentinel1": sentinel,
         "jrc_surface_water": jrc_surface_water,
         "climate_context": climate_context,
         "population_planning_context": population_context,
+        "benchmark_physical_context": benchmark_context,
         "interpretation": {
             "allowed": [
                 "local spatial context",
@@ -636,6 +882,7 @@ def risk_twin_context(
                 "transparent observation follow-up ranking",
                 "terrain, SAR and surface-water coverage summary",
                 "hydrographic and basin context",
+                "HydroRIVERS NEXT_DOWN graph-derived planning route and corridor inspection",
                 "public-asset and population-grid planning context when local attributed extracts are available",
             ],
             "not_allowed": [
@@ -644,7 +891,7 @@ def risk_twin_context(
                 "official warning",
                 "validated lake-to-glacier linkage",
                 "bathymetry or dam-state inference",
-                "routed flow path",
+                "hydrodynamic flow path or glacier-to-channel connector",
                 "inundation extent",
                 "downstream exposure, affected population, evacuation demand, or disruption estimate",
             ],

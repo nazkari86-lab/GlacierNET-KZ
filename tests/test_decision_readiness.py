@@ -12,16 +12,21 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def test_build_decision_readiness_tables_adds_provenance_columns():
+def test_build_decision_readiness_tables_adds_provenance_columns(tmp_path: Path):
     rc = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "build_decision_readiness_tables.py")],
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "build_decision_readiness_tables.py"),
+            "--output-dir",
+            str(tmp_path),
+        ],
         cwd=str(ROOT),
         capture_output=True,
         text=True,
     )
     assert rc.returncode == 0, rc.stderr
 
-    table = ROOT / "results" / "tables" / "decision_ready_area_timeseries.csv"
+    table = tmp_path / "decision_ready_area_timeseries.csv"
     with table.open(newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
 

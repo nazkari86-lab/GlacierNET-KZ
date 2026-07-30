@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [0.4.0] - 2026-07-31
+
 ### Added
 
 - Generalisation Sentinel: a frozen, physics-constrained inventory-guided
@@ -16,12 +20,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   guards.
 - Per-glacier safeguarded GeoTIFF, geometry and diagnostics in the real ML
   evidence workflow and map.
+- CentralAsia-GlacierBench with five model-evaluation tracks, four separately
+  labelled reference-evidence tracks, publisher/source integrity records and
+  no composite score.
+- Strongest local Sentinel-1 + Sentinel-2 multimodal ablation as its own
+  measured one-AOI silver-label track (Dice 0.9036, IoU 0.8242).
+- Real HydroRIVERS `NEXT_DOWN` route tracing, a clearly labelled planning
+  corridor and OSM objects selected for verification inside that corridor.
+- Active Evidence Acquisition readiness gate that counts only source-reviewed
+  events, verified controls, immutable pre-event snapshots and realised
+  decision-loss reductions.
 
 ### Changed
 
 - Scientific Evidence Cockpit and ML Workspace now expose the measured
   safeguard delta while continuing to block independent external-accuracy
   claims.
+- Model evaluation is separated from physical and event reference evidence in
+  the API and benchmark interface.
+- Tests that rebuild decision-readiness tables now write to temporary paths and
+  no longer mutate release artifacts.
+- Product versions are aligned at `0.4.0`; the hub now foregrounds one
+  four-step workflow: ML, Risk Twin, Operations and Benchmark.
 
 ## [0.2.0] - 2026-06-28
 
@@ -54,7 +74,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SEO: `robots.txt`, `sitemap.xml`, JSON-LD structured data
 - Scientific documentation: literature review, architecture, API reference, CITATION.cff
 
-### Results (real data, 2000–2020)
+### Historical development results (real data, 2000–2020)
+
+These v0.1 figures were internal development outputs, not independent
+gold-label validation or an operational forecast. Current release gates do not
+unlock those stronger claims.
+
 - U-Net F1 / IoU: 0.876 / 0.780
 - Glacier area loss: −129.5 km² (−22.4%)
 - Linear trend: −12.7 km²/yr (R² = 0.54)
@@ -62,3 +87,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [0.2.0]: https://github.com/nazkari86-lab/GlacierNET-KZ/releases/tag/v0.2.0
 [0.1.0]: https://github.com/nazkari86-lab/GlacierNET-KZ/releases/tag/v0.1.0
+[0.4.0]: https://github.com/nazkari86-lab/GlacierNET-KZ/releases/tag/v0.4.0

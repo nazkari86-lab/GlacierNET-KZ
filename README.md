@@ -13,6 +13,13 @@ planning what to observe next, coordinating field checks, and preserving an
 auditable chain from data to human decision. Its scientific core remains an
 open benchmark for glacier segmentation quality in Kazakhstan.
 
+The project also ships
+[CentralAsia-GlacierBench](benchmarks/centralasia_glacierbench/README.md), a
+real-source, frozen-split evaluation suite for temporal segmentation,
+cross-region transfer, external lake mapping, glacier motion, physical context,
+and retrospective glacier-lake cascade screening. It never replaces missing
+evidence with a synthetic score.
+
 The project prioritises comparable acquisitions, leakage-resistant splits,
 hard segmentation metrics, area error, temporal anomaly rejection, provenance,
 and explicit limits on scientific claims. API, dashboard, Gradio and MCP tools

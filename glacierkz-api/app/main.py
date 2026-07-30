@@ -20,6 +20,7 @@ from app.monitoring.system import get_system_info
 from app.routers import (
     analysis,
     area,
+    benchmark,
     compare,
     cryogenesis,
     dashboard,
@@ -53,6 +54,7 @@ from app.ws import get_ws_manager, ws_router
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
+PROJECT_VERSION = "0.4.0"
 
 
 @asynccontextmanager
@@ -70,10 +72,10 @@ app = FastAPI(
     title="GlacierNET-KZ API",
     description=(
         "REST API for glacier segmentation, temporal trend analysis, and monitoring "
-        "in Kazakhstan's Zailiysky Alatau. Supports U-Net, U-Net++, Random Forest, "
-        "and NDSI baselines on Sentinel-2 / Landsat imagery."
+        "in Central Asia. It exposes multimodal Sentinel-1/Sentinel-2/terrain ML, "
+        "CentralAsia-GlacierBench, and a research-only evidence-led Risk Twin."
     ),
-    version="1.0.0",
+    version=PROJECT_VERSION,
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
@@ -146,12 +148,13 @@ app.add_middleware(
 app.add_middleware(
     RateLimitMiddleware,
     config=RateLimitConfig(
-        requests_per_minute=120,
+        requests_per_minute=240,
         requests_per_hour=5000,
-        # A single operations view makes several independent, read-only requests.
-        # Keep the sustained limit conservative while avoiding false 429s during a
-        # normal page load or a map-layer switch.
-        burst_size=60,
+        # The evidence workspaces intentionally compose several independent,
+        # read-only layers. A reviewer can traverse desktop and mobile views
+        # without becoming a false-positive abusive client, while the hourly
+        # ceiling and write-route authorization remain enforced.
+        burst_size=120,
     ),
 )
 app.add_middleware(AdminAuthMiddleware)
@@ -177,6 +180,7 @@ if PREDICTIONS_DIR.is_dir():
     )
 
 app.include_router(models.router)
+app.include_router(benchmark.router)
 app.include_router(years.router)
 app.include_router(glaciers.router)
 app.include_router(segmentation.router)
@@ -213,7 +217,7 @@ def root():
     index = STATIC_DIR / "index.html"
     if index.is_file():
         return FileResponse(str(index))
-    return {"name": "GlacierNET-KZ API", "version": "1.0.0", "docs": "/docs"}
+    return {"name": "GlacierNET-KZ API", "version": PROJECT_VERSION, "docs": "/docs"}
 
 
 @app.get("/health")
@@ -221,7 +225,7 @@ def health():
     checker = get_health_checker()
     return {
         "status": "ok",
-        "version": "1.0.0",
+        "version": PROJECT_VERSION,
         "service": "GlacierNET-KZ API",
         "uptime_seconds": round(time.time() - checker._start_time, 2),
     }
@@ -261,7 +265,7 @@ def status():
     ws_mgr = get_ws_manager()
     return {
         "status": "operational",
-        "version": "1.0.0",
+        "version": PROJECT_VERSION,
         "tasks": task_mgr.get_stats(),
         "websocket": ws_mgr.get_stats(),
         "metrics_summary": {

@@ -26,6 +26,7 @@ const KIND_LABELS: Record<EvidenceKind, string> = {
   annual_segmentation: "Годовая сегментация",
   lake: "Озёра",
   river: "Русла HydroRIVERS",
+  corridor: "Коридор проверки",
   basin: "Бассейны HydroBASINS",
   historical_record: "Архивные записи",
   asset: "Объекты OSM",
@@ -36,6 +37,7 @@ const KIND_STYLE: Record<EvidenceKind, L.PathOptions> = {
   annual_segmentation: { color: "#818cf8", weight: 2.5, fillColor: "#818cf8", fillOpacity: 0.08, dashArray: "6 5" },
   lake: { color: "#60a5fa", weight: 2, fillColor: "#2563eb", fillOpacity: 0.34 },
   river: { color: "#38bdf8", weight: 3, opacity: 0.9 },
+  corridor: { color: "#fb923c", weight: 2, fillColor: "#f97316", fillOpacity: 0.12, dashArray: "8 6" },
   basin: { color: "#c084fc", weight: 1.8, fillColor: "#a855f7", fillOpacity: 0.05, dashArray: "6 6" },
   historical_record: { color: "#ffffff", weight: 2, fillColor: "#ef4444", fillOpacity: 0.95 },
   asset: { color: "#ffffff", weight: 1.5, fillColor: "#8b5cf6", fillOpacity: 0.95 },
@@ -71,7 +73,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
   const [basemap, setBasemap] = useState<Basemap>("offline");
   const [showMlBoundary, setShowMlBoundary] = useState(true);
   const [visibleKinds, setVisibleKinds] = useState<Record<EvidenceKind, boolean>>({
-    glacier: true, annual_segmentation: true, lake: true, river: false, basin: false, historical_record: false, asset: false,
+    glacier: true, annual_segmentation: true, lake: true, river: false, corridor: false, basin: false, historical_record: false, asset: false,
   });
   const selectedObject = objects.find((object) => object.id === selectedObjectId) ?? null;
   // A selected glacier context is intentionally finite (10 km by default),
@@ -122,7 +124,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
   useEffect(() => {
     // Mode changes never manufacture a routed impact. They merely expose the
     // local source layers that support the user’s current inspection task.
-    if (mode === "route") setVisibleKinds((current) => ({ ...current, river: true, basin: true }));
+    if (mode === "route") setVisibleKinds((current) => ({ ...current, river: true, corridor: true, basin: true }));
     if (mode === "people") setVisibleKinds((current) => ({ ...current, asset: true }));
   }, [mode]);
 
@@ -179,7 +181,8 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
     for (const object of mapObjects) {
       if (!visibleKinds[object.kind]) continue;
       const selected = object.id === selectedObjectId;
-      const style = { ...KIND_STYLE[object.kind], weight: (KIND_STYLE[object.kind].weight ?? 2) + (selected ? 1.7 : 0), className: mode === "route" && object.kind === "river" ? "risk-twin-route-flow" : undefined };
+      const routeStyle = object.isRoute ? { color: "#f97316", weight: 5, opacity: 1 } : {};
+      const style = { ...KIND_STYLE[object.kind], ...routeStyle, weight: (object.isRoute ? 5 : KIND_STYLE[object.kind].weight ?? 2) + (selected ? 1.7 : 0), className: mode === "route" && object.isRoute ? "risk-twin-route-flow" : undefined };
       const vector = L.geoJSON(object.geometry, {
         style,
         pointToLayer: (_, latlng) => pointStyle(object.kind, latlng),

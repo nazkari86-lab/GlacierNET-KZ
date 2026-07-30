@@ -22,12 +22,18 @@ def test_risk_twin_context_exposes_local_spatial_evidence_without_risk_claims():
     response = client.get("/api/risk-twin/context/RGI2000-v7.0-G-13-33843?year=2024&buffer_km=10")
     assert response.status_code == 200
     body = response.json()
-    assert body["schema"] == "glaciernet-kz.risk-twin-context.v3"
+    assert body["schema"] == "glaciernet-kz.risk-twin-context.v4"
     assert body["query"]["lake_inventory_year"] == 2023
     assert body["layers"]["tien_shan_lakes"]["type"] == "FeatureCollection"
     assert body["layers"]["historical_glof_events"]["features"]
     assert body["layers"]["hydrorivers"]["features"]
     assert body["layers"]["hydrobasins_level06"]["features"]
+    assert body["downstream_route"]["available"] is True
+    assert body["downstream_route"]["features"]["features"]
+    assert body["downstream_route"]["route_segment_count"] > 1
+    assert body["downstream_route"]["route_length_km"] > 0
+    assert body["downstream_route"]["corridor"]["geometry"]["type"] in {"Polygon", "MultiPolygon"}
+    assert "not a glacier-to-channel connector" in body["downstream_route"]["interpretation"]
     assert len(body["lake_timeseries"]) == 5
     assert body["impact_assets"]["available"] is True
     assert body["impact_assets"]["features"]["features"]

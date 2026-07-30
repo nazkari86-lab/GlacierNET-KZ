@@ -1,0 +1,102 @@
+{
+  "schema": "centralasia-glacierbench.protocol.v1",
+  "benchmark_name": "CentralAsia-GlacierBench",
+  "version": "0.4.0",
+  "purpose": "Evidence-bound evaluation of glacier mapping, transfer, physical consistency and retrospective glacier-lake cascade screening in Central Asia.",
+  "sampling_unit": "glacier",
+  "policies": {
+    "frozen_test_splits": true,
+    "no_test_set_tuning": true,
+    "no_synthetic_metrics": true,
+    "no_composite_score": true,
+    "bootstrap_confidence_intervals_at_glacier_level": true,
+    "observations_inventory_labels_and_model_outputs_are_separate": true,
+    "missing_evidence_is_never_scored_as_zero_or_neutral": true
+  },
+  "tracks": [
+    {
+      "id": "temporal_segmentation",
+      "category": "model_evaluation",
+      "split": "train 2016-2022; validation 2023; untouched test 2024",
+      "primary_metrics": ["hard_dice", "hard_iou", "area_bias_percent"],
+      "label_tier": "silver_rgi_derived"
+    },
+    {
+      "id": "sentinel1_multimodal_ablation",
+      "category": "model_evaluation",
+      "split": "same patches, labels, train/validation/test years and training setup as the Sentinel-2 plus terrain control",
+      "primary_metrics": ["hard_dice", "hard_iou", "precision", "recall", "area_bias_percent"],
+      "label_tier": "silver_rgi_derived"
+    },
+    {
+      "id": "external_transfer",
+      "category": "model_evaluation",
+      "split": "Ile Alatau calibration; frozen Zhetysu replay",
+      "primary_metrics": ["glacier_mean_hard_dice", "glacier_mean_hard_iou", "paired_hard_dice_delta"],
+      "uncertainty": "95 percent glacier-level bootstrap CI",
+      "label_tier": "provisional_external_silver"
+    },
+    {
+      "id": "glavitu_external_baseline",
+      "category": "model_evaluation",
+      "split": "official frozen HMA and global checkpoints; frozen Zhetysu scenes; no threshold tuning",
+      "primary_metrics": ["glacier_mean_hard_dice", "glacier_mean_hard_iou"],
+      "label_tier": "external_pretrained_model_plus_provisional_silver_rgi"
+    },
+    {
+      "id": "cryobench_lakes",
+      "category": "model_evaluation",
+      "split": "publisher-provided GLD frozen test split",
+      "primary_metrics": ["hard_dice", "hard_iou", "precision", "recall"],
+      "label_tier": "external_benchmark"
+    },
+    {
+      "id": "itslive_velocity_reference",
+      "category": "reference_evidence",
+      "split": "one real RGI7 centroid point time series per selected ITS_LIVE cube",
+      "primary_metrics": ["valid_velocity_observations", "median_velocity_m_per_year"],
+      "label_tier": "independent_physical_observation"
+    },
+    {
+      "id": "physical_consistency",
+      "category": "reference_evidence",
+      "split": "Hugonnet RGI-13 2000-2020 regional reference; ITS_LIVE retained as a separate RGI7 sample",
+      "primary_metrics": ["area_weighted_mass_change_m_we_per_year", "fraction_glaciers_with_negative_mass_change"],
+      "label_tier": "independent_regional_physical_reference"
+    },
+    {
+      "id": "hma_lake_terminating_reference",
+      "category": "reference_evidence",
+      "split": "publisher 1990 and 2022 layers for three Central Asian mountain systems",
+      "primary_metrics": ["aggregate_glacier_area_change_percent", "aggregate_lake_area_change_percent"],
+      "label_tier": "external_expert_validated_inventory"
+    },
+    {
+      "id": "cascade_risk",
+      "category": "reference_evidence",
+      "split": "HMAGLOFDB coordinate proximity to HMA 2022 glacier geometries with 1/2/5/10 km sensitivity",
+      "primary_metrics": ["events_within_5km", "unique_glaciers_with_event_within_5km"],
+      "label_tier": "descriptive_observed_event_colocation"
+    },
+    {
+      "id": "active_evidence_acquisition",
+      "category": "decision_support_evaluation",
+      "split": "immutable pre-event snapshots grouped by basin with source-reviewed events and verified non-event controls",
+      "primary_metrics": ["realised_loss_reduction", "decision_regret", "abstention_coverage"],
+      "label_tier": "source_reviewed_event_and_control_replay_required"
+    }
+  ],
+  "claim_boundary": {
+    "allowed": [
+      "reproducible research benchmark results within each declared evidence tier",
+      "retrospective screening and prioritisation"
+    ],
+    "not_allowed": [
+      "independent expert gold-label accuracy without adjudication",
+      "operational GLOF warning or calibrated event probability",
+      "causal event-glacier linkage from spatial proximity alone",
+      "pixel-level physical validation without aligned elevation-change and velocity rasters",
+      "field-validated runoff or glacier-volume forecast"
+    ]
+  }
+}

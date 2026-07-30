@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "glaciernet-kz"
-version = "0.2.0"
+version = "0.4.0"
 description = "Multi-language glacier monitoring platform for Kazakhstan"
 readme = "README.md"
 license = {text = "MIT"}
@@ -60,6 +60,14 @@ dev = [
     "pytest-cov>=4.1.0",
     "ruff>=0.1.0",
     "pyright>=1.1.0",
+]
+benchmark = [
+    "gdown>=5.2,<6",
+    "tables>=3.9,<4",
+    "blosc2>=2.3,<3",
+    "zarr>=2.18.0,<=2.18.3; python_version < '3.11'",
+    "zarr>=2.18.7,<3; python_version >= '3.11'",
+    "s3fs>=2024.1",
 ]
 
 [project.scripts]

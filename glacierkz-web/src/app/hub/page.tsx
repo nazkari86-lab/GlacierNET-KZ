@@ -5,11 +5,8 @@ import {
   Mountain,
   BrainCircuit,
   HeartPulse,
-  MapPinned,
   ClipboardCheck,
-  MessageSquareText,
-  ShieldCheck,
-  Sparkles,
+  FlaskConical,
 } from "lucide-react";
 import { useI18n } from "@/lib/I18nProvider";
 
@@ -30,23 +27,16 @@ const SERVICES = [
     icon: ClipboardCheck,
   },
   {
-    href: "/analysis",
-    key: "hub.analysis",
-    icon: MessageSquareText,
-  },
-  {
-    href: "/jury",
-    key: "hub.jury",
-    icon: ShieldCheck,
-  },
-  {
-    href: "/glaciers",
-    key: "hub.glaciers",
-    icon: MapPinned,
+    href: "/benchmark",
+    key: "hub.benchmark",
+    icon: FlaskConical,
   },
 ] as const;
 
 const SECONDARY_LINKS = [
+  ["/analysis", "hub.analysis"],
+  ["/jury", "hub.jury"],
+  ["/glaciers", "hub.glaciers"],
   ["/explore", "hub.explore"],
   ["/predict", "hub.predict"],
   ["/pilot", "hub.pilot"],
@@ -81,29 +71,6 @@ export default function HubPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Link
-            href="/discovery"
-            className="group flex items-start gap-4 rounded-xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-violet-50 p-5 shadow-sm transition hover:border-cyan-400 hover:shadow-md sm:col-span-2"
-          >
-            <div className="rounded-lg bg-slate-950 p-3 text-cyan-300">
-              <Sparkles className="h-6 w-6" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-violet-700">
-                New scientific workspace
-              </p>
-              <h3 className="mt-1 font-semibold text-slate-950">
-                CryoGenesis matched-glacier discovery
-              </h3>
-              <p className="mt-1 text-sm leading-6 text-slate-600">
-                Compare physical glacier twins, inspect divergence, source
-                hashes, uncertainty, and explicit non-causal claim boundaries.
-              </p>
-              <p className="mt-2 font-mono text-xs text-slate-500">
-                /discovery
-              </p>
-            </div>
-          </Link>
           {SERVICES.map(({ href, key, icon: Icon }, index) => (
             <Link
               key={href}
@@ -117,8 +84,8 @@ export default function HubPage() {
                 </span>
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-slate-900">{t(key)}</h3>
-                <p className="mt-1 text-sm leading-6 text-slate-600">{t(`${key}.desc`)}</p>
+                <h3 className="font-semibold text-slate-900">{key === "hub.benchmark" ? "CentralAsia-GlacierBench" : t(key)}</h3>
+                <p className="mt-1 text-sm leading-6 text-slate-600">{key === "hub.benchmark" ? "Отдельно проверяет модели, reference evidence и готовность active evidence acquisition — без общего искусственного score." : t(`${key}.desc`)}</p>
                 <p className="mt-2 font-mono text-xs text-slate-400">{href}</p>
               </div>
             </Link>
@@ -131,6 +98,9 @@ export default function HubPage() {
             {t("hub.supporting.desc")}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
+            <Link href="/discovery" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-800">
+              CryoGenesis
+            </Link>
             {SECONDARY_LINKS.map(([href, key]) => (
               <Link key={href} href={href} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-800">
                 {t(key)}

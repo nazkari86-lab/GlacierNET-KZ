@@ -1,6 +1,6 @@
 import type { GlacierRecord, RiskTwinObservationInput, RiskTwinSpatialContext, YearMapLayer } from "@/lib/api";
 
-export type EvidenceKind = "glacier" | "annual_segmentation" | "lake" | "river" | "basin" | "historical_record" | "asset";
+export type EvidenceKind = "glacier" | "annual_segmentation" | "lake" | "river" | "corridor" | "basin" | "historical_record" | "asset";
 export type EvidenceMaturity = "inventory_reference" | "local_artifact" | "spatial_context" | "archive_record" | "planning_context" | "requires_verification";
 export type DecisionImpact = "high" | "medium" | "low";
 
@@ -16,6 +16,7 @@ export interface EvidenceMapObject {
   allowedClaim: string;
   prohibitedClaim: string;
   inspectorFacts: Array<{ label: string; value: string }>;
+  isRoute?: boolean;
   screening?: {
     rank: number;
     observationPriority: number;
@@ -160,6 +161,7 @@ function featureObjects(
       allowedClaim,
       prohibitedClaim,
       inspectorFacts: makeFacts(properties),
+      isRoute: properties.relation === "graph_derived_downstream_planning_route",
       ...(observationPriority !== null && screeningRank !== null && distanceToRgiBoundaryM !== null && areaM2 !== null ? {
         screening: {
           rank: screeningRank,
@@ -283,6 +285,23 @@ export function buildEvidenceMapObjects(
       "Инвентарная близость не подтверждает связь с ледником, объём, состояние морены или вероятность события.",
     ),
     ...featureObjects(
+      contextFeatures(context.downstream_route?.features),
+      "river",
+      "HydroRIVERS NEXT_DOWN route",
+      "graph-derived downstream planning route",
+      (properties) => `Route segment ${sourceValue(properties.route_sequence)} · ${sourceValue(properties.hyriv_id)}`,
+      (properties) => [
+        { label: "Route sequence", value: sourceValue(properties.route_sequence) },
+        { label: "Reach ID", value: sourceValue(properties.hyriv_id) },
+        { label: "Next downstream", value: sourceValue(properties.next_downstream_id) },
+        { label: "Length", value: `${sourceValue(properties.length_km)} km` },
+      ],
+      "spatial_context",
+      "Сегмент получен последовательным обходом реальной связи NEXT_DOWN.",
+      "Можно показать топологический маршрут HydroRIVERS и порядок сегментов.",
+      "Это не гидродинамический путь, не время добегания, не зона затопления и не официальное предупреждение.",
+    ),
+    ...featureObjects(
       contextFeatures(context.layers?.hydrorivers),
       "river",
       "HydroRIVERS",
@@ -328,6 +347,22 @@ export function buildEvidenceMapObjects(
       "Архивная запись не является прогнозом, доказательством повторяемости или причинной связью с выбранным ледником.",
     ),
     ...featureObjects(
+      contextFeatures(context.downstream_route?.planning_assets),
+      "asset",
+      "OSM objects inside HydroRIVERS planning corridor",
+      "local planning extract",
+      (properties) => sourceValue(properties.name) === "not supplied" ? `OSM ${sourceValue(properties.asset_type)}` : sourceValue(properties.name),
+      (properties) => [
+        { label: "Type", value: sourceValue(properties.asset_type) },
+        { label: "Name", value: sourceValue(properties.name) },
+        { label: "Relation", value: "inside planning corridor" },
+      ],
+      "planning_context",
+      "Публичный объект пересекает планировочный коридор вокруг топологического маршрута.",
+      "Можно назначить объект на проверку назначения и актуальности.",
+      "Пересечение коридора не означает воздействие, затопление, ущерб или необходимость эвакуации.",
+    ),
+    ...featureObjects(
       context.impact_assets?.available ? contextFeatures(context.impact_assets.features) : [],
       "asset",
       context.impact_assets.source || "OSM planning context",
@@ -343,6 +378,28 @@ export function buildEvidenceMapObjects(
       "Объект на карте не подтверждает назначение, занятость, уязвимость или воздействие.",
     ),
   );
+
+  const corridorGeometry = asGeometry(context.downstream_route?.corridor?.geometry);
+  if (context.downstream_route?.available && corridorGeometry) {
+    objects.push({
+      id: "corridor:hydrorivers-downstream",
+      kind: "corridor",
+      name: `HydroRIVERS planning corridor · ${context.downstream_route.corridor_width_m ?? 750} m`,
+      geometry: corridorGeometry,
+      source: "Derived buffer around HydroRIVERS NEXT_DOWN route",
+      temporalCoverage: "reference hydrography",
+      maturity: "planning_context",
+      visibleFact: `${context.downstream_route.route_length_km ?? "—"} km graph route · ${context.downstream_route.planning_asset_count ?? 0} public objects to verify.`,
+      allowedClaim: "Можно показать область поиска объектов для дальнейшей проверки.",
+      prohibitedClaim: context.downstream_route.interpretation ?? "Коридор не является зоной затопления или воздействия.",
+      inspectorFacts: [
+        { label: "Route status", value: context.downstream_route.status },
+        { label: "Route length", value: `${context.downstream_route.route_length_km ?? "—"} km` },
+        { label: "Corridor width", value: `${context.downstream_route.corridor_width_m ?? "—"} m` },
+        { label: "Objects to verify", value: String(context.downstream_route.planning_asset_count ?? 0) },
+      ],
+    });
+  }
 
   return objects;
 }

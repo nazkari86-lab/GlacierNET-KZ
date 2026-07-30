@@ -22,10 +22,10 @@ def test_years_needing_predictions_includes_2019():
         assert 2019 not in missing
 
 
-def test_rebuild_areas_table_writes_csv():
-    out = ROOT / "results" / "tables" / "glacier_areas_all_years.csv"
+def test_rebuild_areas_table_writes_csv(tmp_path: Path):
+    out = tmp_path / "glacier_areas_all_years.csv"
     rc = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "rebuild_areas_table.py")],
+        [sys.executable, str(ROOT / "scripts" / "rebuild_areas_table.py"), "--output", str(out)],
         cwd=str(ROOT),
         capture_output=True,
         text=True,

@@ -15,6 +15,7 @@ const ROUTES = [
   "/reports",
   "/history",
   "/analysis",
+  "/benchmark",
   "/discovery",
   "/settings",
   "/pipeline",

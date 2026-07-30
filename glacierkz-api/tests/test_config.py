@@ -44,6 +44,8 @@ class TestConfigModule:
     def test_localhost_cors_origin_has_loopback_alias(self):
         assert "http://localhost:3000" in config.CORS_ORIGINS
         assert "http://127.0.0.1:3000" in config.CORS_ORIGINS
+        assert "http://localhost:3100" in config.CORS_ORIGINS
+        assert "http://127.0.0.1:3100" in config.CORS_ORIGINS
 
     def test_redis_url_is_string(self):
         assert isinstance(config.REDIS_URL, str)

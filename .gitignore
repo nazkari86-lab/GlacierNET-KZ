@@ -95,6 +95,10 @@ glacierkz-api/data/
 glacierkz-api/experiments/
 *.aux.xml
 data/external/glathida/**
+# Downloaded third-party benchmark archives, weights, and cloud catalog
+# snapshots stay local. Their checksums and provenance are published instead.
+data/external/centralasia_glacierbench/**
+!data/external/centralasia_glacierbench/README.md
 # Third-party source archives stay local. Compact derived GeoPackages and
 # machine-readable provenance manifests remain publishable.
 data/events/**/source/

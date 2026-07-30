@@ -9,6 +9,7 @@ summer composites.
 
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import math
@@ -246,7 +247,19 @@ def trend_summary(rows: list[dict[str, str]]) -> dict:
     }
 
 
-def main() -> None:
+def _display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
+def main(
+    *,
+    quality_csv: Path = QUALITY_CSV,
+    decision_ts_csv: Path = DECISION_TS_CSV,
+    decision_summary_json: Path = DECISION_SUMMARY_JSON,
+) -> None:
     rows = read_area_rows()
     by_year: dict[int, list[dict[str, str]]] = {}
     for row in rows:
@@ -282,21 +295,22 @@ def main() -> None:
             }
         )
 
-    config.TABLES_DIR.mkdir(parents=True, exist_ok=True)
-    with QUALITY_CSV.open("w", newline="", encoding="utf-8") as f:
+    for destination in (quality_csv, decision_ts_csv, decision_summary_json):
+        destination.parent.mkdir(parents=True, exist_ok=True)
+    with quality_csv.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=list(quality_rows[0].keys()), lineterminator="\n")
         writer.writeheader()
         writer.writerows(quality_rows)
 
-    with DECISION_TS_CSV.open("w", newline="", encoding="utf-8") as f:
+    with decision_ts_csv.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=list(decision_rows[0].keys()), lineterminator="\n")
         writer.writeheader()
         writer.writerows(decision_rows)
 
     summary = {
         "created_at": created_at,
-        "quality_table": str(QUALITY_CSV.relative_to(ROOT)),
-        "decision_timeseries_table": str(DECISION_TS_CSV.relative_to(ROOT)),
+        "quality_table": _display_path(quality_csv),
+        "decision_timeseries_table": _display_path(decision_ts_csv),
         "strict_trend": trend_summary([{k: str(v) for k, v in row.items()} for row in decision_rows]),
         "decision_readiness_notes": [
             "Use decision_ready_area_timeseries.csv for public reports, demos and pilot proposals.",
@@ -307,12 +321,22 @@ def main() -> None:
             "Any 2050 extrapolation remains exploratory and is not a climate projection.",
         ],
     }
-    DECISION_SUMMARY_JSON.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+    decision_summary_json.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
 
-    print(f"Wrote {len(quality_rows)} quality rows -> {QUALITY_CSV}")
-    print(f"Wrote {len(decision_rows)} decision time-series rows -> {DECISION_TS_CSV}")
-    print(f"Wrote decision summary -> {DECISION_SUMMARY_JSON}")
+    print(f"Wrote {len(quality_rows)} quality rows -> {quality_csv}")
+    print(f"Wrote {len(decision_rows)} decision time-series rows -> {decision_ts_csv}")
+    print(f"Wrote decision summary -> {decision_summary_json}")
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output-dir", type=Path)
+    args = parser.parse_args()
+    if args.output_dir:
+        main(
+            quality_csv=args.output_dir / "year_quality_scores.csv",
+            decision_ts_csv=args.output_dir / "decision_ready_area_timeseries.csv",
+            decision_summary_json=args.output_dir / "decision_readiness_summary.json",
+        )
+    else:
+        main()

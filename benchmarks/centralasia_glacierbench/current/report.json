@@ -1,0 +1,954 @@
+{
+  "schema": "centralasia-glacierbench.report.v2",
+  "benchmark_version": "0.4.0",
+  "created_at": "2026-07-30T22:57:43.122660+00:00",
+  "benchmark_name": "CentralAsia-GlacierBench",
+  "policy": {
+    "no_composite_score": true,
+    "no_synthetic_metrics": true,
+    "frozen_test_splits": true,
+    "glacier_is_sampling_unit": true,
+    "model_outputs_are_separate_from_observations": true
+  },
+  "sources": [
+    {
+      "id": "rgi7_central_asia",
+      "title": "Randolph Glacier Inventory 7.0, region 13",
+      "role": "silver glacier geometry and glacier identifiers",
+      "citation_url": "https://doi.org/10.5067/F6JMOVY5NAVZ",
+      "license": "RGI data policy",
+      "evidence_tier": "silver_reference_not_independent_gold",
+      "local_paths": [
+        "data/rgi/RGI2000-v7.0-G-13_central_asia.shp"
+      ],
+      "metadata_paths": [],
+      "expected_sha256": null,
+      "expected_md5": null,
+      "notes": "Region 13 is largely based on GAMDAM2; do not count GAMDAM as an independent label source.",
+      "state": "verified_local",
+      "available": true,
+      "local_path": "data/rgi/RGI2000-v7.0-G-13_central_asia.shp",
+      "size_bytes": 162368768,
+      "integrity": "computed_without_upstream_digest",
+      "digest": "84e42030dc25e4ccc385e28a684951e7b545aeb7cd06a6664d22526795e0b2ba"
+    },
+    {
+      "id": "sentinel2_local",
+      "title": "Sentinel-2 harmonized surface-reflectance composites",
+      "role": "primary optical inference and temporal evaluation",
+      "citation_url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR_HARMONIZED",
+      "license": "Copernicus Sentinel data terms",
+      "evidence_tier": "observed_satellite_input",
+      "local_paths": [
+        "data/raw/sentinel2/sentinel2_2024.tif"
+      ],
+      "metadata_paths": [],
+      "expected_sha256": null,
+      "expected_md5": null,
+      "notes": "",
+      "state": "verified_local",
+      "available": true,
+      "local_path": "data/raw/sentinel2/sentinel2_2024.tif",
+      "size_bytes": 1409564779,
+      "integrity": "computed_without_upstream_digest",
+      "digest": "40c670eedfa00c35caaed75b59f6a80518a0bf03b7326317d030fb162c13d5b1"
+    },
+    {
+      "id": "sentinel1_local",
+      "title": "Sentinel-1 summer composites",
+      "role": "cloud-robust SAR evidence and cross-sensor track",
+      "citation_url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S1_GRD",
+      "license": "Copernicus Sentinel data terms",
+      "evidence_tier": "observed_satellite_input",
+      "local_paths": [
+        "data/ancillary/sentinel1/sentinel1_2024.tif"
+      ],
+      "metadata_paths": [],
+      "expected_sha256": null,
+      "expected_md5": null,
+      "notes": "",
+      "state": "verified_local",
+      "available": true,
+      "local_path": "data/ancillary/sentinel1/sentinel1_2024.tif",
+      "size_bytes": 179493249,
+      "integrity": "computed_without_upstream_digest",
+      "digest": "00501893bf29bd5836c894f6677ebd1793b0a2faf8ce9a60fc908fb471f0a4b8"
+    },
+    {
+      "id": "glavitu_code",
+      "title": "GlaViTU v1.0 reference implementation",
+      "role": "profile-specific external glacier-mapping baseline",
+      "citation_url": "https://github.com/konstantin-a-maslov/scalable_glacier_mapping/tree/v1.0",
+      "license": "GPL-2.0",
+      "evidence_tier": "external_model_code",
+      "local_paths": [
+        "data/external/centralasia_glacierbench/glavitu/scalable_glacier_mapping-v1.0.tar.gz"
+      ],
+      "metadata_paths": [],
+      "expected_sha256": null,
+      "expected_md5": null,
+      "notes": "",
+      "state": "verified_local",
+      "available": true,
+      "local_path": "data/external/centralasia_glacierbench/glavitu/scalable_glacier_mapping-v1.0.tar.gz",
+      "size_bytes": 3454349,
+      "integrity": "computed_without_upstream_digest",
+      "digest": "f333b9203bc1cd78961f1dae2d39a5cde04dff0fa3b1c090c52ad227c1c5b670"
+    },
+    {
+      "id": "glavitu_global_weights",
+      "title": "GlaViTU global pretrained weights",
+      "role": "zero-shot external model baseline",
+      "citation_url": "https://drive.google.com/drive/folders/1PPtcBUg6Ls42bgSqpM53Ud8G2MOMV70s",
+      "license": "Model authors' distribution terms",
+      "evidence_tier": "external_pretrained_model",
+      "local_paths": [
+        "data/external/centralasia_glacierbench/glavitu/weights/glavitu_global_weights.h5"
+      ],
+      "metadata_paths": [],
+      "expected_sha256": null,
+      "expected_md5": null,
+      "notes": "",
+      "state": "verified_local",
+      "available": true,
+      "local_path": "data/external/centralasia_glacierbench/glavitu/weights/glavitu_global_weights.h5",
+      "size_bytes": 40495512,
+      "integrity": "computed_without_upstream_digest",
+      "digest": "b5e14245491a62995497aecb3d3628e6e8ca4efe93e85126467e78d1de48b564"
+    },
+    {
+      "id": "glavitu_hma_weights",
+      "title": "GlaViTU High-Mountain Asia fine-tuned weights",
+      "role": "HMA transfer baseline",
+      "citation_url": "https://drive.google.com/drive/folders/1PPtcBUg6Ls42bgSqpM53Ud8G2MOMV70s",
+      "license": "Model authors' distribution terms",
+      "evidence_tier": "external_pretrained_model",
+      "local_paths": [
+        "data/external/centralasia_glacierbench/glavitu/weights/glavitu_finetuning_HMA_weights.h5"
+      ],
+      "metadata_paths": [],
+      "expected_sha256": null,
+      "expected_md5": null,
+      "notes": "",
+      "state": "verified_local",
+      "available": true,
+      "local_path": "data/external/centralasia_glacierbench/glavitu/weights/glavitu_finetuning_HMA_weights.h5",
+      "size_bytes": 40495272,
+      "integrity": "computed_without_upstream_digest",
+      "digest": "eeabcc88e7009d2dbc2620a363d5d3b9750f58fd4031e5df60ced7839f0d52cd"
+    },
+    {
+      "id": "cryobench_gld",
+      "title": "Cryo-Bench GLD glacial-lake task",
+      "role": "external lake segmentation benchmark",
+      "citation_url": "https://huggingface.co/datasets/Sk-21/Cryo-Bench",
+      "license": "MIT benchmark packaging; source-dataset terms retained",
+      "evidence_tier": "external_benchmark",
+      "local_paths": [
+        "data/external/centralasia_glacierbench/cryobench/GLD.tar.gz"
+      ],
+      "metadata_paths": [],
+      "expected_sha256": "e1a0c16f04bb545643662d345d3fdab219872a785aa4429e9301428404e543d1",
+      "expected_md5": null,
+      "notes": "",
+      "state": "verified_local",
+      "available": true,
+      "local_path": "data/external/centralasia_glacierbench/cryobench/GLD.tar.gz",
+      "size_bytes": 1025438850,
+      "integrity": "verified",
+      "digest": "e1a0c16f04bb545643662d345d3fdab219872a785aa4429e9301428404e543d1"
+    },
+    {
+      "id": "cryobench_glid",
+      "title": "Cryo-Bench GLID glacial-lake task",
+      "role": "external cross-resolution lake segmentation benchmark",
+      "citation_url": "https://huggingface.co/datasets/Sk-21/Cryo-Bench",
+      "license": "MIT benchmark packaging; source-dataset terms retained",
+      "evidence_tier": "external_benchmark",
+      "local_paths": [
+        "data/external/centralasia_glacierbench/cryobench/GLID.tar.gz"
+      ],
+      "metadata_paths": [],
+      "expected_sha256": null,
+      "expected_md5": null,
+      "notes": "8.23 GB compressed; intentionally not auto-downloaded on the current 12 GB free-disk budget.",
+      "state": "missing",
+      "available": false,
+      "local_path": null,
+      "size_bytes": 0,
+      "integrity": "not_checked",
+      "digest": null
+    },
+    {
+      "id": "cryobench_gsdd",
+      "title": "Cryo-Bench GSDD supraglacial-debris task",
+      "role": "external debris-covered ice benchmark",
+      "citation_url": "https://huggingface.co/datasets/Sk-21/Cryo-Bench",
+      "license": "MIT benchmark packaging; source-dataset terms retained",
+      "evidence_tier": "external_benchmark",
+      "local_paths": [
+        "data/external/centralasia_glacierbench/cryobench/GSDD.tar.gz"
+      ],
+      "metadata_paths": [],
+      "expected_sha256": null,
+      "expected_md5": null,
+      "notes": "15.04 GB compressed; intentionally not auto-downloaded on the current 12 GB free-disk budget.",
+      "state": "missing",
+      "available": false,
+      "local_path": null,
+      "size_bytes": 0,
+      "integrity": "not_checked",
+      "digest": null
+    },
+    {
+      "id": "hma_lake_terminating_1990_2022",
+      "title": "HMA lake-terminating glaciers and proglacial lakes, 1990-2022",
+      "role": "expert-validated retrospective glacier-lake coupling evidence",
+      "citation_url": "https://doi.org/10.5281/zenodo.17369580",
+      "license": "Zenodo record terms",
+      "evidence_tier": "external_expert_validated_inventory",
+      "local_paths": [
+        "data/external/centralasia_glacierbench/hma_ltg/HMA_LTG.gpkg"
+      ],
+      "metadata_paths": [],
+      "expected_sha256": null,
+      "expected_md5": "47531c9c39d50bdcad480d5b7dde5930",
+      "notes": "",
+      "state": "verified_local",
+      "available": true,
+      "local_path": "data/external/centralasia_glacierbench/hma_ltg/HMA_LTG.gpkg",
+      "size_bytes": 30208000,
+      "integrity": "verified",
+      "digest": "47531c9c39d50bdcad480d5b7dde5930"
+    },
+    {
+      "id": "hmaglofdb",
+      "title": "HMAGLOFDB v1.3.0",
+      "role": "retrospective GLOF event cohort",
+      "citation_url": "https://doi.org/10.5281/zenodo.7271188",
+      "license": "CC-BY-4.0",
+      "evidence_tier": "observed_event_database",
+      "local_paths": [
+        "data/events/hmaglofdb/source/fidelsteiner-HMAGLOFDB-1d975de/Database/GLOFs/HMAGLOFDB.csv"
+      ],
+      "metadata_paths": [],
+      "expected_sha256": null,
+      "expected_md5": null,
+      "notes": "",
+      "state": "verified_local",
+      "available": true,
+      "local_path": "data/events/hmaglofdb/source/fidelsteiner-HMAGLOFDB-1d975de/Database/GLOFs/HMAGLOFDB.csv",
+      "size_bytes": 449837,
+      "integrity": "computed_without_upstream_digest",
+      "digest": "34e923e3729800f61ce3757e93577483b00c46e0d14c986f47e58ed6d4ee2bc5"
+    },
+    {
+      "id": "hugonnet_dhdt",
+      "title": "Global glacier elevation change 2000-2019",
+      "role": "independent geodetic thinning evidence",
+      "citation_url": "https://doi.org/10.6096/13",
+      "license": "Theia product terms",
+      "evidence_tier": "independent_physical_observation",
+      "local_paths": [
+        "data/external/centralasia_glacierbench/hugonnet/hugonnet_2021_ds_rgi60_pergla_rates_10_20_worldwide_filled.hdf"
+      ],
+      "metadata_paths": [],
+      "expected_sha256": null,
+      "expected_md5": null,
+      "notes": "Official per-glacier geodetic rates use RGI6 identifiers; spatial matching to RGI7 must be reported.",
+      "state": "verified_local",
+      "available": true,
+      "local_path": "data/external/centralasia_glacierbench/hugonnet/hugonnet_2021_ds_rgi60_pergla_rates_10_20_worldwide_filled.hdf",
+      "size_bytes": 40254724,
+      "integrity": "computed_without_upstream_digest",
+      "digest": "423cc75fd489e53ab4a156b7df15a9c76d4231df770cde7a685507fb3a71cbf5"
+    },
+    {
+      "id": "itslive_velocity",
+      "title": "NASA ITS_LIVE regional glacier velocity",
+      "role": "independent dynamic glacier evidence",
+      "citation_url": "https://doi.org/10.5067/6II6VW8LLWJ7",
+      "license": "NASA Earthdata terms",
+      "evidence_tier": "independent_physical_observation",
+      "local_paths": [
+        "data/external/centralasia_glacierbench/itslive/velocity_samples.parquet"
+      ],
+      "metadata_paths": [
+        "data/external/centralasia_glacierbench/itslive/stac_cubes.json"
+      ],
+      "expected_sha256": null,
+      "expected_md5": null,
+      "notes": "A STAC catalogue proves coverage discovery only. The source becomes local evidence after velocity samples are materialised.",
+      "state": "verified_local",
+      "available": true,
+      "local_path": "data/external/centralasia_glacierbench/itslive/velocity_samples.parquet",
+      "size_bytes": 11393,
+      "integrity": "computed_without_upstream_digest",
+      "digest": "c7d1fc9bd8512c12b3c5bc5df4598e3377c26b7f4eb3cbb99ef568f0f9d892f7"
+    },
+    {
+      "id": "oggm_rgi7",
+      "title": "OGGM 1.6 RGI7 preprocessed glacier directories",
+      "role": "modelled thickness, volume, mass balance and runoff scenarios",
+      "citation_url": "https://docs.oggm.org/en/stable/shop-preprodirs.html",
+      "license": "OGGM and upstream data terms",
+      "evidence_tier": "physics_model_output_not_observation",
+      "local_paths": [
+        "data/external/centralasia_glacierbench/oggm/"
+      ],
+      "metadata_paths": [],
+      "expected_sha256": null,
+      "expected_md5": null,
+      "notes": "",
+      "state": "local_unverified",
+      "available": true,
+      "local_path": "data/external/centralasia_glacierbench/oggm",
+      "size_bytes": 86264665,
+      "integrity": "directory_present",
+      "digest": null
+    }
+  ],
+  "tracks": [
+    {
+      "id": "temporal_segmentation",
+      "title": "Temporal glacier segmentation",
+      "category": "model_evaluation",
+      "status": "measured",
+      "evidence_tier": "silver",
+      "scope": "one AOI temporal validation only",
+      "metrics": {
+        "threshold": 0.2,
+        "hard_dice": 0.874601583120244,
+        "hard_iou": 0.7771484036250351,
+        "precision": 0.9507593580046324,
+        "recall": 0.809739766769577,
+        "tp": 2719843,
+        "fp": 140863,
+        "fn": 639067,
+        "tn": 13277443,
+        "true_area_km2": 335.891,
+        "predicted_area_km2": 286.0706,
+        "area_error_km2": -49.82040000000001,
+        "absolute_area_error_km2": 49.82040000000001,
+        "area_bias_percent": -14.832311672536628,
+        "area_error_percent": 14.832311672536628
+      },
+      "headline_metrics": {
+        "hard_dice": 0.874601583120244,
+        "hard_iou": 0.7771484036250351,
+        "precision": 0.9507593580046324,
+        "recall": 0.809739766769577,
+        "area_bias_percent": -14.832311672536628
+      },
+      "claim_allowed": "one-AOI temporal silver-label performance",
+      "claim_not_allowed": "independent expert accuracy",
+      "artifacts": [
+        {
+          "path": "results/temporal_benchmark_unet_sentinel2_terrain_2016_2024.json",
+          "exists": true,
+          "sha256": "6a33524fd139f914912a1cb059884f0918758e43e27f2084e234ce3476364a5b",
+          "size_bytes": 11347
+        }
+      ]
+    },
+    {
+      "id": "sentinel1_multimodal_ablation",
+      "title": "Sentinel-1 + Sentinel-2 multimodal ablation",
+      "category": "model_evaluation",
+      "status": "measured",
+      "evidence_tier": "silver",
+      "scope": "one AOI temporal validation only",
+      "metrics": {
+        "threshold": 0.5,
+        "hard_dice": 0.9036145354470304,
+        "hard_iou": 0.8241759533135202,
+        "precision": 0.9251989019005669,
+        "recall": 0.8830143115967118,
+        "tp": 701335,
+        "fp": 56702,
+        "fn": 92916,
+        "tn": 3343351,
+        "true_area_km2": 79.4251,
+        "predicted_area_km2": 75.8037,
+        "area_error_km2": -3.621399999999994,
+        "absolute_area_error_km2": 3.621399999999994,
+        "area_bias_percent": -4.559515820565531,
+        "area_error_percent": 4.559515820565531
+      },
+      "headline_metrics": {
+        "hard_dice": 0.9036145354470304,
+        "hard_iou": 0.8241759533135202,
+        "precision": 0.9251989019005669,
+        "recall": 0.8830143115967118,
+        "area_bias_percent": -4.559515820565531
+      },
+      "claim_allowed": "same-patch one-AOI multimodal feature-ablation result",
+      "claim_not_allowed": "cross-region superiority or independent expert-label accuracy",
+      "artifacts": [
+        {
+          "path": "results/ablation_unet_sentinel2_terrain_s1_2017_2024.json",
+          "exists": true,
+          "sha256": "17eeb875d383296dd7deeecfce56a35a2e7c98c1c948f03fe4a870c4cf3db735",
+          "size_bytes": 12771
+        }
+      ]
+    },
+    {
+      "id": "external_transfer",
+      "title": "Frozen cross-region transfer",
+      "category": "model_evaluation",
+      "status": "measured_provisional",
+      "evidence_tier": "provisional_external_silver",
+      "scope": "Ile Alatau calibration to untouched Zhetysu replay",
+      "metrics": {
+        "n_external_glaciers": 9,
+        "baseline": {
+          "hard_dice": {
+            "estimate": 0.1814780396465812,
+            "ci_lower": 0.06919732570424922,
+            "ci_upper": 0.3304947303894808,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 1000,
+            "seed": 142
+          },
+          "hard_iou": {
+            "estimate": 0.11609456963964308,
+            "ci_lower": 0.037847577302366535,
+            "ci_upper": 0.22829755540853872,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 1000,
+            "seed": 142
+          },
+          "area_error_percent": {
+            "estimate": 1373.0398589983147,
+            "ci_lower": 601.9724633310027,
+            "ci_upper": 2322.01163345978,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 1000,
+            "seed": 142
+          }
+        },
+        "candidate": {
+          "hard_dice": {
+            "estimate": 0.5433234666782386,
+            "ci_lower": 0.39574282993983945,
+            "ci_upper": 0.6593044813375776,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 1000,
+            "seed": 142
+          },
+          "hard_iou": {
+            "estimate": 0.39938865393487755,
+            "ci_lower": 0.28366227323205084,
+            "ci_upper": 0.49918708310073834,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 1000,
+            "seed": 142
+          },
+          "precision": {
+            "estimate": 0.7233411647873338,
+            "ci_lower": 0.5059490024687275,
+            "ci_upper": 0.9030153421480023,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 1000,
+            "seed": 142
+          },
+          "recall": {
+            "estimate": 0.5018812468680552,
+            "ci_lower": 0.3290191125013235,
+            "ci_upper": 0.6650660411525,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 1000,
+            "seed": 142
+          },
+          "area_error_percent": {
+            "estimate": 51.86479050349304,
+            "ci_lower": 37.509729366748346,
+            "ci_upper": 67.77641600840543,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 1000,
+            "seed": 142
+          }
+        },
+        "paired_delta": {
+          "hard_dice": {
+            "estimate": 0.36184542703165734,
+            "ci_lower": 0.21271545170398912,
+            "ci_upper": 0.5011331162679716,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 1000,
+            "seed": 142
+          },
+          "hard_iou": {
+            "estimate": 0.2832940842952344,
+            "ci_lower": 0.1610211471620833,
+            "ci_upper": 0.3960154217161004,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 1000,
+            "seed": 142
+          },
+          "absolute_area_error_percent": {
+            "estimate": -1321.1750684948215,
+            "ci_lower": -2261.1605431591133,
+            "ci_upper": -547.3553592829506,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 1000,
+            "seed": 142
+          }
+        }
+      },
+      "headline_metrics": {
+        "n_external_glaciers": 9,
+        "candidate_hard_dice": 0.5433234666782386,
+        "candidate_hard_iou": 0.39938865393487755,
+        "paired_dice_delta": 0.36184542703165734
+      },
+      "claim_allowed": "frozen provisional external replay",
+      "claim_not_allowed": "independent external accuracy",
+      "artifacts": [
+        {
+          "path": "benchmarks/v2/provisional/inventory_guided_decoder_2024.json",
+          "exists": true,
+          "sha256": "bf06a37210d2e811845340f583b695cf05e8af20730639eebad834af81835413",
+          "size_bytes": 10441
+        }
+      ]
+    },
+    {
+      "id": "glavitu_external_baseline",
+      "title": "Official GlaViTU pretrained-model transfer",
+      "category": "model_evaluation",
+      "status": "measured_provisional",
+      "evidence_tier": "external_pretrained_model_plus_provisional_silver_rgi",
+      "scope": "frozen 2024 Zhetysu replay with no threshold tuning",
+      "metrics": {
+        "hma_finetuned": {
+          "hard_dice": {
+            "estimate": 0.06428362355331492,
+            "ci_lower": 0.011077329185227086,
+            "ci_upper": 0.1230342229701314,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 2000,
+            "seed": 142
+          },
+          "hard_iou": {
+            "estimate": 0.035484065231967475,
+            "ci_lower": 0.005829240462370392,
+            "ci_upper": 0.06908488603311845,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 2000,
+            "seed": 142
+          },
+          "precision": {
+            "estimate": 0.046301437305803106,
+            "ci_lower": 0.006000255330014043,
+            "ci_upper": 0.09390457863919523,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 2000,
+            "seed": 142
+          },
+          "recall": {
+            "estimate": 0.2203498020380633,
+            "ci_lower": 0.05398147077342174,
+            "ci_upper": 0.4139977827400283,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 2000,
+            "seed": 142
+          }
+        },
+        "global": {
+          "hard_dice": {
+            "estimate": 0.04549247635186732,
+            "ci_lower": 0.005518940715387975,
+            "ci_upper": 0.10534462272948868,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 2000,
+            "seed": 142
+          },
+          "hard_iou": {
+            "estimate": 0.025089998988426104,
+            "ci_lower": 0.002829747804367094,
+            "ci_upper": 0.0590850951240722,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 2000,
+            "seed": 142
+          },
+          "precision": {
+            "estimate": 0.027577250360807687,
+            "ci_lower": 0.002857933369138877,
+            "ci_upper": 0.06605472301642074,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 2000,
+            "seed": 142
+          },
+          "recall": {
+            "estimate": 0.22258610397326933,
+            "ci_lower": 0.05964817598910347,
+            "ci_upper": 0.44257076552300134,
+            "confidence": 0.95,
+            "n_glaciers": 9,
+            "n_resamples": 2000,
+            "seed": 142
+          }
+        }
+      },
+      "headline_metrics": {
+        "hma_hard_dice": 0.06428362355331492,
+        "hma_hard_iou": 0.035484065231967475,
+        "global_hard_dice": 0.04549247635186732,
+        "global_hard_iou": 0.025089998988426104
+      },
+      "claim_allowed": "official external pretrained-model interoperability on the frozen replay",
+      "claim_not_allowed": "independent external accuracy or current-boundary truth",
+      "artifacts": [
+        {
+          "path": "benchmarks/centralasia_glacierbench/current/glavitu_zhetysu_baseline.json",
+          "exists": true,
+          "sha256": "1fc1742e8aed20ad29aeb9688819e67a93b6ef768ace90a809ce8dc00bc03792",
+          "size_bytes": 5174
+        },
+        {
+          "path": "benchmarks/centralasia_glacierbench/current/glavitu_zhetysu_global_baseline.json",
+          "exists": true,
+          "sha256": "4ab5b5608da323c9b546be9f0ed29015c48c656a60b50bc59b5261ca7f70616e",
+          "size_bytes": 5178
+        }
+      ]
+    },
+    {
+      "id": "cryobench_lakes",
+      "title": "Cryo-Bench external glacial-lake segmentation",
+      "category": "model_evaluation",
+      "status": "measured_external_test",
+      "evidence_tier": "external_benchmark",
+      "scope": "GLD frozen test split",
+      "metrics": {
+        "hard_dice_foreground": {
+          "estimate": 0.42786840096237055,
+          "ci_lower": 0.394142439225014,
+          "ci_upper": 0.4586401716199465,
+          "confidence": 0.95,
+          "n_images": 141,
+          "n_resamples": 2000,
+          "seed": 142
+        },
+        "hard_iou_foreground": {
+          "estimate": 0.29436593110204384,
+          "ci_lower": 0.2652262035317107,
+          "ci_upper": 0.3206001843286747,
+          "confidence": 0.95,
+          "n_images": 141,
+          "n_resamples": 2000,
+          "seed": 142
+        },
+        "precision_foreground": {
+          "estimate": 0.33035610548680666,
+          "ci_lower": 0.29847930185212707,
+          "ci_upper": 0.35967043452208325,
+          "confidence": 0.95,
+          "n_images": 141,
+          "n_resamples": 2000,
+          "seed": 142
+        },
+        "recall_foreground": {
+          "estimate": 0.758439651753867,
+          "ci_lower": 0.7225421821303334,
+          "ci_upper": 0.7881417157879903,
+          "confidence": 0.95,
+          "n_images": 141,
+          "n_resamples": 2000,
+          "seed": 142
+        }
+      },
+      "headline_metrics": {
+        "hard_dice_foreground": 0.42786840096237055,
+        "hard_iou_foreground": 0.29436593110204384
+      },
+      "claim_allowed": "reproducible lightweight baseline on the frozen real GLD test split",
+      "claim_not_allowed": "operational lake detection in Kazakhstan without regional external validation",
+      "artifacts": [
+        {
+          "path": "benchmarks/centralasia_glacierbench/current/cryobench_gld_baseline.json",
+          "exists": true,
+          "sha256": "33085c20077777b7e0fe9302a69ebd547196e89c1a303d1ac9856b426ebbfdad",
+          "size_bytes": 4821
+        }
+      ]
+    },
+    {
+      "id": "itslive_velocity_reference",
+      "title": "Observed glacier motion from NASA ITS_LIVE",
+      "category": "reference_evidence",
+      "status": "measured_reference",
+      "evidence_tier": "independent_physical_observation",
+      "scope": "real point time series at large RGI7 glacier centroids across available Central Asia cubes",
+      "metrics": {
+        "sampled_glaciers": 8,
+        "valid_velocity_observations": 138687,
+        "median_of_glacier_median_velocity_m_per_year": 16.5,
+        "median_of_glacier_p90_velocity_m_per_year": 56.5,
+        "sampling_geometry": "one RGI7 centroid point per selected ITS_LIVE cube"
+      },
+      "headline_metrics": {
+        "sampled_glaciers": 8,
+        "valid_velocity_observations": 138687,
+        "median_of_glacier_median_velocity_m_per_year": 16.5,
+        "median_of_glacier_p90_velocity_m_per_year": 56.5,
+        "sampling_geometry": "one RGI7 centroid point per selected ITS_LIVE cube"
+      },
+      "claim_allowed": "observed point-velocity context for the sampled glaciers",
+      "claim_not_allowed": "whole-glacier velocity, discharge or instability inference from a centroid point",
+      "artifacts": [
+        {
+          "path": "data/external/centralasia_glacierbench/itslive/velocity_samples.parquet",
+          "exists": true,
+          "sha256": "c7d1fc9bd8512c12b3c5bc5df4598e3377c26b7f4eb3cbb99ef568f0f9d892f7",
+          "size_bytes": 11393
+        }
+      ]
+    },
+    {
+      "id": "physical_consistency",
+      "title": "Independent physical reference context",
+      "category": "reference_evidence",
+      "status": "measured_reference",
+      "evidence_tier": "independent_observation_plus_model_context",
+      "scope": "Hugonnet RGI-13 mass change + sampled ITS_LIVE motion; no cross-inventory join",
+      "source_states": {
+        "hugonnet_dhdt": "verified_local",
+        "itslive_velocity": "verified_local",
+        "oggm_rgi7": "local_unverified"
+      },
+      "metrics": {
+        "status": "measured_reference",
+        "period": "2000-01-01_2020-01-01",
+        "rgi_region": 13,
+        "glacier_records": 54429,
+        "total_glacier_area_km2": 49303.415,
+        "area_weighted_mass_change_m_we_per_year": -0.19469975603072556,
+        "median_mass_change_m_we_per_year": -0.1616,
+        "fraction_glaciers_with_negative_mass_change": 0.7309522497198184,
+        "fraction_glaciers_conservatively_negative": 0.3958735233055908,
+        "median_reported_uncertainty_m_we_per_year": 0.2273,
+        "join_policy": "Regional physical reference only. RGI6 Hugonnet records are not joined to RGI7 ITS_LIVE samples without an authoritative crosswalk.",
+        "itslive_sampled_glaciers": 8,
+        "itslive_valid_velocity_observations": 138687,
+        "itslive_median_velocity_m_per_year": 16.5
+      },
+      "headline_metrics": {
+        "glacier_records": 54429,
+        "area_weighted_mass_change_m_we_per_year": -0.19469975603072556,
+        "fraction_glaciers_with_negative_mass_change": 0.7309522497198184,
+        "itslive_sampled_glaciers": 8
+      },
+      "claim_allowed": "independent regional mass-change and sampled motion context",
+      "claim_not_allowed": "pixel-level validation, glacier-level thinning-motion correlation or causal instability inference",
+      "artifacts": [
+        {
+          "path": "data/external/centralasia_glacierbench/hugonnet/hugonnet_2021_ds_rgi60_pergla_rates_10_20_worldwide_filled.hdf",
+          "exists": true,
+          "sha256": "423cc75fd489e53ab4a156b7df15a9c76d4231df770cde7a685507fb3a71cbf5",
+          "size_bytes": 40254724
+        }
+      ]
+    },
+    {
+      "id": "hma_lake_terminating_reference",
+      "title": "Observed lake-terminating glacier change, 1990-2022",
+      "category": "reference_evidence",
+      "status": "measured_reference",
+      "evidence_tier": "external_expert_validated_inventory",
+      "scope": "Northern/Western Tien Shan, Central Tien Shan and Dzhungarsky Alatau",
+      "metrics": {
+        "status": "measured_reference",
+        "mountain_systems": [
+          "Northern/Western Tien Shan",
+          "Central Tien Shan",
+          "Dzhungarsky Alatau"
+        ],
+        "glacier_records_1990": 311,
+        "glacier_records_2022": 311,
+        "glacier_area_1990_km2": 1012.7418835446099,
+        "glacier_area_2022_km2": 982.0155149,
+        "aggregate_glacier_area_change_percent": -3.0339782667097026,
+        "lake_records_1990": 146,
+        "lake_records_2022": 312,
+        "lake_area_1990_km2": 15.62698193876,
+        "lake_area_2022_km2": 22.42893918646,
+        "aggregate_lake_area_change_percent": 43.52700524231703,
+        "pairing_note": "Aggregate publisher-layer comparison. Record identifiers are not assumed one-to-one because the source contains split/merged glacier and lake objects."
+      },
+      "headline_metrics": {
+        "glacier_records_2022": 311,
+        "aggregate_glacier_area_change_percent": -3.0339782667097026,
+        "lake_records_2022": 312,
+        "aggregate_lake_area_change_percent": 43.52700524231703
+      },
+      "claim_allowed": "retrospective aggregate glacier-lake inventory change",
+      "claim_not_allowed": "causal attribution, event probability or operational warning",
+      "artifacts": [
+        {
+          "path": "data/external/centralasia_glacierbench/hma_ltg/HMA_LTG.gpkg",
+          "exists": true,
+          "sha256": "b36f6753b4f233a434f6dc8c360327fc7dbcc31213561f0a6ea7bffae96fb77a",
+          "size_bytes": 30208000
+        }
+      ]
+    },
+    {
+      "id": "cascade_risk",
+      "title": "Retrospective glacier-event co-location",
+      "category": "reference_evidence",
+      "status": "measured_reference",
+      "evidence_tier": "expert_inventory_plus_observed_events",
+      "scope": "HMA lake-terminating glacier geometry and HMAGLOFDB event coordinates",
+      "metrics": {
+        "status": "measured_reference",
+        "hma_glaciers_screened": 311,
+        "hmaglof_events_with_coordinates": 768,
+        "events_in_regional_envelope": 255,
+        "events_within_5km": 147,
+        "unique_glaciers_with_event_within_5km": 24,
+        "event_year_min_within_5km": 1902,
+        "event_year_max_within_5km": 2019,
+        "distance_sensitivity_km": {
+          "1": {
+            "event_records": 106,
+            "unique_glaciers": 13
+          },
+          "2": {
+            "event_records": 115,
+            "unique_glaciers": 17
+          },
+          "5": {
+            "event_records": 147,
+            "unique_glaciers": 24
+          },
+          "10": {
+            "event_records": 178,
+            "unique_glaciers": 28
+          }
+        },
+        "distance_crs": "EPSG:32643",
+        "interpretation": "Descriptive spatial co-location only. Repeated events remain separate records; proximity is not a causal link, calibrated hazard score or operational warning."
+      },
+      "headline_metrics": {
+        "hma_glaciers_screened": 311,
+        "events_in_regional_envelope": 255,
+        "events_within_5km": 147,
+        "unique_glaciers_with_event_within_5km": 24
+      },
+      "claim_allowed": "retrospective spatial event coverage and sensitivity screening",
+      "claim_not_allowed": "operational GLOF probability or warning",
+      "artifacts": [
+        {
+          "path": "data/events/hmaglofdb/source/fidelsteiner-HMAGLOFDB-1d975de/Database/GLOFs/HMAGLOFDB.csv",
+          "exists": true,
+          "sha256": "34e923e3729800f61ce3757e93577483b00c46e0d14c986f47e58ed6d4ee2bc5",
+          "size_bytes": 449837
+        },
+        {
+          "path": "data/external/centralasia_glacierbench/hma_ltg/HMA_LTG.gpkg",
+          "exists": true,
+          "sha256": "b36f6753b4f233a434f6dc8c360327fc7dbcc31213561f0a6ea7bffae96fb77a",
+          "size_bytes": 30208000
+        }
+      ]
+    },
+    {
+      "id": "active_evidence_acquisition",
+      "title": "Retrospective active evidence acquisition",
+      "category": "decision_support_evaluation",
+      "status": "blocked_evidence_incomplete",
+      "evidence_tier": "source_reviewed_event_replay_required",
+      "scope": "pre-event snapshots, verified controls and realised decision-loss reduction",
+      "metrics": {
+        "database_cited_event_records": 58,
+        "primary_source_verified_strict_events": 0,
+        "verified_non_event_controls": 0,
+        "immutable_pre_event_replays": 0,
+        "realised_observation_value_rows": 0
+      },
+      "headline_metrics": {
+        "database_cited_event_records": 58,
+        "primary_source_verified_strict_events": 0,
+        "verified_non_event_controls": 0,
+        "immutable_pre_event_replays": 0,
+        "realised_observation_value_rows": 0
+      },
+      "blockers": [
+        "no_primary_source_verified_strict_events",
+        "no_verified_non_event_controls",
+        "no_immutable_pre_event_replay_snapshots",
+        "no_realised_observation_loss_reduction_rows"
+      ],
+      "claim_allowed": "implemented leakage-safe protocol and measured evidence readiness",
+      "claim_not_allowed": "observation-policy performance, calibrated event probability or warning skill until every blocker is resolved",
+      "artifacts": [
+        {
+          "path": "benchmarks/central_asia_cascade/tables/event_review_queue.csv",
+          "exists": true,
+          "sha256": "1bf9c79bf2eccd9c43b33f4a757d0d59c6227350970055259094dc8a8207a0cd",
+          "size_bytes": 24724
+        },
+        {
+          "path": "benchmarks/central_asia_cascade/tables/event_replay.csv",
+          "exists": true,
+          "sha256": "f851012461664eb6893919fe723e9f91e106725083b6e8e13bfc811b709530e9",
+          "size_bytes": 121
+        },
+        {
+          "path": "benchmarks/central_asia_cascade/tables/observation_value.csv",
+          "exists": true,
+          "sha256": "fd13d5dd4cc481852e333245e3e512684e7d377e59cb4fb2d976dfcfcb014831",
+          "size_bytes": 104
+        },
+        {
+          "path": "benchmarks/central_asia_cascade/manifests/event_replay.json",
+          "exists": true,
+          "sha256": "7cf236cf0922b9f019658860903cab323e7325b2a13ffc379e5a0656e5884b9a",
+          "size_bytes": 1112
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "sources_total": 14,
+    "sources_local": 12,
+    "sources_verified": 11,
+    "sources_metadata_only": 0,
+    "sources_missing": 2,
+    "tracks_total": 10,
+    "tracks_data_ready": 0,
+    "tracks_blocked": 1,
+    "model_evaluations_total": 5,
+    "model_evaluations_measured": 5,
+    "reference_evidence_total": 4,
+    "reference_evidence_available": 4,
+    "decision_support_evaluations_total": 1,
+    "decision_support_evaluations_ready": 0
+  },
+  "claims_not_unlocked": [
+    "independent expert gold-label accuracy",
+    "operational GLOF warning or calibrated event probability",
+    "field-validated glacier volume or runoff forecast"
+  ]
+}

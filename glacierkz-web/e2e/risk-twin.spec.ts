@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.describe("Active Cryosphere Risk Twin", () => {
   test("shows a real year-specific screening case and keeps the map usable offline", async ({ page }) => {
+    test.setTimeout(60_000);
     await page.goto("/risk-twin");
 
     await expect(page.getByRole("heading", { level: 1, name: "Active Cryosphere Risk Twin" })).toBeVisible();

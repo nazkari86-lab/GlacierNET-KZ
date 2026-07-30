@@ -1,0 +1,147 @@
+{
+  "schema": "centralasia-glacierbench.cryobench-gld.v1",
+  "created_at": "2026-07-30T02:46:17.673989+00:00",
+  "status": "measured_external_test",
+  "task": "Cryo-Bench GLD glacial-lake foreground segmentation",
+  "model": {
+    "family": "HistGradientBoostingClassifier",
+    "input_channels": 10,
+    "training_pixels": 459858,
+    "class_balance_positive_fraction": 0.4789348016126717,
+    "artifact": "models/centralasia_glacierbench_gld_hgb.joblib",
+    "artifact_sha256": "629da84fcb5628572c4700ecf5e11f3414130225b5277e323211017c23889953"
+  },
+  "protocol": {
+    "train_images": 468,
+    "validation_images": 52,
+    "test_images": 141,
+    "selection_split": "validation",
+    "test_set_touched_for_selection": false,
+    "selected_threshold": 0.8,
+    "primary_metric": "macro image-level foreground IoU",
+    "metric_note": "Foreground IoU is reported explicitly; it is not assumed identical to publisher mIoU.",
+    "seed": 142
+  },
+  "validation_threshold_sweep": [
+    {
+      "threshold": 0.2,
+      "macro_image_hard_iou_foreground": 0.14120781450928555,
+      "pooled_hard_iou_foreground": 0.13240195641310804
+    },
+    {
+      "threshold": 0.25,
+      "macro_image_hard_iou_foreground": 0.163220791900769,
+      "pooled_hard_iou_foreground": 0.15112394048845115
+    },
+    {
+      "threshold": 0.30000000000000004,
+      "macro_image_hard_iou_foreground": 0.18384618208529643,
+      "pooled_hard_iou_foreground": 0.16992674815500683
+    },
+    {
+      "threshold": 0.35000000000000003,
+      "macro_image_hard_iou_foreground": 0.20369237463435694,
+      "pooled_hard_iou_foreground": 0.18889033480980957
+    },
+    {
+      "threshold": 0.4,
+      "macro_image_hard_iou_foreground": 0.22384174382436683,
+      "pooled_hard_iou_foreground": 0.20847962403857975
+    },
+    {
+      "threshold": 0.45000000000000007,
+      "macro_image_hard_iou_foreground": 0.24528811496532493,
+      "pooled_hard_iou_foreground": 0.23008212007496134
+    },
+    {
+      "threshold": 0.5,
+      "macro_image_hard_iou_foreground": 0.2683868583985192,
+      "pooled_hard_iou_foreground": 0.25493333242652283
+    },
+    {
+      "threshold": 0.55,
+      "macro_image_hard_iou_foreground": 0.2924266344420139,
+      "pooled_hard_iou_foreground": 0.2831127281612333
+    },
+    {
+      "threshold": 0.6000000000000001,
+      "macro_image_hard_iou_foreground": 0.3154529512346396,
+      "pooled_hard_iou_foreground": 0.3149595797498634
+    },
+    {
+      "threshold": 0.6500000000000001,
+      "macro_image_hard_iou_foreground": 0.33815064495392316,
+      "pooled_hard_iou_foreground": 0.3515179077363075
+    },
+    {
+      "threshold": 0.7000000000000002,
+      "macro_image_hard_iou_foreground": 0.35910787410885187,
+      "pooled_hard_iou_foreground": 0.3933866457612755
+    },
+    {
+      "threshold": 0.7500000000000002,
+      "macro_image_hard_iou_foreground": 0.37931247085412934,
+      "pooled_hard_iou_foreground": 0.4400067772998108
+    },
+    {
+      "threshold": 0.8,
+      "macro_image_hard_iou_foreground": 0.4006399430373022,
+      "pooled_hard_iou_foreground": 0.49223363125574476
+    }
+  ],
+  "test_pooled_metrics": {
+    "hard_dice_foreground": 0.4608386311605859,
+    "hard_iou_foreground": 0.2994089122104693,
+    "precision_foreground": 0.32263350064110813,
+    "recall_foreground": 0.806177383143063,
+    "tp": 270745,
+    "fp": 568427,
+    "fn": 65093,
+    "tn": 11785735
+  },
+  "test_macro_bootstrap": {
+    "hard_dice_foreground": {
+      "estimate": 0.42786840096237055,
+      "ci_lower": 0.394142439225014,
+      "ci_upper": 0.4586401716199465,
+      "confidence": 0.95,
+      "n_images": 141,
+      "n_resamples": 2000,
+      "seed": 142
+    },
+    "hard_iou_foreground": {
+      "estimate": 0.29436593110204384,
+      "ci_lower": 0.2652262035317107,
+      "ci_upper": 0.3206001843286747,
+      "confidence": 0.95,
+      "n_images": 141,
+      "n_resamples": 2000,
+      "seed": 142
+    },
+    "precision_foreground": {
+      "estimate": 0.33035610548680666,
+      "ci_lower": 0.29847930185212707,
+      "ci_upper": 0.35967043452208325,
+      "confidence": 0.95,
+      "n_images": 141,
+      "n_resamples": 2000,
+      "seed": 142
+    },
+    "recall_foreground": {
+      "estimate": 0.758439651753867,
+      "ci_lower": 0.7225421821303334,
+      "ci_upper": 0.7881417157879903,
+      "confidence": 0.95,
+      "n_images": 141,
+      "n_resamples": 2000,
+      "seed": 142
+    }
+  },
+  "dataset": {
+    "archive": "data/external/centralasia_glacierbench/cryobench/GLD.tar.gz",
+    "archive_sha256": "e1a0c16f04bb545643662d345d3fdab219872a785aa4429e9301428404e543d1",
+    "source": "Sk-21/Cryo-Bench GLD"
+  },
+  "claim_allowed": "reproducible lightweight baseline on the frozen real GLD test split",
+  "claim_not_allowed": "operational lake detection in Kazakhstan without regional external validation"
+}

@@ -112,6 +112,48 @@ describe("Risk Twin evidence model", () => {
     expect(objects).toHaveLength(2);
   });
 
+  it("distinguishes a NEXT_DOWN route and planning corridor from nearby hydrography", () => {
+    const context = {
+      ...lakeContext,
+      downstream_route: {
+        available: true,
+        status: "distance_cap_reached",
+        route_length_km: 42.5,
+        route_segment_count: 3,
+        corridor_width_m: 750,
+        planning_asset_count: 1,
+        interpretation: "Planning route only.",
+        features: {
+          type: "FeatureCollection",
+          features: [{
+            type: "Feature",
+            properties: {
+              hyriv_id: 10,
+              next_downstream_id: 11,
+              route_sequence: 1,
+              relation: "graph_derived_downstream_planning_route",
+            },
+            geometry: { type: "LineString", coordinates: [[77.08, 43.05], [77.1, 43.0]] },
+          }],
+        },
+        corridor: {
+          type: "Feature",
+          properties: { width_m: 750 },
+          geometry: { type: "Polygon", coordinates: [[[77, 43], [77.2, 43], [77.2, 42.9], [77, 43]]] },
+        },
+        planning_assets: { type: "FeatureCollection", features: [] },
+      },
+    } as unknown as RiskTwinSpatialContext;
+
+    const objects = buildEvidenceMapObjects(glacier, null, context, []);
+    const route = objects.find((item) => item.kind === "river" && item.isRoute);
+    const corridor = objects.find((item) => item.kind === "corridor");
+
+    expect(route?.name).toContain("Route segment 1");
+    expect(route?.prohibitedClaim).toMatch(/гидродинамический|warning/i);
+    expect(corridor?.visibleFact).toContain("42.5 km");
+  });
+
   it("marks an outlet-data gap as a decision gap rather than a hazard", () => {
     const issues = buildEvidenceIssues([], ["outlet_capacity_fraction"], []);
 

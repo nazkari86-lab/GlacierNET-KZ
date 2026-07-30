@@ -146,6 +146,66 @@ export interface MlBenchmark {
   generalisation_scope?: string | null;
 }
 
+export interface BenchmarkSource {
+  id: string;
+  title: string;
+  role: string;
+  citation_url: string;
+  license: string;
+  evidence_tier: string;
+  state: "verified_local" | "local_unverified" | "metadata_only" | "missing";
+  available: boolean;
+  local_path?: string | null;
+  size_bytes: number;
+  integrity: string;
+  digest?: string | null;
+  notes?: string;
+}
+
+export interface BenchmarkTrack {
+  id: string;
+  title: string;
+  status: string;
+  category: "model_evaluation" | "reference_evidence" | "decision_support_evaluation";
+  evidence_tier?: string;
+  scope?: string;
+  metrics: Record<string, unknown>;
+  headline_metrics?: Record<string, unknown>;
+  source_states?: Record<string, string>;
+  blockers?: string[];
+  claim_allowed?: string | null;
+  claim_not_allowed?: string | null;
+  artifacts: Array<{ path: string; exists: boolean; sha256?: string | null; size_bytes?: number }>;
+}
+
+export interface CentralAsiaBenchmarkReport {
+  schema: string;
+  benchmark_name: string;
+  status: "ready" | "not_built";
+  created_at?: string;
+  policy?: Record<string, boolean>;
+  sources: BenchmarkSource[];
+  tracks: BenchmarkTrack[];
+  summary: {
+    sources_total: number;
+    sources_local: number;
+    sources_verified: number;
+    sources_metadata_only: number;
+    sources_missing: number;
+    tracks_total: number;
+    tracks_data_ready: number;
+    tracks_blocked: number;
+    model_evaluations_total: number;
+    model_evaluations_measured: number;
+    reference_evidence_total: number;
+    reference_evidence_available: number;
+    decision_support_evaluations_total: number;
+    decision_support_evaluations_ready: number;
+  };
+  claims_not_unlocked?: string[];
+  build_command?: string;
+}
+
 export interface MlReadinessModel extends ModelInfo {
   available: boolean;
   trusted_artifact: boolean;
@@ -985,6 +1045,25 @@ export interface RiskTwinSpatialContext {
     source?: string;
     interpretation: string;
   };
+  downstream_route: {
+    available: boolean;
+    status: string;
+    start_reach_id?: number;
+    start_distance_to_rgi_boundary_m?: number;
+    connector_quality?: "near" | "screening_only";
+    route_length_km?: number;
+    route_segment_count?: number;
+    next_downstream_id_after_subset?: number | null;
+    max_route_km?: number;
+    corridor_width_m?: number;
+    features: GeoJsonFeatureCollection;
+    corridor: { type: "Feature"; properties: Record<string, unknown>; geometry: GeoJSON.GeoJsonObject } | null;
+    planning_assets: GeoJsonFeatureCollection;
+    planning_asset_summary?: Record<string, number>;
+    planning_asset_count?: number;
+    returned_planning_asset_count?: number;
+    interpretation?: string;
+  };
   terrain: { available: boolean; path: string; bands?: Record<string, number | null>; scope?: string; reason?: string };
   sentinel1: { available: boolean; path: string; bands?: Record<string, number | null>; scope?: string; reason?: string };
   jrc_surface_water: { available: boolean; path: string; bands?: Record<string, number | null>; scope?: string; reason?: string };
@@ -1008,6 +1087,30 @@ export interface RiskTwinSpatialContext {
     non_empty_grid_cells?: number;
     scope?: string;
     reason?: string;
+  };
+  benchmark_physical_context?: {
+    available: boolean;
+    oggm?: {
+      inventory_based_volume_km3?: number | null;
+      volume_area_scaling_km3?: number | null;
+      dem_mean_elevation_m?: number | null;
+      main_flowline_length_m?: number | null;
+      calibration_reference_mass_balance_kg_m2_year?: number | null;
+      calibration_reference_error_kg_m2_year?: number | null;
+      calibration_reference_period?: string | null;
+      evidence_type: string;
+    } | null;
+    itslive_point_sample?: {
+      observations_valid: number;
+      velocity_m_per_year_median?: number | null;
+      velocity_m_per_year_p90?: number | null;
+      velocity_m_per_year_max?: number | null;
+      sampling_geometry: string;
+      evidence_type: string;
+    } | null;
+    itslive_cloud_coverage: Array<{ cube_id: string; bbox: number[]; zarr_url: string }>;
+    claim_allowed: Array<string | null>;
+    claim_not_allowed: string[];
   };
   interpretation: { allowed: string[]; not_allowed: string[]; event_note: string };
   sources: string[];
@@ -1071,6 +1174,7 @@ function normalizeRiskTwinContext(payload: unknown): RiskTwinSpatialContext {
   const previousYearValue = rawQuery.previous_lake_inventory_year;
   const previousYear = typeof previousYearValue === "number" ? previousYearValue : inventoryYear === 2023 ? 2020 : null;
   const rawCandidates = Array.isArray(raw.screening_candidates) ? raw.screening_candidates as Array<Record<string, unknown>> : [];
+  const rawRoute = (raw.downstream_route ?? {}) as Record<string, unknown>;
   return {
     ...raw,
     query: {
@@ -1085,6 +1189,14 @@ function normalizeRiskTwinContext(payload: unknown): RiskTwinSpatialContext {
       historical_glof_events: (rawLayers.historical_glof_events ?? emptyLayer) as GeoJsonFeatureCollection,
       hydrorivers: (rawLayers.hydrorivers ?? emptyLayer) as GeoJsonFeatureCollection,
       hydrobasins_level06: (rawLayers.hydrobasins_level06 ?? emptyLayer) as GeoJsonFeatureCollection,
+    },
+    downstream_route: {
+      ...rawRoute,
+      available: rawRoute.available === true,
+      status: String(rawRoute.status ?? "not_available"),
+      features: (rawRoute.features ?? emptyLayer) as GeoJsonFeatureCollection,
+      corridor: (rawRoute.corridor ?? null) as RiskTwinSpatialContext["downstream_route"]["corridor"],
+      planning_assets: (rawRoute.planning_assets ?? emptyLayer) as GeoJsonFeatureCollection,
     },
     screening_candidates: rawCandidates.map((candidate) => ({
       ...candidate,
@@ -1673,5 +1785,10 @@ export async function createRiskTwinHandoff(input: RiskTwinHandoffInput): Promis
       body: JSON.stringify(input),
     }),
   );
+  return res.json();
+}
+
+export async function fetchCentralAsiaBenchmark(): Promise<CentralAsiaBenchmarkReport> {
+  const res = checkResponse(await fetch(apiUrl("/api/benchmark")));
   return res.json();
 }

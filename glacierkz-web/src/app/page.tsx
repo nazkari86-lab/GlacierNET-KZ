@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BrainCircuit, ClipboardCheck, FileText, Map, Mountain, ShieldCheck } from "lucide-react";
+import { ArrowRight, BrainCircuit, ClipboardCheck, FileText, FlaskConical, Map, Mountain, ShieldCheck } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useI18n } from "@/lib/I18nProvider";
 
@@ -67,6 +67,7 @@ export default function HomePage() {
         <Link href="/ml" className="rounded-2xl border border-cyan-200 bg-cyan-50 p-6 shadow-sm transition hover:border-cyan-400 hover:shadow-md"><BrainCircuit className="h-7 w-7 text-cyan-700" /><h2 className="mt-4 text-xl font-semibold">Glacier-first ML</h2><p className="mt-2 text-sm leading-6 text-slate-600">16-channel segmentation, probability, entropy and a downloadable audit manifest.</p></Link>
         <Link href="/risk-twin" className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm transition hover:border-blue-300 hover:shadow-md"><Map className="h-7 w-7 text-blue-700" /><h2 className="mt-4 text-xl font-semibold">{text.map}</h2><p className="mt-2 text-sm leading-6 text-slate-600">{text.mapText}</p></Link>
         <Link href="/jury" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300 hover:shadow-md"><ClipboardCheck className="h-7 w-7 text-blue-700" /><h2 className="mt-4 text-xl font-semibold">{text.audit}</h2><p className="mt-2 text-sm leading-6 text-slate-600">{text.auditText}</p></Link>
+        <Link href="/benchmark" className="rounded-2xl border border-violet-200 bg-violet-50 p-6 shadow-sm transition hover:border-violet-400 hover:shadow-md"><FlaskConical className="h-7 w-7 text-violet-700" /><h2 className="mt-4 text-xl font-semibold">CentralAsia-GlacierBench</h2><p className="mt-2 text-sm leading-6 text-slate-600">Frozen external, temporal, physical and cascade-risk tracks with explicit evidence tiers.</p></Link>
         <Link href="/analysis" className="sm:col-span-2 lg:col-span-1 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-950 px-5 py-4 font-semibold text-white hover:bg-slate-800"><FileText className="h-5 w-5 text-blue-300" />Evidence-first AI analysis<ArrowRight className="ml-auto h-4 w-4" /></Link>
       </section>
     </main>

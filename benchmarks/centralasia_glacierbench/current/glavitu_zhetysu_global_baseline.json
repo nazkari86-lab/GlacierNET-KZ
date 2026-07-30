@@ -1,0 +1,172 @@
+{
+  "schema": "centralasia-glacierbench.glavitu-zhetysu.v1",
+  "created_at": "2026-07-30T02:55:00.912758+00:00",
+  "status": "measured_provisional_external_model",
+  "model": "GlaViTU",
+  "strategy": "global",
+  "weights_sha256": "b5e14245491a62995497aecb3d3628e6e8ca4efe93e85126467e78d1de48b564",
+  "threshold": 0.5,
+  "threshold_source": "fixed softmax argmax; no Zhetysu tuning",
+  "feature_schema": [
+    "B2",
+    "B3",
+    "B4",
+    "B8",
+    "B11",
+    "B12",
+    "elevation",
+    "slope"
+  ],
+  "metrics_bootstrap": {
+    "hard_dice": {
+      "estimate": 0.04549247635186732,
+      "ci_lower": 0.005518940715387975,
+      "ci_upper": 0.10534462272948868,
+      "confidence": 0.95,
+      "n_glaciers": 9,
+      "n_resamples": 2000,
+      "seed": 142
+    },
+    "hard_iou": {
+      "estimate": 0.025089998988426104,
+      "ci_lower": 0.002829747804367094,
+      "ci_upper": 0.0590850951240722,
+      "confidence": 0.95,
+      "n_glaciers": 9,
+      "n_resamples": 2000,
+      "seed": 142
+    },
+    "precision": {
+      "estimate": 0.027577250360807687,
+      "ci_lower": 0.002857933369138877,
+      "ci_upper": 0.06605472301642074,
+      "confidence": 0.95,
+      "n_glaciers": 9,
+      "n_resamples": 2000,
+      "seed": 142
+    },
+    "recall": {
+      "estimate": 0.22258610397326933,
+      "ci_lower": 0.05964817598910347,
+      "ci_upper": 0.44257076552300134,
+      "confidence": 0.95,
+      "n_glaciers": 9,
+      "n_resamples": 2000,
+      "seed": 142
+    }
+  },
+  "per_glacier": [
+    {
+      "rgi_id": "RGI2000-v7.0-G-13-36006",
+      "scene_sha256": "ab18fc36de25d1cfded2520cf89770f06b9fd99b87cf42fcb06cef27e7b5bf01",
+      "hard_dice": 0.0,
+      "hard_iou": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0,
+      "fp": 3643,
+      "fn": 154,
+      "predicted_fraction": 0.07135581932855407
+    },
+    {
+      "rgi_id": "RGI2000-v7.0-G-13-36594",
+      "scene_sha256": "15b52c15e6e5503bb959deb08b72500b1241e1bcded6479117cd0f0731769017",
+      "hard_dice": 0.25103425898385745,
+      "hard_iou": 0.14353297671686094,
+      "precision": 0.1638198757763975,
+      "recall": 0.5368335839019313,
+      "tp": 4642,
+      "fp": 23694,
+      "fn": 4005,
+      "predicted_fraction": 0.23981042654028437
+    },
+    {
+      "rgi_id": "RGI2000-v7.0-G-13-37015",
+      "scene_sha256": "67a977518fb9e37db537070a2abe09014f130c1c4d5abcd26c0de22c01a63c66",
+      "hard_dice": 0.0,
+      "hard_iou": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0,
+      "fp": 6037,
+      "fn": 694,
+      "predicted_fraction": 0.10465640385548852
+    },
+    {
+      "rgi_id": "RGI2000-v7.0-G-13-37260",
+      "scene_sha256": "805451b6db2447cf1745cc5eb0c94829a1017eac6901a349810ec9a1331a22a7",
+      "hard_dice": 0.0,
+      "hard_iou": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0,
+      "fp": 4727,
+      "fn": 5754,
+      "predicted_fraction": 0.0448959045665223
+    },
+    {
+      "rgi_id": "RGI2000-v7.0-G-13-37493",
+      "scene_sha256": "11f5a837611d4dec3e26b5cdc6b9f18c3577091bbfc19e6848e910b40b726b2d",
+      "hard_dice": 0.013069667007614501,
+      "hard_iou": 0.0065778184522107186,
+      "precision": 0.007137537239324727,
+      "recall": 0.07738896366083446,
+      "tp": 115,
+      "fp": 15997,
+      "fn": 1371,
+      "predicted_fraction": 0.25761476104440145
+    },
+    {
+      "rgi_id": "RGI2000-v7.0-G-13-37610",
+      "scene_sha256": "671048801b1050ee6dba88c042a9acfd2a3f1250eeb6a114d3cccaa5f2bea978",
+      "hard_dice": 0.09565789473684211,
+      "hard_iou": 0.05023146548745941,
+      "precision": 0.05151643990929705,
+      "recall": 0.6681985294117647,
+      "tp": 727,
+      "fp": 13385,
+      "fn": 361,
+      "predicted_fraction": 0.2322962962962963
+    },
+    {
+      "rgi_id": "RGI2000-v7.0-G-13-37740",
+      "scene_sha256": "4b063d0e48f643528e13749f5da118c23b166ed49ef36d9c6295586c540eb53c",
+      "hard_dice": 0.0,
+      "hard_iou": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 919,
+      "predicted_fraction": 0.0
+    },
+    {
+      "rgi_id": "RGI2000-v7.0-G-13-39187",
+      "scene_sha256": "c48b767ea844ff6cb458ddf964c6755595e00911735614fb946a8fa8780ba1a7",
+      "hard_dice": 0.0,
+      "hard_iou": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0,
+      "fp": 687,
+      "fn": 4008,
+      "predicted_fraction": 0.00748439389482629
+    },
+    {
+      "rgi_id": "RGI2000-v7.0-G-13-39203",
+      "scene_sha256": "26089b724ab0b58f0575d35475e110b200229a97c48e030416971e4775cab9eb",
+      "hard_dice": 0.04967046643849178,
+      "hard_iou": 0.025467730239303845,
+      "precision": 0.025721400322249892,
+      "recall": 0.7208538587848933,
+      "tp": 878,
+      "fp": 33257,
+      "fn": 340,
+      "predicted_fraction": 0.5600492206726825
+    }
+  ],
+  "label_quality_tier": "provisional_silver_rgi",
+  "claim_allowed": "official external pretrained-model interoperability on the frozen replay",
+  "claim_not_allowed": "independent external accuracy or current-boundary truth",
+  "circularity_guard": "The 2024 prediction is compared with an RGI-derived inventory layer. The metric measures inventory consistency, not expert-verified 2024 accuracy."
+}

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import sys
@@ -60,19 +61,19 @@ def read_mask_stats(mask_path: Path) -> tuple[int, int, float]:
     return glacier_pixels, total_pixels, round(area_km2, 2)
 
 
-def read_existing_rows() -> list[dict[str, str]]:
+def read_existing_rows(output_path: Path = OUT) -> list[dict[str, str]]:
     """Keep valid historical rows when only some prediction years are local."""
-    if not OUT.exists():
+    if not output_path.exists():
         return []
-    with OUT.open(newline="", encoding="utf-8") as f:
+    with output_path.open(newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         if not reader.fieldnames or not set(FIELDNAMES).issubset(reader.fieldnames):
             return []
         return [row for row in reader if row.get("year") and row.get("method")]
 
 
-def main() -> None:
-    config.TABLES_DIR.mkdir(parents=True, exist_ok=True)
+def main(output_path: Path = OUT) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     created_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     pred_dir = ROOT / "predictions"
 
@@ -119,21 +120,24 @@ def main() -> None:
             )
 
     merged: dict[tuple[int, str], dict[str, str | int | float]] = {
-        (int(row["year"]), row["method"]): row for row in read_existing_rows()
+        (int(row["year"]), row["method"]): row for row in read_existing_rows(output_path)
     }
     for row in rows:
         merged[(int(row["year"]), str(row["method"]))] = row
     rows = sorted(merged.values(), key=lambda row: (int(row["year"]), str(row["method"])))
 
-    with OUT.open("w", newline="", encoding="utf-8") as f:
+    with output_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=FIELDNAMES, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
     years_covered = sorted({int(r["year"]) for r in rows})
-    print(f"Wrote {len(rows)} rows for {len(years_covered)} years → {OUT}")
+    print(f"Wrote {len(rows)} rows for {len(years_covered)} years → {output_path}")
     print(f"Years: {years_covered}")
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output", type=Path, default=OUT)
+    args = parser.parse_args()
+    main(args.output)
