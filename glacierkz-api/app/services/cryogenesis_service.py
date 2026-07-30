@@ -95,11 +95,7 @@ def discovery_status() -> dict[str, Any]:
     return {
         "status": cohorts["status"],
         "cohort_count": cohorts["count"],
-        "passport_file_count": (
-            len(list(passport_root.glob("*.json")))
-            if passport_root.is_dir()
-            else 0
-        ),
+        "passport_file_count": (len(list(passport_root.glob("*.json"))) if passport_root.is_dir() else 0),
         "claims_not_allowed": list(CLAIMS_NOT_ALLOWED),
     }
 
@@ -144,11 +140,7 @@ def list_discoveries(
                 "match_status": match.get("status"),
                 "twin_count": len(match.get("twins", [])),
                 "surprise_class": payload["surprise_class"],
-                "raw_divergence": (
-                    divergence.get("raw_divergence")
-                    if isinstance(divergence, dict)
-                    else None
-                ),
+                "raw_divergence": (divergence.get("raw_divergence") if isinstance(divergence, dict) else None),
                 "payload_sha256": payload["payload_sha256"],
             }
         )

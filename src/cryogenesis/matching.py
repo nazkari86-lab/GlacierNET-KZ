@@ -48,9 +48,7 @@ class MatchConfig:
 
 def _is_aspect(feature_name: str) -> bool:
     normalized = feature_name.lower()
-    return normalized in {"aspect", "aspect_deg", "aspect_degrees"} or (
-        normalized.endswith("_aspect_deg")
-    )
+    return normalized in {"aspect", "aspect_deg", "aspect_degrees"} or (normalized.endswith("_aspect_deg"))
 
 
 def _numeric_value(feature: FeatureValue | None) -> float | None:
@@ -90,8 +88,7 @@ def _development_scales(
         values = [
             value
             for record in scale_population
-            if (value := _numeric_value(record.features.get(feature_name)))
-            is not None
+            if (value := _numeric_value(record.features.get(feature_name))) is not None
         ]
         if len(values) < 2:
             scales[feature_name] = floor
@@ -113,17 +110,11 @@ def match_twins(
     validate_pre_outcome_features(target, required_features)
     scales = _development_scales(cohort, required_features, config.scale_floor)
     target_values = {
-        feature_name: _numeric_value(target.features.get(feature_name))
-        for feature_name in required_features
+        feature_name: _numeric_value(target.features.get(feature_name)) for feature_name in required_features
     }
     if any(value is None for value in target_values.values()):
-        missing = [
-            name for name, value in target_values.items() if value is None
-        ]
-        raise ValueError(
-            "target has non-numeric or unobserved required features: "
-            + ", ".join(missing)
-        )
+        missing = [name for name, value in target_values.items() if value is None]
+        raise ValueError("target has non-numeric or unobserved required features: " + ", ".join(missing))
 
     accepted: list[tuple[float, str, dict[str, float]]] = []
     rejected: dict[str, str] = {}
@@ -153,19 +144,11 @@ def match_twins(
             continue
 
         candidate_values = {
-            feature_name: _numeric_value(
-                candidate.features.get(feature_name)
-            )
-            for feature_name in required_features
+            feature_name: _numeric_value(candidate.features.get(feature_name)) for feature_name in required_features
         }
-        missing = [
-            name for name, value in candidate_values.items() if value is None
-        ]
+        missing = [name for name, value in candidate_values.items() if value is None]
         if missing:
-            rejected[candidate.rgi_id] = (
-                "non-numeric or unobserved required features: "
-                + ", ".join(missing)
-            )
+            rejected[candidate.rgi_id] = "non-numeric or unobserved required features: " + ", ".join(missing)
             continue
 
         component_distances: dict[str, float] = {}
@@ -173,33 +156,24 @@ def match_twins(
         for feature_name in required_features:
             target_value = cast(float, target_values[feature_name])
             candidate_value = cast(float, candidate_values[feature_name])
-            raw_difference = _raw_difference(
-                feature_name, target_value, candidate_value
-            )
+            raw_difference = _raw_difference(feature_name, target_value, candidate_value)
             caliper = config.hard_calipers.get(feature_name)
             if caliper is not None and raw_difference > caliper:
                 failed_caliper = feature_name
                 break
-            component_distances[feature_name] = (
-                raw_difference / scales[feature_name]
-            )
+            component_distances[feature_name] = raw_difference / scales[feature_name]
 
         if failed_caliper is not None:
-            rejected[candidate.rgi_id] = (
-                f"hard_caliper_exceeded:{failed_caliper}"
-            )
+            rejected[candidate.rgi_id] = f"hard_caliper_exceeded:{failed_caliper}"
             continue
 
-        total_distance = sum(
-            config.feature_weights[name] * component_distances[name]
-            for name in required_features
-        ) / weight_sum
+        total_distance = (
+            sum(config.feature_weights[name] * component_distances[name] for name in required_features) / weight_sum
+        )
         if total_distance > config.maximum_distance:
             rejected[candidate.rgi_id] = "maximum_distance_exceeded"
             continue
-        accepted.append(
-            (float(total_distance), candidate.rgi_id, component_distances)
-        )
+        accepted.append((float(total_distance), candidate.rgi_id, component_distances))
 
     accepted.sort(key=lambda item: (item[0], item[1]))
     selected = accepted[: config.maximum_twins]
@@ -207,10 +181,7 @@ def match_twins(
         status: MatchStatus = "no_valid_counterfactual"
         return MatchResult(target.rgi_id, status, (), rejected)
 
-    inverse_distances = [
-        1.0 / max(distance, config.scale_floor)
-        for distance, _, _ in selected
-    ]
+    inverse_distances = [1.0 / max(distance, config.scale_floor) for distance, _, _ in selected]
     inverse_sum = sum(inverse_distances)
     twins = tuple(
         TwinMatch(
@@ -219,15 +190,10 @@ def match_twins(
             component_distances=components,
             weight=inverse_distance / inverse_sum,
         )
-        for (distance, rgi_id, components), inverse_distance in zip(
-            selected, inverse_distances
-        )
+        for (distance, rgi_id, components), inverse_distance in zip(selected, inverse_distances)
     )
     status = cast(
         MatchStatus,
-        "matched"
-        if len(twins) >= config.minimum_primary_twins
-        else "limited_match",
+        "matched" if len(twins) >= config.minimum_primary_twins else "limited_match",
     )
     return MatchResult(target.rgi_id, status, twins, rejected)
-

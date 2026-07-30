@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -16,6 +17,7 @@ client = TestClient(app)
 TUYUKSU = "RGI2000-v7.0-G-13-33843"
 
 
+@pytest.mark.local_data
 def test_ml_readiness_exposes_only_compatible_physical_years():
     payload = ml_readiness()
 
@@ -40,6 +42,7 @@ def test_ml_readiness_api_preserves_claim_boundary():
     assert any("entropy" in step for step in body["workflow"])
 
 
+@pytest.mark.local_data
 def test_training_dataset_is_integrated_without_promoting_provisional_labels():
     payload = training_dataset_readiness()
 
@@ -66,6 +69,7 @@ def test_training_dataset_is_integrated_without_promoting_provisional_labels():
     assert "independent expert accuracy" in spatial["claims_not_allowed"]
 
 
+@pytest.mark.local_data
 def test_training_dataset_api_and_preview_are_available():
     response = client.get("/api/ml/training-dataset")
     preview = client.get("/api/ml/training-dataset/preview")

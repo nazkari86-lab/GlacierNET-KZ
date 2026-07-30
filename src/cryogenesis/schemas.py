@@ -56,12 +56,8 @@ class SourceAsset:
     size_bytes: int
 
     def __post_init__(self) -> None:
-        if len(self.sha256) != 64 or any(
-            character not in "0123456789abcdef" for character in self.sha256
-        ):
-            raise ValueError(
-                "sha256 must be a lowercase 64-character hexadecimal digest"
-            )
+        if len(self.sha256) != 64 or any(character not in "0123456789abcdef" for character in self.sha256):
+            raise ValueError("sha256 must be a lowercase 64-character hexadecimal digest")
         if self.size_bytes < 0:
             raise ValueError("size_bytes must be non-negative")
 
@@ -163,15 +159,9 @@ class DiscoveryPassport:
             raise ValueError(f"unsupported surprise class: {self.surprise_class}")
         if self.payload_sha256 and (
             len(self.payload_sha256) != 64
-            or any(
-                character not in "0123456789abcdef"
-                for character in self.payload_sha256
-            )
+            or any(character not in "0123456789abcdef" for character in self.payload_sha256)
         ):
-            raise ValueError(
-                "payload_sha256 must be empty or a lowercase "
-                "64-character hexadecimal digest"
-            )
+            raise ValueError("payload_sha256 must be empty or a lowercase 64-character hexadecimal digest")
 
 
 @dataclass(frozen=True)
@@ -180,4 +170,3 @@ class VerificationResult:
 
     valid: bool
     errors: tuple[str, ...] = ()
-

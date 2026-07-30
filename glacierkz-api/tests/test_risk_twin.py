@@ -1,5 +1,6 @@
 """API tests for the safety-bounded Active Cryosphere Risk Twin."""
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -16,6 +17,7 @@ def test_risk_twin_readiness_is_fail_closed():
     assert "not an official warning" in body["safety_statement"]
 
 
+@pytest.mark.local_data
 def test_risk_twin_context_exposes_local_spatial_evidence_without_risk_claims():
     response = client.get("/api/risk-twin/context/RGI2000-v7.0-G-13-33843?year=2024&buffer_km=10")
     assert response.status_code == 200
@@ -39,6 +41,7 @@ def test_risk_twin_context_exposes_local_spatial_evidence_without_risk_claims():
     assert "downstream exposure, affected population, evacuation demand, or disruption estimate" in body["interpretation"]["not_allowed"]
 
 
+@pytest.mark.local_data
 def test_risk_twin_context_uses_the_explicit_lake_inventory_year_for_layer_and_candidates():
     response = client.get("/api/risk-twin/context/RGI2000-v7.0-G-13-33843?year=2024&lake_inventory_year=2010")
     assert response.status_code == 200
@@ -145,6 +148,7 @@ def test_risk_twin_api_runs_resilience_stress_surface_without_probability_claim(
     assert body["priorities"]["hazard_priority"]["status"] == "model_based_priority_not_event_probability"
 
 
+@pytest.mark.local_data
 def test_regional_scan_returns_real_observation_candidates_without_hazard_claims():
     from app.services.risk_twin_context_service import regional_lake_screening
 
@@ -158,6 +162,7 @@ def test_regional_scan_returns_real_observation_candidates_without_hazard_claims
     assert "hazard" in candidate["interpretation"].lower()
 
 
+@pytest.mark.local_data
 def test_regional_scan_uses_previous_available_inventory_and_keeps_1990_as_baseline():
     from app.services.risk_twin_context_service import regional_lake_screening
 

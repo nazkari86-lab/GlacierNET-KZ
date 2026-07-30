@@ -73,9 +73,7 @@ def verify_sources(
         if not path.is_relative_to(root) or not path.is_file():
             raise ValueError(f"missing registered source: {source.relative_path}")
         if path.stat().st_size != source.size_bytes:
-            raise ValueError(
-                f"source checksum/size changed: {source.relative_path}"
-            )
+            raise ValueError(f"source checksum/size changed: {source.relative_path}")
         if sha256_file(path) != source.sha256:
             raise ValueError(f"source checksum changed: {source.relative_path}")
 
@@ -91,9 +89,7 @@ def register_required_sources(
     for source_id, relative_path in REQUIRED_SOURCE_PATHS.items():
         absolute = root / relative_path
         if source_id == "rgi":
-            paths = [
-                absolute.with_suffix(suffix) for suffix in _SHAPEFILE_SUFFIXES
-            ]
+            paths = [absolute.with_suffix(suffix) for suffix in _SHAPEFILE_SUFFIXES]
         elif source_id == "predictions" and prediction_years:
             paths = sorted(
                 path
@@ -111,9 +107,7 @@ def register_required_sources(
             raise ValueError(f"missing required source family: {source_id}")
         for index, path in enumerate(paths):
             item_id = source_id if len(paths) == 1 else f"{source_id}:{index}"
-            registered.append(
-                RegisteredSource.from_path(item_id, path, root)
-            )
+            registered.append(RegisteredSource.from_path(item_id, path, root))
     return tuple(registered)
 
 
@@ -125,18 +119,12 @@ def preflight_sources(project_root: Path) -> dict[str, dict[str, object]]:
     for source_id, relative_path in REQUIRED_SOURCE_PATHS.items():
         path = root / relative_path
         if source_id == "rgi":
-            paths = [
-                path.with_suffix(suffix) for suffix in _SHAPEFILE_SUFFIXES
-            ]
+            paths = [path.with_suffix(suffix) for suffix in _SHAPEFILE_SUFFIXES]
         elif path.is_dir():
             paths = sorted(item for item in path.rglob("*") if item.is_file())
         else:
             paths = [path]
-        missing = [
-            item.relative_to(root).as_posix()
-            for item in paths
-            if not item.is_file()
-        ]
+        missing = [item.relative_to(root).as_posix() for item in paths if not item.is_file()]
         report[source_id] = {
             "status": "ready" if paths and not missing else "missing",
             "path": relative_path.as_posix(),

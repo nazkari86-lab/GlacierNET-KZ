@@ -40,9 +40,7 @@ def load_feature_fixture(
     project_root: Path,
 ) -> tuple[list[GlacierFeatureRecord], tuple[SourceAsset, ...]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
-    if payload.get("schema") != (
-        "glaciernet-kz.cryogenesis-feature-fixture.v1"
-    ):
+    if payload.get("schema") != ("glaciernet-kz.cryogenesis-feature-fixture.v1"):
         raise ValueError("unsupported CryoGenesis feature fixture schema")
     raw = path.read_bytes()
     digest = hashlib.sha256(raw).hexdigest()
@@ -130,12 +128,8 @@ def _climate_features(
     history = point.sel(valid_time=point.valid_time <= cutoff)
     if history.sizes.get("valid_time", 0) == 0:
         raise ValueError("ERA5-Land has no observations before anchor cutoff")
-    summer = history.where(
-        history.valid_time.dt.month.isin([6, 7, 8]), drop=True
-    )
-    annual_precipitation = history["tp"].groupby(
-        "valid_time.year"
-    ).sum().mean()
+    summer = history.where(history.valid_time.dt.month.isin([6, 7, 8]), drop=True)
+    annual_precipitation = history["tp"].groupby("valid_time.year").sum().mean()
     return {
         "summer_temperature_c": float(summer["t2m"].mean()) - 273.15,
         "annual_precipitation_m": float(annual_precipitation),
@@ -162,16 +156,10 @@ def extract_physical_records(
     outcome_path = root / "predictions" / str(outcome_year) / "ndsi_mask.tif"
     records: list[GlacierFeatureRecord] = []
     exclusions: list[dict[str, str]] = []
-    with rasterio.open(anchor_path) as anchor_mask, rasterio.open(
-        outcome_path
-    ) as outcome_mask:
+    with rasterio.open(anchor_path) as anchor_mask, rasterio.open(outcome_path) as outcome_mask:
         for _, row in inventory.sort_values("rgi_id").iterrows():
-            anchor_area = _mapped_area_km2(
-                anchor_mask, row.geometry, inventory.crs
-            )
-            outcome_area = _mapped_area_km2(
-                outcome_mask, row.geometry, inventory.crs
-            )
+            anchor_area = _mapped_area_km2(anchor_mask, row.geometry, inventory.crs)
+            outcome_area = _mapped_area_km2(outcome_mask, row.geometry, inventory.crs)
             # At 10 m resolution this requires at least 100 positive anchor
             # pixels. Smaller supports are dominated by pixel quantisation and
             # are excluded using pre-outcome information only.
@@ -208,18 +196,10 @@ def extract_physical_records(
             )
             aspect_radians = np.deg2rad(float(row["aspect_deg"]))
             feature_values = {
-                "anchor_area_km2": _feature(
-                    anchor_area, "km2", anchor_year, "annual_mask"
-                ),
-                "elevation_min_m": _feature(
-                    float(row["zmin_m"]), "m", anchor_year, "rgi_copdem"
-                ),
-                "elevation_mean_m": _feature(
-                    float(row["zmean_m"]), "m", anchor_year, "rgi_copdem"
-                ),
-                "elevation_max_m": _feature(
-                    float(row["zmax_m"]), "m", anchor_year, "rgi_copdem"
-                ),
+                "anchor_area_km2": _feature(anchor_area, "km2", anchor_year, "annual_mask"),
+                "elevation_min_m": _feature(float(row["zmin_m"]), "m", anchor_year, "rgi_copdem"),
+                "elevation_mean_m": _feature(float(row["zmean_m"]), "m", anchor_year, "rgi_copdem"),
+                "elevation_max_m": _feature(float(row["zmax_m"]), "m", anchor_year, "rgi_copdem"),
                 "elevation_range_m": _feature(
                     float(row["zmax_m"] - row["zmin_m"]),
                     "m",
@@ -247,19 +227,13 @@ def extract_physical_records(
                 **{
                     name: _feature(
                         value,
-                        (
-                            "degree_celsius"
-                            if name == "summer_temperature_c"
-                            else "m"
-                        ),
+                        ("degree_celsius" if name == "summer_temperature_c" else "m"),
                         anchor_year,
                         "era5_land",
                     )
                     for name, value in climate_values.items()
                 },
-                "valid_observation_count": _feature(
-                    2, "count", anchor_year, "annual_mask_provenance"
-                ),
+                "valid_observation_count": _feature(2, "count", anchor_year, "annual_mask_provenance"),
                 "label_tier": _feature(
                     "automated_physical_mask",
                     "category",

@@ -33,9 +33,7 @@ def main() -> int:
     if not passports:
         errors.append("no passports found")
     for path in passports:
-        result = verify_passport(
-            json.loads(path.read_text(encoding="utf-8"))
-        )
+        result = verify_passport(json.loads(path.read_text(encoding="utf-8")))
         if not result.valid:
             errors.append(f"{path.name}: {', '.join(result.errors)}")
     checksums = root / "checksums.sha256"

@@ -1,3 +1,7 @@
+import pytest
+
+
+@pytest.mark.local_data
 def test_jury_evidence_keeps_supported_and_blocked_claims_separate():
     from app.services.jury_evidence_service import jury_evidence
 

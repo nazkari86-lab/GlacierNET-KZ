@@ -39,17 +39,12 @@ def estimate_divergence(
     for excluded_index in range(len(twin_outcomes)):
         retained = [
             (outcome, weight)
-            for index, (outcome, weight) in enumerate(
-                zip(twin_outcomes, weights)
-            )
+            for index, (outcome, weight) in enumerate(zip(twin_outcomes, weights))
             if index != excluded_index
         ]
         retained_weight = sum(weight for _, weight in retained)
         if retained and retained_weight > 0:
-            leave_one_out.append(
-                sum(outcome * weight for outcome, weight in retained)
-                / retained_weight
-            )
+            leave_one_out.append(sum(outcome * weight for outcome, weight in retained) / retained_weight)
     if not leave_one_out:
         leave_one_out = [comparator]
 
@@ -61,4 +56,3 @@ def estimate_divergence(
         comparator_interval=(min(twin_outcomes), max(twin_outcomes)),
         leave_one_out_range=(min(leave_one_out), max(leave_one_out)),
     )
-

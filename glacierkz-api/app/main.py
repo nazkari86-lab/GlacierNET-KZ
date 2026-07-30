@@ -121,7 +121,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.add_middleware(SecurityHeadersMiddleware, config=SecurityHeadersConfig())
+app.add_middleware(
+    SecurityHeadersMiddleware,
+    config=SecurityHeadersConfig(
+        # The web client and API are intentionally deployable on separate
+        # origins. CORS still controls script access; CORP permits audited API
+        # images (QA previews and map layers) to render in that client.
+        cross_origin_resource_policy="cross-origin",
+    ),
+)
 app.add_middleware(
     RequestLoggingMiddleware,
     config=RequestLoggingConfig(

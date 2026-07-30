@@ -17,11 +17,7 @@ def classify_surprise(
 
     if match_status != "matched":
         return "comparison_inconclusive"
-    if (
-        target_outcome is None
-        or raw_divergence is None
-        or comparator_interval is None
-    ):
+    if target_outcome is None or raw_divergence is None or comparator_interval is None:
         return "comparison_inconclusive"
     if measurement_uncertainty is not None:
         if measurement_uncertainty < 0:
@@ -31,4 +27,3 @@ def classify_surprise(
     if comparator_interval[0] <= target_outcome <= comparator_interval[1]:
         return "trajectory_consistent"
     return "unexplained_divergence_candidate"
-

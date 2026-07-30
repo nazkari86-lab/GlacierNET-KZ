@@ -73,6 +73,13 @@ data/rgi/*.shx
 data/rgi/*.dbf
 data/rgi/*.prj
 data/rgi/*.cpg
+# The compact 586-feature RGI 7.0 study-area subset is part of the portable
+# demo/evaluation package. The full 155 MB Central Asia source stays ignored.
+!data/rgi/rgi_study_area.shp
+!data/rgi/rgi_study_area.shx
+!data/rgi/rgi_study_area.dbf
+!data/rgi/rgi_study_area.prj
+!data/rgi/rgi_study_area.cpg
 data/processed/patches/**/*.npy
 data/processed/masks/*.tif
 data/ancillary/**/*.tif

@@ -83,6 +83,7 @@ export interface YearComparison {
 }
 
 export interface YearMapLayer {
+  available?: true;
   year: number;
   method: string;
   image_url: string;
@@ -463,7 +464,15 @@ export async function compareLocalYears(fromYear: number, toYear: number): Promi
 
 export async function fetchYearMapLayer(year: number): Promise<YearMapLayer> {
   const res = checkResponse(await fetch(apiUrl(`/api/years/${year}/map-layer`)));
-  return res.json();
+  const body = await res.json() as YearMapLayer | {
+    available: false;
+    year: number;
+    reason: string;
+  };
+  if (body.available === false) {
+    throw new Error(body.reason);
+  }
+  return body;
 }
 
 export interface CompareSegment {

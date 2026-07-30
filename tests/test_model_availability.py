@@ -51,6 +51,7 @@ class TestModelAvailability:
         with patch("pathlib.Path.exists", return_value=False):
             assert is_model_available("ensemble") is False
 
+    @pytest.mark.local_data
     def test_deployable_temporal_models_publish_feature_contract(self):
         from app.services.model_availability import filter_available_models
 

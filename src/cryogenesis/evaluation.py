@@ -20,4 +20,3 @@ def cohort_report(
         "surprise_class_counts": dict(sorted(surprises.items())),
         "passport_verifier_target_rate": 1.0 if passports else 0.0,
     }
-

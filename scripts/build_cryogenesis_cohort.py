@@ -70,9 +70,7 @@ def _git_commit() -> str:
 def _matching_config(
     records: list[GlacierFeatureRecord],
 ) -> MatchConfig:
-    available = set.intersection(
-        *(set(record.features) for record in records)
-    )
+    available = set.intersection(*(set(record.features) for record in records))
     preferred = (
         "anchor_area_km2",
         "elevation_mean_m",
@@ -120,24 +118,10 @@ def _build_passports(
             )
         surprise = classify_surprise(
             match_status=match.status,
-            target_outcome=(
-                float(target.outcome.value)
-                if target.outcome is not None
-                else None
-            ),
-            raw_divergence=(
-                divergence.raw_divergence if divergence is not None else None
-            ),
-            comparator_interval=(
-                divergence.comparator_interval
-                if divergence is not None
-                else None
-            ),
-            measurement_uncertainty=(
-                target.outcome.uncertainty
-                if target.outcome is not None
-                else None
-            ),
+            target_outcome=(float(target.outcome.value) if target.outcome is not None else None),
+            raw_divergence=(divergence.raw_divergence if divergence is not None else None),
+            comparator_interval=(divergence.comparator_interval if divergence is not None else None),
+            measurement_uncertainty=(target.outcome.uncertainty if target.outcome is not None else None),
         )
         passports.append(
             build_passport(
@@ -155,9 +139,7 @@ def _build_passports(
 def _feature_rows(
     records: list[GlacierFeatureRecord],
 ) -> tuple[list[dict[str, Any]], pa.Schema]:
-    feature_names = sorted(
-        {name for record in records for name in record.features}
-    )
+    feature_names = sorted({name for record in records for name in record.features})
     string_features = {
         name
         for name in feature_names
@@ -192,22 +174,9 @@ def _feature_rows(
             "split": record.split,
             "anchor_year": record.anchor_year,
             "outcome_year": record.outcome_year,
-            "outcome": (
-                float(record.outcome.value)
-                if record.outcome is not None
-                else None
-            ),
+            "outcome": (float(record.outcome.value) if record.outcome is not None else None),
         }
-        row.update(
-            {
-                name: (
-                    record.features[name].value
-                    if name in record.features
-                    else None
-                )
-                for name in feature_names
-            }
-        )
+        row.update({name: (record.features[name].value if name in record.features else None) for name in feature_names})
         rows.append(row)
     return rows, pa.schema(fields)
 
@@ -232,10 +201,7 @@ def _write_bundle(
         payload = passport_to_dict(passport)
         verification = verify_passport(payload)
         if not verification.valid:
-            raise ValueError(
-                f"generated invalid passport {passport.target_rgi_id}: "
-                + ", ".join(verification.errors)
-            )
+            raise ValueError(f"generated invalid passport {passport.target_rgi_id}: " + ", ".join(verification.errors))
         _json_write(passport_root / f"{passport.target_rgi_id}.json", payload)
 
     rows, arrow_schema = _feature_rows(records)
@@ -280,17 +246,14 @@ def _write_bundle(
         "input_glacier_count": len(records) + len(exclusions),
         "passport_count": len(passports),
         "scientific_readiness": (
-            "cohort_ready"
-            if len(records) >= 30 and not fixture_mode
-            else "insufficient_cohort_size"
+            "cohort_ready" if len(records) >= 30 and not fixture_mode else "insufficient_cohort_size"
         ),
         "random_seed": 0,
         "feature_columns": list(arrow_schema.names),
         "eligibility_policy": {
             "minimum_anchor_area_km2": MINIMUM_ANCHOR_AREA_KM2,
             "basis": (
-                "pre-outcome support of at least 100 positive pixels at "
-                "the declared 10 m annual-mask resolution"
+                "pre-outcome support of at least 100 positive pixels at the declared 10 m annual-mask resolution"
             ),
             "outcome_magnitude_filter": False,
         },
@@ -302,14 +265,8 @@ def _write_bundle(
     )
 
     checksum_lines = []
-    for path in sorted(
-        item
-        for item in output_root.rglob("*")
-        if item.is_file() and item.name != "checksums.sha256"
-    ):
-        checksum_lines.append(
-            f"{sha256_file(path)}  {path.relative_to(output_root).as_posix()}"
-        )
+    for path in sorted(item for item in output_root.rglob("*") if item.is_file() and item.name != "checksums.sha256"):
+        checksum_lines.append(f"{sha256_file(path)}  {path.relative_to(output_root).as_posix()}")
     (output_root / "checksums.sha256").write_text(
         "\n".join(checksum_lines) + "\n",
         encoding="utf-8",
@@ -327,17 +284,13 @@ def main() -> int:
     )
     parser.add_argument("--anchor-year", type=int, default=2020)
     parser.add_argument("--outcome-year", type=int, default=2024)
-    parser.add_argument(
-        "--cohort-id", default="ile-alatau-2020-2024-v1"
-    )
+    parser.add_argument("--cohort-id", default="ile-alatau-2020-2024-v1")
     args = parser.parse_args()
 
     if args.preflight:
         report = preflight_sources(PROJECT_ROOT)
         print(json.dumps(report, indent=2, sort_keys=True))
-        return 0 if all(
-            item["status"] == "ready" for item in report.values()
-        ) else 1
+        return 0 if all(item["status"] == "ready" for item in report.values()) else 1
 
     if args.outcome_year <= args.anchor_year:
         parser.error("--outcome-year must be later than --anchor-year")
@@ -355,9 +308,7 @@ def main() -> int:
         )
         verify_sources(registered, PROJECT_ROOT)
         provenance = tuple(source.as_asset() for source in registered)
-        records, exclusions = extract_physical_records(
-            PROJECT_ROOT, args.anchor_year, args.outcome_year
-        )
+        records, exclusions = extract_physical_records(PROJECT_ROOT, args.anchor_year, args.outcome_year)
         fixture_mode = False
     if not records:
         raise ValueError("no eligible glacier records were extracted")

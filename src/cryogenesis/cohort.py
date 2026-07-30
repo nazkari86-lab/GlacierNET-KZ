@@ -20,9 +20,7 @@ def validate_pre_outcome_features(
 
     missing = sorted(set(required_features).difference(record.features))
     if missing:
-        raise ValueError(
-            "missing required pre-outcome features: " + ", ".join(missing)
-        )
+        raise ValueError("missing required pre-outcome features: " + ", ".join(missing))
 
     leaked = sorted(
         feature_name
@@ -30,7 +28,4 @@ def validate_pre_outcome_features(
         if feature.observed_at.year > record.anchor_year
     )
     if leaked:
-        raise ValueError(
-            "features observed after anchor_year: " + ", ".join(leaked)
-        )
-
+        raise ValueError("features observed after anchor_year: " + ", ".join(leaked))

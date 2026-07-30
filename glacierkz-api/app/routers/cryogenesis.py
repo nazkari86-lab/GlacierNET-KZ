@@ -26,10 +26,7 @@ def passport(rgi_id: str, cohort_id: str | None = None) -> dict:
     except (FileNotFoundError, ValueError) as error:
         raise HTTPException(
             status_code=404,
-            detail=(
-                "No exact validated CryoGenesis passport exists for this "
-                "glacier and cohort"
-            ),
+            detail=("No exact validated CryoGenesis passport exists for this glacier and cohort"),
         ) from error
 
 
@@ -44,4 +41,3 @@ def discoveries(
         status=status,
         limit=limit,
     )
-

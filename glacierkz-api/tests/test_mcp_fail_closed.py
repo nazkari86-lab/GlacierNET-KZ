@@ -61,6 +61,7 @@ def test_heavy_mcp_inference_requires_explicit_opt_in(monkeypatch):
     assert "MCP inference is disabled" in result["error"]
 
 
+@pytest.mark.local_data
 def test_dataset_tool_lists_physical_local_files():
     result = mcp_tools.execute_tool("list_datasets", {"limit": 3})
 

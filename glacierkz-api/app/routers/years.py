@@ -224,7 +224,18 @@ def compare_years(from_year: int = Query(...), to_year: int = Query(...)) -> dic
 
 @router.get("/{year}/map-layer", summary="Get georeferencing for a yearly segmentation layer")
 def map_layer_metadata(year: int) -> dict[str, Any]:
-    return _map_layer_metadata(year)
+    try:
+        return {"available": True, **_map_layer_metadata(year)}
+    except HTTPException as error:
+        if error.status_code != 404:
+            raise
+        return {
+            "available": False,
+            "year": year,
+            "reason": str(error.detail),
+            "scope": "physical local segmentation artifacts only",
+            "caveat": "No map geometry or image URL is emitted when the physical mask is absent.",
+        }
 
 
 @router.get("/{year}/map-layer.png", summary="Render a transparent yearly segmentation map layer")

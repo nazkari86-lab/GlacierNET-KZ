@@ -26,7 +26,9 @@ test.describe("Active Cryosphere Risk Twin", () => {
     await expect(caseButton).toBeVisible({ timeout: 20_000 });
     await caseButton.click();
     await expect(page).toHaveURL(/\/risk-twin\?.*lake=.*lake_year=2010/);
-    await expect(page.getByRole("heading", { name: "Что этот объект позволяет утверждать сейчас" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Что этот объект позволяет утверждать сейчас" })
+    ).toBeVisible({ timeout: 20_000 });
     await expect(page.locator("[data-nextjs-dialog]")).toHaveCount(0);
   });
 });

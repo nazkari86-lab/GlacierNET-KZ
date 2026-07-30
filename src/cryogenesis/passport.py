@@ -69,9 +69,7 @@ def canonical_bytes(payload: dict[str, object]) -> bytes:
 
 
 def _json_compatible(value: Any) -> Any:
-    return json.loads(
-        json.dumps(value, sort_keys=True, ensure_ascii=False)
-    )
+    return json.loads(json.dumps(value, sort_keys=True, ensure_ascii=False))
 
 
 def _payload_digest(payload: dict[str, object]) -> str:
@@ -140,13 +138,9 @@ def verify_passport(payload: dict[str, Any]) -> VerificationResult:
 
     claims_allowed = payload.get("claims_allowed")
     claims_not_allowed = payload.get("claims_not_allowed")
-    if not isinstance(claims_allowed, list) or any(
-        claim in CLAIMS_NOT_ALLOWED for claim in claims_allowed
-    ):
+    if not isinstance(claims_allowed, list) or any(claim in CLAIMS_NOT_ALLOWED for claim in claims_allowed):
         errors.append("claims_allowed")
-    if not isinstance(claims_not_allowed, list) or not set(
-        CLAIMS_NOT_ALLOWED
-    ).issubset(claims_not_allowed):
+    if not isinstance(claims_not_allowed, list) or not set(CLAIMS_NOT_ALLOWED).issubset(claims_not_allowed):
         errors.append("claims_not_allowed")
 
     provenance = payload.get("provenance")
@@ -163,11 +157,7 @@ def verify_passport(payload: dict[str, Any]) -> VerificationResult:
                 errors.append(f"provenance[{index}].sha256")
 
     supplied_digest = payload.get("payload_sha256")
-    if (
-        not isinstance(supplied_digest, str)
-        or supplied_digest != _payload_digest(payload)
-    ):
+    if not isinstance(supplied_digest, str) or supplied_digest != _payload_digest(payload):
         errors.append("payload_sha256")
 
     return VerificationResult(valid=not errors, errors=tuple(errors))
-

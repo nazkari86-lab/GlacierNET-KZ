@@ -121,22 +121,37 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: http://127.0.0.1:8000
         run: npm run build
-      - name: Start API server
-        working-directory: ${{ github.workspace }}
-        run: |
-          export PYTHONPATH="${{ github.workspace }}"
-          cd glacierkz-api
-          uvicorn app.main:app --host 127.0.0.1 --port 8000 &
-          for i in $(seq 1 30); do
-            curl -sf http://127.0.0.1:8000/health && break
-            sleep 2
-          done
-      - name: Run Playwright tests
+      - name: Run Playwright tests with API
         env:
           CI: true
           PLAYWRIGHT_API_URL: http://127.0.0.1:8000
           NEXT_PUBLIC_API_URL: http://127.0.0.1:8000
-        run: npm run test:e2e
+          CORS_ORIGINS: http://127.0.0.1:3000
+        run: |
+          export PYTHONPATH="${{ github.workspace }}"
+          cd "${{ github.workspace }}/glacierkz-api"
+          uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/glacierkz-api.log 2>&1 &
+          api_pid=$!
+          trap 'kill "$api_pid" 2>/dev/null || true' EXIT
+
+          api_ready=false
+          for _ in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8000/health >/dev/null; then
+              api_ready=true
+              break
+            fi
+            if ! kill -0 "$api_pid" 2>/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          if [ "$api_ready" != true ]; then
+            cat /tmp/glacierkz-api.log
+            exit 1
+          fi
+
+          cd "${{ github.workspace }}/glacierkz-web"
+          npm run test:e2e
 
   security:
     name: Security Scan

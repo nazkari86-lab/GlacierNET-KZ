@@ -44,14 +44,10 @@ def validate_mechanism_catalog(records: object) -> tuple[dict[str, Any], ...]:
             raise ValueError(f"mechanism {index} must be an object")
         missing = _REQUIRED_FIELDS.difference(record)
         if missing:
-            raise ValueError(
-                f"mechanism {index} missing fields: {', '.join(sorted(missing))}"
-            )
+            raise ValueError(f"mechanism {index} missing fields: {', '.join(sorted(missing))}")
         forbidden = _FORBIDDEN_SCORE_FIELDS.intersection(record)
         if forbidden:
-            raise ValueError(
-                f"mechanism {record.get('id')} contains Release 1 score fields"
-            )
+            raise ValueError(f"mechanism {record.get('id')} contains Release 1 score fields")
         if not isinstance(record["required_variables"], list):
             raise ValueError("required_variables must be a list")
         validated.append(record)
@@ -65,7 +61,4 @@ def validate_mechanism_catalog(records: object) -> tuple[dict[str, Any], ...]:
 def load_mechanism_catalog(path: Path) -> tuple[dict[str, Any], ...]:
     """Load and validate the catalogue from a caller-selected local path."""
 
-    return validate_mechanism_catalog(
-        json.loads(path.read_text(encoding="utf-8"))
-    )
-
+    return validate_mechanism_catalog(json.loads(path.read_text(encoding="utf-8")))
