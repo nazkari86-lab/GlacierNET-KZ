@@ -1,6 +1,6 @@
 # CryoGenesis X Release 1 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Build a leakage-safe, physical-data Counterfactual Twin Bank that emits validated Discovery Passports and exposes them through a read-only API and `/discovery` workspace.
 
@@ -82,7 +82,7 @@ forecasting.
 - Create: `src/cryogenesis/schemas.py`
 - Test: `tests/test_cryogenesis_schemas.py`
 
-- [ ] **Step 1: Write failing schema tests**
+- [x] **Step 1: Write failing schema tests**
 
 ```python
 from dataclasses import FrozenInstanceError
@@ -134,7 +134,7 @@ def test_source_asset_requires_a_sha256_digest():
         )
 ```
 
-- [ ] **Step 2: Run the tests and verify the import failure**
+- [x] **Step 2: Run the tests and verify the import failure**
 
 Run:
 
@@ -145,7 +145,7 @@ Run:
 
 Expected: collection fails with `ModuleNotFoundError: No module named 'src.cryogenesis'`.
 
-- [ ] **Step 3: Implement the immutable records**
+- [x] **Step 3: Implement the immutable records**
 
 `src/cryogenesis/schemas.py` must define frozen dataclasses:
 
@@ -262,13 +262,13 @@ class VerificationResult:
 
 Export these records from `src/cryogenesis/__init__.py`.
 
-- [ ] **Step 4: Run schema tests**
+- [x] **Step 4: Run schema tests**
 
 Run the command from Step 2.
 
 Expected: `3 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/cryogenesis tests/test_cryogenesis_schemas.py
@@ -282,7 +282,7 @@ git commit -m "feat: define CryoGenesis evidence schemas"
 - Create: `src/cryogenesis/matching.py`
 - Test: `tests/test_cryogenesis_matching.py`
 
-- [ ] **Step 1: Write failing matching tests**
+- [x] **Step 1: Write failing matching tests**
 
 ```python
 from datetime import datetime, timezone
@@ -348,7 +348,7 @@ def test_outcome_changes_do_not_change_selected_twins():
     assert [item.rgi_id for item in first.twins] == [item.rgi_id for item in second.twins]
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run:
 
@@ -359,7 +359,7 @@ Run:
 
 Expected: import failure for `src.cryogenesis.cohort`.
 
-- [ ] **Step 3: Implement matching**
+- [x] **Step 3: Implement matching**
 
 `cohort.py` must reject every feature with `observed_at.year > anchor_year` and
 reject missing required features. `matching.py` must define:
@@ -381,11 +381,11 @@ crossing, absent required features and caliper violations. Sort by
 `(total_distance, rgi_id)`. Assign inverse-distance weights with the configured
 floor and normalise to one.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Expected: `3 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/cryogenesis/cohort.py src/cryogenesis/matching.py tests/test_cryogenesis_matching.py
@@ -399,7 +399,7 @@ git commit -m "feat: add leakage-safe glacier twin matching"
 - Create: `src/cryogenesis/surprise.py`
 - Test: `tests/test_cryogenesis_passport.py`
 
-- [ ] **Step 1: Write failing divergence tests**
+- [x] **Step 1: Write failing divergence tests**
 
 ```python
 import pytest
@@ -441,7 +441,7 @@ def test_too_few_twins_is_comparison_inconclusive():
     ) == "comparison_inconclusive"
 ```
 
-- [ ] **Step 2: Run and verify failure**
+- [x] **Step 2: Run and verify failure**
 
 Run:
 
@@ -452,7 +452,7 @@ Run:
 
 Expected: import failure for `src.cryogenesis.divergence`.
 
-- [ ] **Step 3: Implement minimal bounded estimators**
+- [x] **Step 3: Implement minimal bounded estimators**
 
 `estimate_divergence` validates equal non-empty outcome/weight lengths,
 non-negative normalised weights and finite values. Comparator interval is the
@@ -474,11 +474,11 @@ return "unexplained_divergence_candidate"
 
 Pass `target_outcome` explicitly; do not infer it from divergence.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Expected: `3 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/cryogenesis/divergence.py src/cryogenesis/surprise.py tests/test_cryogenesis_passport.py
@@ -494,7 +494,7 @@ git commit -m "feat: quantify bounded glacier divergence"
 - Create: `benchmarks/cryogenesis/feature_schema.json`
 - Extend: `tests/test_cryogenesis_passport.py`
 
-- [ ] **Step 1: Add failing passport tests**
+- [x] **Step 1: Add failing passport tests**
 
 ```python
 import json
@@ -553,11 +553,11 @@ def test_tampered_passport_fails_verification():
     assert "payload_sha256" in result.errors
 ```
 
-- [ ] **Step 2: Run focused tests**
+- [x] **Step 2: Run focused tests**
 
 Expected: failure because `src.cryogenesis.passport` is absent.
 
-- [ ] **Step 3: Implement canonical JSON and claim policy**
+- [x] **Step 3: Implement canonical JSON and claim policy**
 
 Use:
 
@@ -630,7 +630,7 @@ evidence metadata; Release 1 must not add scores.
 ]
 ```
 
-- [ ] **Step 4: Run passport tests and JSON parse checks**
+- [x] **Step 4: Run passport tests and JSON parse checks**
 
 Run:
 
@@ -643,7 +643,7 @@ Run:
 
 Expected: all tests pass and `json.tool` exits zero.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/cryogenesis benchmarks/cryogenesis tests/test_cryogenesis_passport.py
@@ -664,7 +664,7 @@ git commit -m "feat: add immutable CryoGenesis discovery passports"
 - Create: `tests/test_cryogenesis_pipeline.py`
 - Modify: `pyproject.toml`
 
-- [ ] **Step 1: Write source and pipeline tests**
+- [x] **Step 1: Write source and pipeline tests**
 
 ```python
 from pathlib import Path
@@ -735,7 +735,7 @@ def test_fixture_pipeline_emits_three_twin_engineering_passport(tmp_path: Path):
     assert passport["claims_not_allowed"]
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run:
 
@@ -746,7 +746,7 @@ Run:
 
 Expected: imports fail.
 
-- [ ] **Step 3: Add explicit NetCDF dependencies**
+- [x] **Step 3: Add explicit NetCDF dependencies**
 
 Add to `pyproject.toml` dependencies:
 
@@ -758,7 +758,7 @@ Add to `pyproject.toml` dependencies:
 
 Do not add Dask; the regional ERA5 file is opened without chunking.
 
-- [ ] **Step 4: Implement physical source extraction**
+- [x] **Step 4: Implement physical source extraction**
 
 `source_registry.py` permits these roots only:
 
@@ -788,7 +788,7 @@ Fixture mode reads the same schema but is allowed only with
 `--feature-fixture`; emitted passports must include
 `claim_tier="cohort_built"` unless the fixture declares physical source hashes.
 
-- [ ] **Step 5: Implement cohort output and aggregate report**
+- [x] **Step 5: Implement cohort output and aggregate report**
 
 Write:
 
@@ -807,7 +807,7 @@ Write feature rows to Parquet with an explicit Arrow schema and stable column
 order. The manifest sets `scientific_readiness` to
 `insufficient_cohort_size` below 30 eligible glaciers.
 
-- [ ] **Step 6: Run fixture pipeline and local preflight**
+- [x] **Step 6: Run fixture pipeline and local preflight**
 
 Run:
 
@@ -822,7 +822,7 @@ Expected: tests pass. Preflight reports each required source as `ready` or
 exits non-zero with exact missing/checksum/coverage reasons; it never downloads
 or fabricates data.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add pyproject.toml src/cryogenesis scripts/build_cryogenesis_cohort.py \
@@ -840,7 +840,7 @@ git commit -m "feat: build physical CryoGenesis cohorts"
 - Create: `glacierkz-api/tests/test_cryogenesis.py`
 - Modify: `glacierkz-api/app/main.py`
 
-- [ ] **Step 1: Write failing service and router tests**
+- [x] **Step 1: Write failing service and router tests**
 
 ```python
 import json
@@ -874,7 +874,7 @@ def test_router_returns_404_without_nearest_glacier_substitution(monkeypatch, tm
         assert response.status_code == 404
 ```
 
-- [ ] **Step 2: Run test and verify failure**
+- [x] **Step 2: Run test and verify failure**
 
 Run:
 
@@ -885,7 +885,7 @@ Run:
 
 Expected: import failure.
 
-- [ ] **Step 3: Implement service and router**
+- [x] **Step 3: Implement service and router**
 
 Resolve the project root with the same fail-closed parent search used by
 `scientific_evidence_service.py`, then set the service root:
@@ -924,11 +924,11 @@ def discoveries(
 Add the router import, OpenAPI tag and `app.include_router(cryogenesis.router)`
 to `main.py`.
 
-- [ ] **Step 4: Run API tests**
+- [x] **Step 4: Run API tests**
 
 Expected: all CryoGenesis API tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add glacierkz-api/app/main.py glacierkz-api/app/routers/cryogenesis.py \
@@ -948,7 +948,7 @@ git commit -m "feat: expose validated CryoGenesis passports"
 - Modify: `glacierkz-web/src/app/sitemap.ts`
 - Modify: primary navigation file found by the command in the file map
 
-- [ ] **Step 1: Write failing component test**
+- [x] **Step 1: Write failing component test**
 
 ```tsx
 import { render, screen } from "@testing-library/react";
@@ -995,7 +995,7 @@ describe("DiscoveryPassportPanel", () => {
 });
 ```
 
-- [ ] **Step 2: Run and verify failure**
+- [x] **Step 2: Run and verify failure**
 
 Run:
 
@@ -1006,7 +1006,7 @@ npm test -- src/__tests__/cryogenesis.test.tsx
 
 Expected: import failure for the new component.
 
-- [ ] **Step 3: Add exact TypeScript contracts and fetch functions**
+- [x] **Step 3: Add exact TypeScript contracts and fetch functions**
 
 `cryogenesis.ts` mirrors the passport schema. Add to `api.ts`:
 
@@ -1031,7 +1031,7 @@ export async function fetchGlacier(rgiId: string): Promise<GlacierRecord> {
 }
 ```
 
-- [ ] **Step 4: Implement accessible workspace**
+- [x] **Step 4: Implement accessible workspace**
 
 The page has:
 
@@ -1054,7 +1054,7 @@ searches for a nearby glacier.
 Use a dynamic Leaflet component with SSR disabled, following the existing map
 components. Empty and invalid states show the returned reason.
 
-- [ ] **Step 5: Run component, lint and build checks**
+- [x] **Step 5: Run component, lint and build checks**
 
 Run:
 
@@ -1067,7 +1067,7 @@ npm run build
 
 Expected: all commands exit zero.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add glacierkz-web/src
@@ -1083,7 +1083,7 @@ git commit -m "feat: add CryoGenesis discovery workspace"
 - Modify: `docs/API_REFERENCE.md`
 - Modify: `config/coverage_scopes.json`
 
-- [ ] **Step 1: Write browser test**
+- [x] **Step 1: Write browser test**
 
 ```ts
 import { expect, test } from "@playwright/test";
@@ -1098,7 +1098,7 @@ test("CryoGenesis shows physical twins and never promotes a causal claim", async
 });
 ```
 
-- [ ] **Step 2: Document exact maturity**
+- [x] **Step 2: Document exact maturity**
 
 Add to `MODULE_MATURITY.md`:
 
@@ -1117,7 +1117,7 @@ Document preflight, cohort build, validation and API checks in
 `src/cryogenesis` to production scope only after the physical pipeline and API
 tests pass; until then classify it as a visible research scope.
 
-- [ ] **Step 3: Run focused full verification**
+- [x] **Step 3: Run focused full verification**
 
 Run:
 
@@ -1139,7 +1139,7 @@ npm run test:e2e -- e2e/discovery.spec.ts --project=chromium
 Expected: every command exits zero. If the E2E server is not already running,
 build first because Playwright uses `npm run start`.
 
-- [ ] **Step 4: Run regression verification**
+- [x] **Step 4: Run regression verification**
 
 Run:
 
@@ -1154,7 +1154,7 @@ Expected: no regression relative to the current `944 passed, 2 skipped,
 65 deselected` Python baseline and current web suite. Record the exact new
 counts rather than copying the baseline into release evidence.
 
-- [ ] **Step 5: Build and validate one physical local cohort**
+- [x] **Step 5: Build and validate one physical local cohort**
 
 Run:
 
@@ -1174,7 +1174,7 @@ Expected: either a validated physical cohort with at least one target and three
 twins, or a non-zero fail-closed report naming the exact data insufficiency.
 Do not replace a failed physical run with the fixture for product evidence.
 
-- [ ] **Step 6: Commit release evidence**
+- [x] **Step 6: Commit release evidence**
 
 ```bash
 git add docs config/coverage_scopes.json glacierkz-web/e2e/discovery.spec.ts \
@@ -1190,7 +1190,7 @@ JSON/CSV/manifests and no large imagery or secret paths.
 **Files:**
 - Review all files changed by Tasks 1–8.
 
-- [ ] **Step 1: Scan for prohibited claims and placeholders**
+- [x] **Step 1: Scan for prohibited claims and placeholders**
 
 Run:
 
@@ -1204,7 +1204,7 @@ rg -n -i \
 
 Expected: only explicit blocked-claim and non-goal text; no placeholder markers.
 
-- [ ] **Step 2: Check repository integrity**
+- [x] **Step 2: Check repository integrity**
 
 Run:
 
@@ -1217,7 +1217,7 @@ git log --oneline -10
 Expected: no whitespace errors, only intentional uncommitted changes, and one
 small commit per completed task.
 
-- [ ] **Step 3: Update the plan checkboxes and final handoff**
+- [x] **Step 3: Update the plan checkboxes and final handoff**
 
 Mark completed steps in this plan. Report:
 
