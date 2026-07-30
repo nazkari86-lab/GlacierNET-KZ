@@ -87,6 +87,12 @@ const fixture = vi.hoisted(() => ({
       training_command: "python -m src.train --patches-dir data/processed/patches/enhanced_provisional_spatial_holdout",
       limitations: ["not independently adjudicated gold"],
     },
+    generalisation_sentinel: {
+      status: "completed_provisional_inventory_guided_screening",
+      selected_config: { ndsi_threshold: 0.5, support_buffer_m: 100, retain_inventory_connected_components: true },
+      n_external_glaciers: 9, baseline_hard_dice: 0.1815, safeguard_hard_dice: 0.5433,
+      paired_dice_delta: 0.3618, claim_tier: "provisional_inventory_guided_failure_containment",
+    },
     workflow: [],
     interpretation: "screening",
   },
@@ -99,9 +105,10 @@ const fixture = vi.hoisted(() => ({
     model: { name: "temporal_s2_terrain_s1", display_name: "Multimodal U-Net", description: "best", supports_tta: true, supports_crf: false, supports_uncertainty: true },
     inference: { variant: "flip_tta_4", use_tta: true, decision_threshold: 0.5, duration_seconds: 23.5, window_shape: [512, 512], context_m: 400, feature_schema: Array(16).fill("band") },
     source: { sentinel2_file: "sentinel2_2024.tif", sentinel2_size_bytes: 1, source_crop_sha256: "a".repeat(64), terrain_file: "terrain.tif", sentinel1_file: "s1.tif" },
-    metrics: { predicted_area_km2: 2.6063, rgi_rasterized_area_km2: 2.8666, area_delta_percent: -9.08, rgi_overlap_iou: 0.8239, mean_probability_in_selected_component: 0.9349, uncertain_fraction_in_review_zone: 0.0679, mean_boundary_entropy_nats: 0.5223, review_priority_0_100: 31 },
-    map: { bounds: [[43.02, 77.04], [43.07, 77.11]], rgi_geometry: { type: "Polygon", coordinates: [] }, model_geometry: { type: "Polygon", coordinates: [] } },
-    artifacts: { selected_mask_url: "/mask.tif", probability_url: "/prob.tif", entropy_url: "/entropy.tif", boundary_url: "/boundary.geojson", manifest_url: "/manifest.json" },
+    metrics: { predicted_area_km2: 2.6063, rgi_rasterized_area_km2: 2.8666, area_delta_percent: -9.08, rgi_overlap_iou: 0.8239, mean_probability_in_selected_component: 0.9349, uncertain_fraction_in_review_zone: 0.0679, mean_boundary_entropy_nats: 0.5223, review_priority_0_100: 31, inventory_guided_area_km2: 2.42, inventory_guided_area_delta_percent: -15.58, inventory_guided_rgi_overlap_iou: 0.74, inventory_guided_spectral_fraction: 0.81 },
+    map: { bounds: [[43.02, 77.04], [43.07, 77.11]], rgi_geometry: { type: "Polygon", coordinates: [] }, model_geometry: { type: "Polygon", coordinates: [] }, inventory_guided_geometry: { type: "Polygon", coordinates: [] } },
+    inventory_guided_decoder: { schema: "glaciernet-kz.inventory-guided-decoder.v1", config: { ndsi_threshold: 0.5, support_buffer_m: 100, retain_inventory_connected_components: true }, claim_tier: "inventory_guided_screening", circular_validation_warning: "The inventory is a decoding prior and cannot also serve as independent accuracy ground truth." },
+    artifacts: { selected_mask_url: "/mask.tif", inventory_guided_mask_url: "/guided.tif", probability_url: "/prob.tif", entropy_url: "/entropy.tif", boundary_url: "/boundary.geojson", manifest_url: "/manifest.json" },
     review: { status: "expert_review_required", next_action: "Inspect high-entropy boundary sectors.", risk_twin_url: "/risk-twin?ml_case=e855ed7d973b159ff4fb" },
     claims_allowed: ["model-screened glacier boundary"],
     claims_not_allowed: ["independent expert accuracy"],
@@ -169,6 +176,8 @@ describe("ML Workspace", () => {
     expect(await screen.findByTestId("ml-evidence-map")).toBeInTheDocument();
     expect(screen.getByText("2.6063 km²")).toBeInTheDocument();
     expect(screen.getByText("82.4%")).toBeInTheDocument();
+    expect(screen.getByText("2.4200 km²")).toBeInTheDocument();
+    expect(screen.getByText(/Physics-constrained candidate/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open same case in Risk Twin/i })).toHaveAttribute(
       "href",
       fixture.evidence.review.risk_twin_url

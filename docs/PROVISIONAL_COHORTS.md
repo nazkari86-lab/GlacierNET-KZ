@@ -42,12 +42,34 @@ mean area-error percentage 1373.0%. This poor, uncertain result is useful: it
 demonstrates that the current model cannot claim external generalisation and
 that RGI-2000 pseudo-labels are insufficient for a 2024 external validation.
 
+## Generalisation Sentinel: inventory-guided failure containment
+
+The unconstrained external prediction exposed a practical failure mode: summer
+snow elsewhere in the downloaded crop can be mapped as part of the target
+glacier. A frozen decoder now combines NDSI evidence with a 100 m search buffer
+around the historical inventory and retains only spectral components connected
+to that inventory. The threshold and buffer were selected on the 18-glacier Ile
+Alatau cohort, then frozen before the external replay.
+
+On the same nine-glacier provisional replay, mean hard Dice increased to 0.5433
+(95% CI 0.3957–0.6593), while mean absolute area error fell to 51.9%. The paired
+Dice delta was +0.3618 (95% CI +0.2127 to +0.5011); the paired absolute area
+error delta was −1321.2 percentage points (95% CI −2261.2 to −547.4).
+
+This does **not** repair the independent external-generalisation gate. RGI is
+used as the search prior and as the provisional comparison mask, so the result
+measures failure containment and inventory consistency—not independent
+current-boundary accuracy. It is intended for candidate generation,
+annotation prioritisation and explicit abstention.
+
 ## Files and gate
 
 - `benchmarks/v2/provisional/ile_alatau_rgi_2024_per_glacier.csv`
 - `benchmarks/v2/provisional/ile_alatau_rgi_2024_paired_summary.json`
 - `benchmarks/v2/provisional/zhetysu_candidate_rgi_2024_per_glacier.csv`
 - `benchmarks/v2/provisional/zhetysu_candidate_rgi_2024_summary.json`
+- `benchmarks/v2/provisional/inventory_guided_decoder_2024.json`
+- `benchmarks/v2/provisional/inventory_guided_decoder_zhetysu_2024_per_glacier.csv`
 - `benchmarks/v2/claims_registry.json`
 
 Run `python scripts/validate_provisional_cohorts.py` to verify tables and raw

@@ -34,6 +34,7 @@ export default function ScientificEvidenceCockpit({ science }: { science: Scient
   const claims = useMemo(() => filter === "all" ? science.claim_registry : science.claim_registry.filter((claim) => claim.status === filter), [filter, science.claim_registry]);
   const temporal = science.temporal_holdout;
   const paired = science.paired_glacier_diagnostic;
+  const safeguard = science.external_safeguard;
 
   return <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
     <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-800">Scientific Evidence Cockpit</p><h2 className="mt-1 text-xl font-bold text-slate-950">Scientific Evidence Cockpit: что измерено — и где наука заканчивается</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">Все показатели ниже прочитаны из локальных артефактов. Статус, область применимости и запреты на расширение вывода показаны рядом с числом.</p></div><span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700">{science.schema}</span></div>
@@ -45,6 +46,18 @@ export default function ScientificEvidenceCockpit({ science }: { science: Scient
     </div>
 
     <article className="mt-4 min-w-0 rounded-xl border border-slate-200 p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><p className="text-xs font-bold uppercase tracking-wide text-slate-600">Claim registry explorer</p><h3 className="mt-1 font-semibold text-slate-950">Каждое утверждение связано с файлом и границей</h3><p className="mt-1 text-xs text-slate-600">{science.claim_policy}</p></div><div className="flex max-w-full flex-wrap gap-2">{(["all", ...Object.keys(statusMeta)] as Filter[]).map((status) => <button key={status} type="button" onClick={() => setFilter(status)} aria-pressed={filter === status} className={`max-w-full rounded-full px-3 py-1.5 text-xs font-semibold ${filter === status ? "bg-slate-950 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}>{status === "all" ? "All" : statusMeta[status].label}</button>)}</div></div><div className="mt-4 grid min-w-0 gap-3 lg:grid-cols-2">{claims.map((claim) => <details key={claim.id} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4"><summary className="cursor-pointer list-none"><div className="flex min-w-0 flex-wrap items-start justify-between gap-3"><p className="min-w-0 flex-1 break-words font-semibold text-slate-950">{claim.id} · {claim.claim}</p><span className={`max-w-full rounded-full px-2 py-1 text-center text-[11px] font-bold ${statusMeta[claim.status].className}`}>{statusMeta[claim.status].label}</span></div><p className="mt-2 break-words text-sm text-slate-600">{claim.scope}</p></summary><ArtifactList artifacts={claim.artifacts} /></details>)}</div></article>
+
+    <article className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-emerald-800">Generalisation Sentinel · failure containment</p><h3 className="mt-1 font-semibold text-emerald-950">Frozen decoder suppresses catastrophic external overmapping</h3></div><span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-emerald-900">{safeguard.n_external_glaciers} external glaciers</span></div>
+      <p className="mt-2 text-sm leading-6 text-emerald-950">{safeguard.method}</p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-lg bg-white p-3"><p className="text-xs text-slate-500">Hard Dice</p><p className="mt-1 font-mono text-lg font-bold">{formatValue(safeguard.baseline.hard_dice.estimate)} → {formatValue(safeguard.safeguard.hard_dice.estimate)}</p></div>
+        <div className="rounded-lg bg-white p-3"><p className="text-xs text-slate-500">Hard IoU</p><p className="mt-1 font-mono text-lg font-bold">{formatValue(safeguard.baseline.hard_iou.estimate)} → {formatValue(safeguard.safeguard.hard_iou.estimate)}</p></div>
+        <div className="rounded-lg bg-white p-3"><p className="text-xs text-slate-500">Mean area error</p><p className="mt-1 font-mono text-lg font-bold">{formatValue(safeguard.baseline.area_error_percent.estimate)}% → {formatValue(safeguard.safeguard.area_error_percent.estimate)}%</p></div>
+      </div>
+      <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950"><strong>Safeguard, not gold accuracy.</strong> {safeguard.circularity_guard}</p>
+      <ArtifactList artifacts={safeguard.artifacts} />
+    </article>
 
     <article className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-4"><p className="text-xs font-bold uppercase tracking-wide text-rose-800">External generalisation gate</p><h3 className="mt-1 font-semibold text-rose-950">{science.external_generalisation.test_region}: {science.external_generalisation.status === "blocked_external_evidence" ? "blocked" : "evidence available"}</h3><p className="mt-2 text-sm text-rose-950">Required label tier: {science.external_generalisation.label_quality_tier_required}. {science.external_generalisation.blocked_reason}</p><ArtifactList artifacts={[science.external_generalisation.artifact]} /></article>
   </section>;

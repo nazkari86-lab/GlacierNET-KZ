@@ -96,6 +96,16 @@ outside the strict evidence gate; see [their limits and results](docs/PROVISIONA
 The machine-readable [scientific claims registry](benchmarks/v2/claims_registry.json)
 separates supported, refuted, provisional, and externally blocked statements.
 
+The **Generalisation Sentinel** adds a frozen, physics-constrained
+inventory-guided decoder for failure containment. Parameters selected on 18 Ile
+Alatau glaciers were replayed without tuning on the nine-glacier provisional
+external cohort. Mean hard Dice increased from 0.1815 to 0.5433 and mean
+absolute area error fell from 1373.0% to 51.9%. This is a useful safeguard
+result, not independent external accuracy: RGI is both the search prior and the
+provisional comparison layer. The full paired intervals and circularity guard
+are stored in
+[`inventory_guided_decoder_2024.json`](benchmarks/v2/provisional/inventory_guided_decoder_2024.json).
+
 ## Active Cryosphere Risk Twin
 
 The repository now includes a safety-bounded research baseline that turns

@@ -40,6 +40,10 @@ def test_ml_readiness_api_preserves_claim_boundary():
     body = response.json()
     assert "not independent accuracy" in body["interpretation"]
     assert any("entropy" in step for step in body["workflow"])
+    assert body["generalisation_sentinel"]["safeguard_hard_dice"] > body["generalisation_sentinel"][
+        "baseline_hard_dice"
+    ]
+    assert body["generalisation_sentinel"]["claim_tier"] == "provisional_inventory_guided_failure_containment"
 
 
 @pytest.mark.local_data

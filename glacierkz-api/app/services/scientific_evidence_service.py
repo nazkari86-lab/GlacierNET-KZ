@@ -64,6 +64,7 @@ def scientific_evidence() -> dict[str, Any]:
     temporal = _read_json("results/temporal_benchmark_unet_sentinel2_terrain_2016_2024.json")
     paired = _read_json("benchmarks/v2/provisional/ile_alatau_rgi_2024_paired_summary.json")
     cross_region = _read_json("benchmarks/v2/manifests/cross_region.json")
+    safeguard = _read_json("benchmarks/v2/provisional/inventory_guided_decoder_2024.json")
 
     return {
         "schema": "glaciernet-kz.scientific-evidence.v1",
@@ -116,5 +117,24 @@ def scientific_evidence() -> dict[str, Any]:
             "label_quality_tier_required": cross_region["label_quality_tier"],
             "blocked_reason": cross_region.get("blocked_reason"),
             "artifact": _artifact("benchmarks/v2/manifests/cross_region.json"),
+        },
+        "external_safeguard": {
+            "status": safeguard["status"],
+            "method": safeguard["method"],
+            "selected_config": safeguard["selection_protocol"]["selected_config"],
+            "n_calibration_glaciers": safeguard["selection_protocol"]["n_calibration_glaciers"],
+            "n_external_glaciers": safeguard["external_replay"]["n_glaciers"],
+            "parameters_frozen_before_external_replay": safeguard["external_replay"][
+                "parameters_frozen_before_external_replay"
+            ],
+            "baseline": safeguard["external_replay"]["unconstrained_model_baseline"],
+            "safeguard": safeguard["external_replay"]["metrics_bootstrap"],
+            "paired_delta": safeguard["external_replay"]["paired_delta_decoder_minus_unconstrained_model"],
+            "circularity_guard": safeguard["circularity_guard"],
+            "claims_not_allowed": safeguard["claims_not_allowed"],
+            "artifacts": [
+                _artifact("benchmarks/v2/provisional/inventory_guided_decoder_2024.json"),
+                _artifact(safeguard["artifacts"]["external_table"]),
+            ],
         },
     }

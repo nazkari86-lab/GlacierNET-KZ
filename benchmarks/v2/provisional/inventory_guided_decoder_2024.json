@@ -1,0 +1,324 @@
+{
+  "schema": "glaciernet-kz.inventory-guided-external-safeguard.v1",
+  "status": "completed_provisional_inventory_guided_screening",
+  "year": 2024,
+  "method": "NDSI physical evidence constrained to a buffered historical inventory search area; only components connected to the inventory are retained.",
+  "selection_protocol": {
+    "calibration_geography": "Ile Alatau",
+    "calibration_label_tier": "provisional_silver_rgi",
+    "n_calibration_glaciers": 18,
+    "objective": "maximum mean hard Dice, then minimum absolute area error",
+    "threshold_grid": [
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6
+    ],
+    "support_buffer_grid_m": [
+      100.0,
+      200.0,
+      300.0
+    ],
+    "selected_config": {
+      "ndsi_threshold": 0.5,
+      "support_buffer_m": 100.0,
+      "retain_inventory_connected_components": true
+    },
+    "candidate_results": [
+      {
+        "config": {
+          "ndsi_threshold": 0.5,
+          "support_buffer_m": 100.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.6904775721885021,
+        "mean_hard_iou": 0.5512325510274686,
+        "mean_absolute_area_error_percent": 26.2004063124087
+      },
+      {
+        "config": {
+          "ndsi_threshold": 0.4,
+          "support_buffer_m": 100.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.6883242024819411,
+        "mean_hard_iou": 0.5411211396271115,
+        "mean_absolute_area_error_percent": 46.15880524653044
+      },
+      {
+        "config": {
+          "ndsi_threshold": 0.3,
+          "support_buffer_m": 100.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.6773122090512608,
+        "mean_hard_iou": 0.5289032885346147,
+        "mean_absolute_area_error_percent": 66.87843972975142
+      },
+      {
+        "config": {
+          "ndsi_threshold": 0.2,
+          "support_buffer_m": 100.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.6639463202093303,
+        "mean_hard_iou": 0.5157608812654635,
+        "mean_absolute_area_error_percent": 85.6261104357563
+      },
+      {
+        "config": {
+          "ndsi_threshold": 0.6,
+          "support_buffer_m": 100.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.6540509471645806,
+        "mean_hard_iou": 0.5140980208957914,
+        "mean_absolute_area_error_percent": 26.510192597302243
+      },
+      {
+        "config": {
+          "ndsi_threshold": 0.5,
+          "support_buffer_m": 200.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.6299053761891821,
+        "mean_hard_iou": 0.48807033960400253,
+        "mean_absolute_area_error_percent": 48.47294831226711
+      },
+      {
+        "config": {
+          "ndsi_threshold": 0.6,
+          "support_buffer_m": 200.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.6249910795769316,
+        "mean_hard_iou": 0.48395035218109306,
+        "mean_absolute_area_error_percent": 33.91473665057075
+      },
+      {
+        "config": {
+          "ndsi_threshold": 0.6,
+          "support_buffer_m": 300.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.6002245266042716,
+        "mean_hard_iou": 0.45950369317460865,
+        "mean_absolute_area_error_percent": 49.77061156744483
+      },
+      {
+        "config": {
+          "ndsi_threshold": 0.4,
+          "support_buffer_m": 200.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.5849080798059668,
+        "mean_hard_iou": 0.43566683491422764,
+        "mean_absolute_area_error_percent": 101.19999359947586
+      },
+      {
+        "config": {
+          "ndsi_threshold": 0.5,
+          "support_buffer_m": 300.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.5844526396062489,
+        "mean_hard_iou": 0.4438902764400469,
+        "mean_absolute_area_error_percent": 80.40827178600222
+      },
+      {
+        "config": {
+          "ndsi_threshold": 0.3,
+          "support_buffer_m": 200.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.5632820183684687,
+        "mean_hard_iou": 0.41623899766183425,
+        "mean_absolute_area_error_percent": 150.81712283340548
+      },
+      {
+        "config": {
+          "ndsi_threshold": 0.2,
+          "support_buffer_m": 200.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.5367727314102126,
+        "mean_hard_iou": 0.3880570464343437,
+        "mean_absolute_area_error_percent": 190.282816372779
+      },
+      {
+        "config": {
+          "ndsi_threshold": 0.4,
+          "support_buffer_m": 300.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.5097278278771489,
+        "mean_hard_iou": 0.37059332392538774,
+        "mean_absolute_area_error_percent": 200.7832697863108
+      },
+      {
+        "config": {
+          "ndsi_threshold": 0.3,
+          "support_buffer_m": 300.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.49199915171004416,
+        "mean_hard_iou": 0.3538032329389614,
+        "mean_absolute_area_error_percent": 260.88317090404644
+      },
+      {
+        "config": {
+          "ndsi_threshold": 0.2,
+          "support_buffer_m": 300.0,
+          "retain_inventory_connected_components": true
+        },
+        "n_glaciers": 18,
+        "mean_hard_dice": 0.4471048049147842,
+        "mean_hard_iou": 0.3094905510108192,
+        "mean_absolute_area_error_percent": 341.1612074634041
+      }
+    ]
+  },
+  "external_replay": {
+    "geography": "broad provisional Zhetysu candidate filter",
+    "n_glaciers": 9,
+    "parameters_frozen_before_external_replay": true,
+    "unconstrained_model_baseline": {
+      "hard_dice": {
+        "estimate": 0.1814780396465812,
+        "ci_lower": 0.06919732570424922,
+        "ci_upper": 0.3304947303894808,
+        "confidence": 0.95,
+        "n_glaciers": 9,
+        "n_resamples": 1000,
+        "seed": 142
+      },
+      "hard_iou": {
+        "estimate": 0.11609456963964308,
+        "ci_lower": 0.037847577302366535,
+        "ci_upper": 0.22829755540853872,
+        "confidence": 0.95,
+        "n_glaciers": 9,
+        "n_resamples": 1000,
+        "seed": 142
+      },
+      "area_error_percent": {
+        "estimate": 1373.0398589983147,
+        "ci_lower": 601.9724633310027,
+        "ci_upper": 2322.01163345978,
+        "confidence": 0.95,
+        "n_glaciers": 9,
+        "n_resamples": 1000,
+        "seed": 142
+      }
+    },
+    "metrics_bootstrap": {
+      "hard_dice": {
+        "estimate": 0.5433234666782386,
+        "ci_lower": 0.39574282993983945,
+        "ci_upper": 0.6593044813375776,
+        "confidence": 0.95,
+        "n_glaciers": 9,
+        "n_resamples": 1000,
+        "seed": 142
+      },
+      "hard_iou": {
+        "estimate": 0.39938865393487755,
+        "ci_lower": 0.28366227323205084,
+        "ci_upper": 0.49918708310073834,
+        "confidence": 0.95,
+        "n_glaciers": 9,
+        "n_resamples": 1000,
+        "seed": 142
+      },
+      "precision": {
+        "estimate": 0.7233411647873338,
+        "ci_lower": 0.5059490024687275,
+        "ci_upper": 0.9030153421480023,
+        "confidence": 0.95,
+        "n_glaciers": 9,
+        "n_resamples": 1000,
+        "seed": 142
+      },
+      "recall": {
+        "estimate": 0.5018812468680552,
+        "ci_lower": 0.3290191125013235,
+        "ci_upper": 0.6650660411525,
+        "confidence": 0.95,
+        "n_glaciers": 9,
+        "n_resamples": 1000,
+        "seed": 142
+      },
+      "area_error_percent": {
+        "estimate": 51.86479050349304,
+        "ci_lower": 37.509729366748346,
+        "ci_upper": 67.77641600840543,
+        "confidence": 0.95,
+        "n_glaciers": 9,
+        "n_resamples": 1000,
+        "seed": 142
+      }
+    },
+    "mean_absolute_area_error_percent": 51.86479050349304,
+    "paired_delta_decoder_minus_unconstrained_model": {
+      "hard_dice": {
+        "estimate": 0.36184542703165734,
+        "ci_lower": 0.21271545170398912,
+        "ci_upper": 0.5011331162679716,
+        "confidence": 0.95,
+        "n_glaciers": 9,
+        "n_resamples": 1000,
+        "seed": 142
+      },
+      "hard_iou": {
+        "estimate": 0.2832940842952344,
+        "ci_lower": 0.1610211471620833,
+        "ci_upper": 0.3960154217161004,
+        "confidence": 0.95,
+        "n_glaciers": 9,
+        "n_resamples": 1000,
+        "seed": 142
+      },
+      "absolute_area_error_percent": {
+        "estimate": -1321.1750684948215,
+        "ci_lower": -2261.1605431591133,
+        "ci_upper": -547.3553592829506,
+        "confidence": 0.95,
+        "n_glaciers": 9,
+        "n_resamples": 1000,
+        "seed": 142
+      }
+    }
+  },
+  "claims_allowed": [
+    "The frozen inventory-guided safeguard reduced catastrophic overmapping on this provisional replay.",
+    "The result motivates inventory-guided candidate generation and abstaining review workflows."
+  ],
+  "claims_not_allowed": [
+    "independent external-region accuracy",
+    "gold-label segmentation accuracy",
+    "operational glacier-change accuracy",
+    "proof that the current 2024 boundary equals the RGI-derived reference"
+  ],
+  "circularity_guard": "RGI is used as both a search prior and provisional comparison layer. Metrics quantify inventory consistency and failure containment, not independent current-boundary accuracy.",
+  "artifacts": {
+    "external_table": "benchmarks/v2/provisional/inventory_guided_decoder_zhetysu_2024_per_glacier.csv",
+    "external_table_sha256": "509f83124a24c8040332c36d1b8d09f72adcb20f92431483e5349bf32c716e09",
+    "baseline_summary": "benchmarks/v2/provisional/zhetysu_candidate_rgi_2024_summary.json",
+    "baseline_summary_sha256": "8f64187502eb6578f0e3aa78b73a3fbf4e92ea58346c04dd6fb820dc7b0e6f0e"
+  }
+}

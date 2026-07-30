@@ -23,6 +23,16 @@ const science: ScientificEvidence = {
     metrics: { hard_iou: { estimate: 0.025, ci_lower: 0.01, ci_upper: 0.04, confidence: 0.95, n_glaciers: 18 } }, paired_tests: {},
     claims_not_allowed: ["gold-label accuracy"], artifacts: [{ path: "benchmarks/paired.json", exists: true, sha256: "d".repeat(64) }],
   },
+  external_safeguard: {
+    status: "completed_provisional_inventory_guided_screening",
+    method: "NDSI constrained by a historical inventory search area.",
+    selected_config: { ndsi_threshold: 0.5, support_buffer_m: 100, retain_inventory_connected_components: true },
+    n_calibration_glaciers: 18, n_external_glaciers: 9, parameters_frozen_before_external_replay: true,
+    baseline: { hard_dice: { estimate: 0.1815, ci_lower: 0.06, ci_upper: 0.33 }, hard_iou: { estimate: 0.1161, ci_lower: 0.03, ci_upper: 0.22 }, area_error_percent: { estimate: 1373, ci_lower: 600, ci_upper: 2300 } },
+    safeguard: { hard_dice: { estimate: 0.5433, ci_lower: 0.39, ci_upper: 0.65 }, hard_iou: { estimate: 0.3994, ci_lower: 0.28, ci_upper: 0.5 }, area_error_percent: { estimate: 51.86, ci_lower: 37, ci_upper: 68 } },
+    paired_delta: {}, circularity_guard: "RGI is both search prior and comparison layer; this is not independent accuracy.",
+    claims_not_allowed: ["independent external accuracy"], artifacts: [{ path: "benchmarks/safeguard.json", exists: true, sha256: "f".repeat(64) }],
+  },
   external_generalisation: { status: "blocked_external_evidence", test_region: "Zhetysu Alatau", label_quality_tier_required: "gold", blocked_reason: "No labels", artifact: { path: "benchmarks/cross.json", exists: true, sha256: "e".repeat(64) } },
 };
 
@@ -35,6 +45,8 @@ describe("ScientificEvidenceCockpit", () => {
     expect(screen.getByText(/Glacier-level CI unavailable/i)).toBeInTheDocument();
     expect(screen.getByText(/post-hoc, non-independent/i)).toBeInTheDocument();
     expect(screen.getAllByText(/External generalisation/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Generalisation Sentinel/i)).toBeInTheDocument();
+    expect(screen.getByText(/0.1815 → 0.5433/)).toBeInTheDocument();
     expect(screen.getByText("results/a.json")).toBeInTheDocument();
   });
 });

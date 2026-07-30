@@ -270,6 +270,15 @@ export interface MlReadiness {
   years: MlReadinessYear[];
   models: MlReadinessModel[];
   training_dataset: MlTrainingDataset;
+  generalisation_sentinel: {
+    status: string;
+    selected_config?: { ndsi_threshold: number; support_buffer_m: number; retain_inventory_connected_components: boolean } | null;
+    n_external_glaciers?: number | null;
+    baseline_hard_dice?: number | null;
+    safeguard_hard_dice?: number | null;
+    paired_dice_delta?: number | null;
+    claim_tier: string;
+  };
   workflow: string[];
   interpretation: string;
 }
@@ -311,11 +320,22 @@ export interface MlEvidenceCase {
     uncertain_fraction_in_review_zone: number;
     mean_boundary_entropy_nats?: number | null;
     review_priority_0_100: number;
+    inventory_guided_area_km2: number;
+    inventory_guided_area_delta_percent?: number | null;
+    inventory_guided_rgi_overlap_iou: number;
+    inventory_guided_spectral_fraction: number;
   };
   map: {
     bounds: [[number, number], [number, number]];
     rgi_geometry: { type: string; coordinates: unknown };
     model_geometry?: { type: string; coordinates: unknown } | null;
+    inventory_guided_geometry?: { type: string; coordinates: unknown } | null;
+  };
+  inventory_guided_decoder: {
+    schema: string;
+    config: { ndsi_threshold: number; support_buffer_m: number; retain_inventory_connected_components: boolean };
+    claim_tier: string;
+    circular_validation_warning: string;
   };
   artifacts: Record<string, string | null>;
   review: { status: string; next_action: string; risk_twin_url: string };
@@ -1148,6 +1168,20 @@ export interface ScientificEvidence {
     artifacts: EvidenceArtifact[];
   };
   external_generalisation: { status: ClaimEvidenceStatus | "external_evidence_available"; test_region: string; label_quality_tier_required: string; blocked_reason?: string | null; artifact: EvidenceArtifact };
+  external_safeguard: {
+    status: string;
+    method: string;
+    selected_config: { ndsi_threshold: number; support_buffer_m: number; retain_inventory_connected_components: boolean };
+    n_calibration_glaciers: number;
+    n_external_glaciers: number;
+    parameters_frozen_before_external_replay: boolean;
+    baseline: Record<string, { estimate: number; ci_lower: number; ci_upper: number }>;
+    safeguard: Record<string, { estimate: number; ci_lower: number; ci_upper: number }>;
+    paired_delta: Record<string, { estimate: number; ci_lower: number; ci_upper: number }>;
+    circularity_guard: string;
+    claims_not_allowed: string[];
+    artifacts: EvidenceArtifact[];
+  };
 }
 
 export async function fetchJuryEvidence(): Promise<JuryEvidence> {

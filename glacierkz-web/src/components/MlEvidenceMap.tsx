@@ -67,6 +67,26 @@ export default function MlEvidenceMap({ evidence }: MlEvidenceMapProps) {
           `<strong>ML boundary · ${evidence.year}</strong><br/>${evidence.metrics.predicted_area_km2.toFixed(4)} km²<br/>Click layers to inspect evidence.`
         ).addTo(map)
       : null;
+    const guided = evidence.map.inventory_guided_geometry
+      ? L.geoJSON(
+          {
+            type: "Feature",
+            properties: { layer: "Generalisation Sentinel" },
+            geometry: evidence.map.inventory_guided_geometry,
+          } as GeoJSON.Feature,
+          {
+            style: {
+              color: "#a855f7",
+              weight: 3,
+              dashArray: "3 4",
+              fillColor: "#a855f7",
+              fillOpacity: 0.18,
+            },
+          }
+        ).bindPopup(
+          `<strong>Inventory-guided safeguard · ${evidence.year}</strong><br/>${evidence.metrics.inventory_guided_area_km2.toFixed(4)} km²<br/>Physical candidate for review, not independent accuracy.`
+        ).addTo(map)
+      : null;
 
     const probabilityUrl = evidence.artifacts.probability_preview_url;
     const entropyUrl = evidence.artifacts.entropy_preview_url;
@@ -81,6 +101,7 @@ export default function MlEvidenceMap({ evidence }: MlEvidenceMapProps) {
       "RGI 7.0 · inventory": rgi,
     };
     if (model) overlays[`${evidence.year} · ML boundary`] = model;
+    if (guided) overlays[`${evidence.year} · Generalisation Sentinel`] = guided;
     if (probability) overlays["Model probability"] = probability;
     if (entropy) overlays["Predictive entropy"] = entropy;
     L.control.layers({ "Satellite imagery": satellite, "Light map": streets }, overlays, {
@@ -101,6 +122,7 @@ export default function MlEvidenceMap({ evidence }: MlEvidenceMapProps) {
       <div className="pointer-events-none absolute bottom-5 right-4 z-[500] rounded-xl border border-white/20 bg-slate-950/88 px-3 py-2 text-xs text-white shadow-xl backdrop-blur">
         <div className="flex items-center gap-2"><span className="h-0.5 w-5 bg-emerald-400" />ML boundary</div>
         <div className="mt-1 flex items-center gap-2"><span className="w-5 border-t-2 border-dashed border-sky-400" />RGI inventory</div>
+        <div className="mt-1 flex items-center gap-2"><span className="w-5 border-t-2 border-dotted border-violet-400" />Safeguarded candidate</div>
       </div>
     </div>
   );

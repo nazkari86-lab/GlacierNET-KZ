@@ -77,6 +77,15 @@ passes with `--allow-incomplete`; the strict gate intentionally fails until
 source-reviewed events, non-event controls, immutable pre-event snapshots and
 an external-region cohort are present.
 
+## Generalisation Sentinel
+
+`src/inventory_guided_decoding.py` is a tested, physics-constrained safeguard
+for inventory-update workflows. It limits spectral candidates to a declared
+physical search buffer and removes disconnected snow components. Its frozen
+external replay demonstrates failure containment, not model generalisation:
+because the historical inventory participates in decoding, that inventory
+cannot simultaneously be treated as independent truth.
+
 ## CryoGenesis X
 
 Release 1 is a tested retrospective matched-comparator research baseline. It

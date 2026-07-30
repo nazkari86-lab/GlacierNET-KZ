@@ -1,6 +1,6 @@
 {
   "schema": "glaciernet-kz.claims-registry.v1",
-  "updated": "2026-07-27",
+  "updated": "2026-07-30",
   "policy": "A claim is publishable only at its declared evidence tier and scope. Provisional evidence never upgrades a blocked strict claim.",
   "allowed_statuses": [
     "supported_silver",
@@ -74,6 +74,16 @@
       "evidence": [
         "results/decision_readiness_summary.json",
         "docs/REPRODUCIBILITY.md"
+      ]
+    },
+    {
+      "id": "C8",
+      "status": "supported_provisional",
+      "claim": "A decoder frozen in Ile Alatau reduced catastrophic overmapping on the nine-glacier provisional external replay.",
+      "scope": "Inventory-guided failure containment only; RGI is both search prior and provisional comparison layer, so this is not independent external accuracy",
+      "evidence": [
+        "benchmarks/v2/provisional/inventory_guided_decoder_2024.json",
+        "benchmarks/v2/provisional/inventory_guided_decoder_zhetysu_2024_per_glacier.csv"
       ]
     }
   ]

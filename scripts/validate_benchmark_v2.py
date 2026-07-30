@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -94,6 +95,36 @@ def validate(*, allow_incomplete: bool) -> tuple[list[str], list[str]]:
             errors.append("2018 quality record must carry temporal_status=reject")
         if int(row_2018.get("quality_score", 101)) >= 100:
             errors.append("2018 physically suspicious result cannot have quality_score=100")
+
+    safeguard_path = BENCHMARK / "provisional/inventory_guided_decoder_2024.json"
+    try:
+        safeguard = json.loads(safeguard_path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError) as error:
+        errors.append(f"invalid inventory-guided safeguard report: {error}")
+    else:
+        if safeguard.get("schema") != "glaciernet-kz.inventory-guided-external-safeguard.v1":
+            errors.append("invalid inventory-guided safeguard schema")
+        replay = safeguard.get("external_replay", {})
+        if replay.get("parameters_frozen_before_external_replay") is not True:
+            errors.append("inventory-guided parameters must be frozen before external replay")
+        if replay.get("n_glaciers") != 9:
+            errors.append("inventory-guided external replay must retain the frozen nine-glacier cohort")
+        deltas = replay.get("paired_delta_decoder_minus_unconstrained_model", {})
+        if float(deltas.get("hard_dice", {}).get("ci_lower", -1)) <= 0:
+            errors.append("inventory-guided Dice improvement interval must remain above zero")
+        if float(deltas.get("absolute_area_error_percent", {}).get("ci_upper", 1)) >= 0:
+            errors.append("inventory-guided absolute-area-error interval must remain below zero")
+        table_relative = safeguard.get("artifacts", {}).get("external_table", "")
+        table_path = ROOT / str(table_relative)
+        if not table_path.is_file():
+            errors.append("inventory-guided per-glacier table is missing")
+        else:
+            digest = hashlib.sha256(table_path.read_bytes()).hexdigest()
+            if digest != safeguard.get("artifacts", {}).get("external_table_sha256"):
+                errors.append("inventory-guided per-glacier table digest mismatch")
+        forbidden = set(safeguard.get("claims_not_allowed", []))
+        if "independent external-region accuracy" not in forbidden:
+            errors.append("inventory-guided report must block independent external accuracy claims")
 
     if blockers and not allow_incomplete:
         errors.extend(f"benchmark evidence blocker: {blocker}" for blocker in blockers)

@@ -208,7 +208,7 @@ export default function MlWorkspacePage() {
                 запускает temporal holdout модель и показывает, где результат надёжен, а где его нужно проверить.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-3 self-end text-sm">
+            <div className="grid gap-3 self-end text-sm sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-slate-400">Best measured hard Dice</p>
                 <p className="mt-2 text-3xl font-bold text-cyan-300">
@@ -222,6 +222,15 @@ export default function MlWorkspacePage() {
                   {readiness?.years.filter((item) => item.compatible_models.length).length ?? 0}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">2016–2024 model-compatible</p>
+              </div>
+              <div className="rounded-2xl border border-violet-400/20 bg-violet-400/10 p-4">
+                <p className="text-violet-200">External failure containment</p>
+                <p className="mt-2 text-3xl font-bold text-violet-300">
+                  {readiness?.generalisation_sentinel.paired_dice_delta
+                    ? `+${readiness.generalisation_sentinel.paired_dice_delta.toFixed(3)}`
+                    : "—"}
+                </p>
+                <p className="mt-1 text-xs text-violet-200/60">paired Dice · provisional safeguard</p>
               </div>
             </div>
           </div>
@@ -573,7 +582,7 @@ export default function MlWorkspacePage() {
                   <MlEvidenceMap evidence={evidence} />
                 </section>
 
-                <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                   <div className="rounded-2xl border border-slate-200 bg-white p-4">
                     <p className="text-xs text-slate-500">ML area · selected component</p>
                     <p className="mt-2 text-2xl font-bold">{evidence.metrics.predicted_area_km2.toFixed(4)} km²</p>
@@ -594,6 +603,16 @@ export default function MlWorkspacePage() {
                     <p className="mt-2 text-2xl font-bold">{evidence.metrics.review_priority_0_100}/100</p>
                     <p className="mt-1 text-xs opacity-70">Disagreement + uncertainty</p>
                   </div>
+                  <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4 text-violet-950">
+                    <p className="text-xs text-violet-700">Generalisation Sentinel area</p>
+                    <p className="mt-2 text-2xl font-bold">{evidence.metrics.inventory_guided_area_km2.toFixed(4)} km²</p>
+                    <p className="mt-1 text-xs text-violet-700">{evidence.metrics.inventory_guided_area_delta_percent?.toFixed(2)}% vs RGI · safeguard</p>
+                  </div>
+                </section>
+
+                <section className="rounded-3xl border border-violet-200 bg-violet-50 p-5 text-violet-950">
+                  <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-violet-700">Generalisation Sentinel</p><h2 className="mt-1 font-bold">Physics-constrained candidate for this exact glacier</h2></div><span className="rounded-full bg-white px-3 py-1 text-xs font-bold">NDSI ≥ {evidence.inventory_guided_decoder.config.ndsi_threshold} · {evidence.inventory_guided_decoder.config.support_buffer_m} m support</span></div>
+                  <p className="mt-3 text-sm leading-6">{evidence.inventory_guided_decoder.circular_validation_warning}</p>
                 </section>
 
                 <section className="grid gap-5 lg:grid-cols-[1fr_0.9fr]">
@@ -617,6 +636,7 @@ export default function MlWorkspacePage() {
                     <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
                       {[
                         ["Mask GeoTIFF", "selected_mask_url"],
+                        ["Safeguarded mask", "inventory_guided_mask_url"],
                         ["Probability", "probability_url"],
                         ["Entropy", "entropy_url"],
                         ["Boundary GeoJSON", "boundary_url"],

@@ -88,8 +88,8 @@ ignore = ["E501"]
 known-first-party = ["src", "app"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-v --tb=short --cov=src --cov-report=term-missing --cov-fail-under=35"
+testpaths = ["tests", "glacierkz-api/tests"]
+addopts = "-v --tb=short -m 'not experimental and not local_data' --cov=src --cov=glacierkz-api/app --cov-report=term-missing --cov-fail-under=45"
 asyncio_mode = "auto"
 markers = [
     "experimental: Phase 10 scaffold modules — excluded from CI until production-ready",

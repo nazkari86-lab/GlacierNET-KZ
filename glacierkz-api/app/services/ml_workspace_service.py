@@ -30,6 +30,11 @@ from app.services.glacier_registry_service import get_glacier
 from app.services.model_availability import is_model_available
 from app.services.segmentation_service import run_segmentation
 from app.utils import path_to_url
+from src.inventory_guided_decoding import (
+    InventoryGuidedDecoderConfig,
+    inventory_guided_decode,
+    normalized_difference,
+)
 from src.model_registry import MODEL_SPECS, get_model_spec, model_metadata
 from src.model_security import verify_trusted_model
 
@@ -67,6 +72,7 @@ SUPPORTED_MODELS = ("temporal_s2_terrain_s1", "temporal_s2_terrain")
 PATCH_SIZE = 256
 DEFAULT_CONTEXT_M = 400
 MAX_WINDOW_PIXELS = 1280
+INVENTORY_GUIDED_CONFIG = InventoryGuidedDecoderConfig()
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -442,6 +448,8 @@ def ml_readiness() -> dict[str, Any]:
         )
     years = _available_years()
     ready_years = [item["year"] for item in years if item["compatible_models"]]
+    safeguard_report = _json(CORE_DIR / "benchmarks/v2/provisional/inventory_guided_decoder_2024.json")
+    safeguard_replay = safeguard_report.get("external_replay", {})
     return {
         "status": "ready" if ready_years and any(item["available"] for item in models) else "blocked",
         "recommended_model": next(
@@ -450,11 +458,25 @@ def ml_readiness() -> dict[str, Any]:
         "years": years,
         "models": models,
         "training_dataset": training_dataset_readiness(),
+        "generalisation_sentinel": {
+            "status": safeguard_report.get("status", "unavailable"),
+            "selected_config": safeguard_report.get("selection_protocol", {}).get("selected_config"),
+            "n_external_glaciers": safeguard_replay.get("n_glaciers"),
+            "baseline_hard_dice": safeguard_replay.get("unconstrained_model_baseline", {})
+            .get("hard_dice", {})
+            .get("estimate"),
+            "safeguard_hard_dice": safeguard_replay.get("metrics_bootstrap", {}).get("hard_dice", {}).get("estimate"),
+            "paired_dice_delta": safeguard_replay.get("paired_delta_decoder_minus_unconstrained_model", {})
+            .get("hard_dice", {})
+            .get("estimate"),
+            "claim_tier": "provisional_inventory_guided_failure_containment",
+        },
         "workflow": [
             "Select a glacier from the physical RGI 7.0 registry.",
             "Select a locally available Sentinel-2 year.",
             "Run the compatible temporal model with aligned terrain and Sentinel-1 features.",
             "Review the model boundary, probability, entropy and inventory disagreement.",
+            "Compare the unconstrained ML boundary with the physics-constrained Generalisation Sentinel candidate.",
             "Open the same glacier-year case in Risk Twin or download the audit manifest.",
         ],
         "interpretation": (
@@ -477,6 +499,7 @@ def _analysis_key(rgi_id: str, year: int, model_name: str, use_tta: bool, contex
         "context_m": context_m,
         "source": _source_fingerprint(source),
         "model_sha256": report.get("model_artifact_sha256"),
+        "inventory_guided_decoder": INVENTORY_GUIDED_CONFIG.to_dict(),
     }
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:20]
 
@@ -558,6 +581,7 @@ def _move_artifact(path_value: str | None, case_dir: Path, label: str) -> Path |
 
 def _geojson_and_metrics(
     *,
+    source_crop_path: Path,
     mask_path: Path,
     probability_path: Path,
     entropy_path: Path,
@@ -594,6 +618,23 @@ def _geojson_and_metrics(
             destination.write(selected.astype("uint8"), 1)
             destination.set_band_description(1, "selected_glacier_component")
 
+        with rasterio.open(source_crop_path) as crop_source:
+            if crop_source.count < 6 or (crop_source.height, crop_source.width) != predicted.shape:
+                raise ValueError("source crop is incompatible with inventory-guided decoding")
+            green = crop_source.read(2).astype(np.float32)
+            swir = crop_source.read(6).astype(np.float32)
+        guided_mask, guided_diagnostics = inventory_guided_decode(
+            normalized_difference(green, swir),
+            reference,
+            pixel_size_m=float(np.sqrt(pixel_area_m2)),
+            config=INVENTORY_GUIDED_CONFIG,
+        )
+        guided = guided_mask.astype(bool)
+        guided_path = case_dir / "inventory_guided_mask.tif"
+        with rasterio.open(guided_path, "w", **profile) as destination:
+            destination.write(guided_mask, 1)
+            destination.set_band_description(1, "inventory_guided_spectral_candidate")
+
         polygon_parts = [
             shape(value)
             for value, value_id in shapes(selected.astype("uint8"), mask=selected, transform=source.transform)
@@ -604,6 +645,16 @@ def _geojson_and_metrics(
             model_geometry = transform_geom(source.crs, "EPSG:4326", mapping(combined), precision=7)
         else:
             model_geometry = None
+        guided_parts = [
+            shape(value)
+            for value, value_id in shapes(guided_mask, mask=guided, transform=source.transform)
+            if int(value_id) == 1
+        ]
+        if guided_parts:
+            combined_guided = unary_union(guided_parts).simplify(max(abs(source.transform.a), abs(source.transform.e)))
+            guided_geometry = transform_geom(source.crs, "EPSG:4326", mapping(combined_guided), precision=7)
+        else:
+            guided_geometry = None
         bounds_projected = source.bounds
         bounds_wgs84_geom = transform_geom(
             source.crs,
@@ -638,9 +689,15 @@ def _geojson_and_metrics(
     predicted_pixels = int(np.count_nonzero(selected))
     reference_pixels = int(np.count_nonzero(reference))
     predicted_area = predicted_pixels * pixel_area_m2 / 1_000_000
+    guided_pixels = int(np.count_nonzero(guided))
+    guided_area = guided_pixels * pixel_area_m2 / 1_000_000
     reference_area = reference_pixels * pixel_area_m2 / 1_000_000
     overlap_iou = intersection / union if union else 0.0
+    guided_intersection = int(np.count_nonzero(guided & reference))
+    guided_union = int(np.count_nonzero(guided | reference))
+    guided_iou = guided_intersection / guided_union if guided_union else 0.0
     area_delta_percent = (predicted_area - reference_area) / reference_area * 100 if reference_area else None
+    guided_area_delta_percent = (guided_area - reference_area) / reference_area * 100 if reference_area else None
     boundary = ndimage.binary_dilation(selected | reference, iterations=2) ^ ndimage.binary_erosion(
         selected | reference, iterations=2
     )
@@ -667,8 +724,10 @@ def _geojson_and_metrics(
     )
     return {
         "model_geometry": model_geometry,
+        "inventory_guided_geometry": guided_geometry,
         "boundary_path": boundary_path,
         "selected_mask_path": selected_path,
+        "inventory_guided_mask_path": guided_path,
         "map_bounds": map_bounds,
         "metrics": {
             "predicted_area_km2": round(predicted_area, 4),
@@ -679,7 +738,17 @@ def _geojson_and_metrics(
             "uncertain_fraction_in_review_zone": round(uncertain_fraction, 4),
             "mean_boundary_entropy_nats": round(boundary_uncertainty, 4) if boundary_uncertainty is not None else None,
             "review_priority_0_100": priority,
+            "inventory_guided_area_km2": round(guided_area, 4),
+            "inventory_guided_area_delta_percent": (
+                round(guided_area_delta_percent, 2) if guided_area_delta_percent is not None else None
+            ),
+            "inventory_guided_rgi_overlap_iou": round(guided_iou, 4),
+            "inventory_guided_spectral_fraction": round(
+                float(guided_diagnostics["inventory_spectral_fraction"]),
+                4,
+            ),
         },
+        "inventory_guided_decoder": guided_diagnostics,
     }
 
 
@@ -756,6 +825,7 @@ def analyze_glacier(
         raise HTTPException(500, "Inference did not produce the required geospatial evidence layers")
 
     evidence = _geojson_and_metrics(
+        source_crop_path=crop_path,
         mask_path=moved["mask_path"],
         probability_path=moved["probability_path"],
         entropy_path=moved["entropy_path"],
@@ -763,6 +833,7 @@ def analyze_glacier(
         case_dir=case_dir,
     )
     moved["selected_mask_path"] = evidence["selected_mask_path"]
+    moved["inventory_guided_mask_path"] = evidence["inventory_guided_mask_path"]
     moved["boundary_path"] = evidence["boundary_path"]
     crop_path.unlink(missing_ok=True)
 
@@ -804,7 +875,9 @@ def analyze_glacier(
             "bounds": evidence["map_bounds"],
             "rgi_geometry": glacier["geometry"],
             "model_geometry": evidence["model_geometry"],
+            "inventory_guided_geometry": evidence["inventory_guided_geometry"],
         },
+        "inventory_guided_decoder": evidence["inventory_guided_decoder"],
         "artifacts": {key: str(value) if value else None for key, value in moved.items()},
         "review": {
             "status": "expert_review_required",
@@ -818,6 +891,7 @@ def analyze_glacier(
             "model-screened glacier boundary for the selected local year",
             "agreement and disagreement with the fixed RGI inventory geometry",
             "model probability and predictive-entropy review zones",
+            "inventory-guided spectral candidate for failure containment and annotation review",
         ],
         "claims_not_allowed": [
             "independent expert-validated accuracy for this glacier",
