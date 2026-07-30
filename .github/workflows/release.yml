@@ -41,7 +41,7 @@ jobs:
           python scripts/export_stac_catalog.py --output results/stac/catalog.json
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           body_path: release_notes.md
           generate_release_notes: true
