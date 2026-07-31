@@ -376,6 +376,69 @@ def parse_gdelt(payload: dict[str, Any], fetched_at: datetime | None = None) -> 
                 "severity_label": None,
                 "provider_model_confidence": metrics.get("confidence"),
                 "article_count": metrics.get("article_count"),
+                "record_kind": "event_card",
+                "fetched_at": _iso(fetched),
+            }
+        )
+    return events
+
+
+def parse_gdelt_stories(payload: dict[str, Any], fetched_at: datetime | None = None) -> list[dict[str, Any]]:
+    """Normalize GDELT Cloud story clusters without copying article bodies.
+
+    GDELT event cards and story clusters are different products.  The latter is
+    valuable for cryosphere monitoring because it clusters multilingual news
+    even when there is no CAMEO-style event record.  It remains a reported
+    signal, never a validated hazard or probability.
+    """
+    fetched = fetched_at or _utc_now()
+    events: list[dict[str, Any]] = []
+    for item in payload.get("data", []):
+        title = _clean_text(item.get("title") or item.get("headline") or "GDELT story cluster")
+        summary = _clean_text(item.get("summary") or item.get("description"), 240)
+        event_type, topics = classify_event(f"{title} {summary}")
+        if event_type == "other":
+            continue
+        raw_geo = item.get("geo") or item.get("location") or {}
+        geo = raw_geo if isinstance(raw_geo, dict) else {}
+        latitude, longitude = geo.get("latitude"), geo.get("longitude")
+        metrics = item.get("metrics") or {}
+        top_articles = item.get("top_articles") or item.get("articles") or []
+        first_article = top_articles[0] if isinstance(top_articles, list) and top_articles else {}
+        url = str(
+            item.get("url")
+            or item.get("primary_story_url")
+            or item.get("primary_article_url")
+            or (first_article.get("url") if isinstance(first_article, dict) else "")
+            or ""
+        )
+        external_id = str(item.get("id") or item.get("story_id") or url or title)
+        published = _parse_datetime(item.get("story_date") or item.get("date") or item.get("published_at")) or fetched
+        events.append(
+            {
+                "id": _stable_id("gdelt_cloud", f"story:{external_id}", url, title),
+                "external_id": external_id,
+                "source_id": "gdelt_cloud",
+                "source_name": "GDELT Cloud",
+                "source_tier": "open_news_intelligence",
+                "title": title,
+                "summary": summary,
+                "url": url,
+                "published_at": _iso(published),
+                "event_type": event_type,
+                "matched_topics": topics,
+                "latitude": float(latitude) if latitude is not None else None,
+                "longitude": float(longitude) if longitude is not None else None,
+                "location_name": _clean_text(geo.get("location") or geo.get("admin1") or geo.get("country"), 180),
+                "geolocation_method": "provider_resolved_coordinates"
+                if latitude is not None and longitude is not None
+                else "unresolved",
+                "geolocation_uncertainty_km": None,
+                "magnitude": None,
+                "severity_label": None,
+                "provider_model_confidence": metrics.get("confidence"),
+                "article_count": metrics.get("article_count") or item.get("article_count"),
+                "record_kind": "story_cluster",
                 "fetched_at": _iso(fetched),
             }
         )
@@ -682,29 +745,46 @@ def _fetch_live(now: datetime) -> tuple[list[dict[str, Any]], list[dict[str, Any
 
         gdelt_key = os.getenv("GDELT_CLOUD_API_KEY", os.getenv("GDELT_API_KEY", "")).strip()
         if gdelt_key:
-            try:
-                payload = _get_json(
-                    client,
-                    "https://gdeltcloud.com/api/v2/events",
-                    {
-                        "date_start": start.date().isoformat(),
-                        "date_end": now.date().isoformat(),
-                        "region": "Central Asia",
-                        "bbox": "40,67,47.5,88",
-                        "search": "glacier glacial lake mudflow avalanche flood",
-                        "sort": "recent",
-                        "limit": 100,
-                        "include_images": "false",
-                    },
-                    headers={"Authorization": f"Bearer {gdelt_key}"},
-                )
-                parsed = parse_gdelt(payload or {}, now)
-                events.extend(parsed)
-                health.append({"source_id": "gdelt_cloud", "status": "online", "items": len(parsed), "error": None})
-            except (httpx.HTTPError, ValueError) as error:
-                health.append(
-                    {"source_id": "gdelt_cloud", "status": "unavailable", "items": 0, "error": type(error).__name__}
-                )
+            gdelt_params = {
+                "date_start": start.date().isoformat(),
+                "date_end": now.date().isoformat(),
+                "region": "Central Asia",
+                "bbox": "40,67,47.5,88",
+                # Search in English, Russian, and Kazakh.  The normalizer below
+                # still excludes material without a cryosphere-relevant topic.
+                "search": "glacier glacial lake mudflow avalanche flood ледник ледниковое озеро сель наводнение мұздық сел тасқын",
+                "languages": "ru,kk,en",
+                "sort": "recent",
+                "limit": 100,
+                "include_images": "false",
+            }
+            parsed_gdelt: list[dict[str, Any]] = []
+            gdelt_errors: list[str] = []
+            for endpoint, parser in (
+                ("events", parse_gdelt),
+                ("stories", parse_gdelt_stories),
+            ):
+                try:
+                    payload = _get_json(
+                        client,
+                        f"https://gdeltcloud.com/api/v2/{endpoint}",
+                        gdelt_params,
+                        headers={"Authorization": f"Bearer {gdelt_key}"},
+                    )
+                    parsed_gdelt.extend(parser(payload or {}, now))
+                except (httpx.HTTPError, ValueError) as error:
+                    # Keep the usable GDELT product live if its companion is
+                    # temporarily unavailable or has a provider-side query limit.
+                    gdelt_errors.append(f"{endpoint}:{type(error).__name__}")
+            events.extend(parsed_gdelt)
+            health.append(
+                {
+                    "source_id": "gdelt_cloud",
+                    "status": "online" if not gdelt_errors else ("partial" if parsed_gdelt else "unavailable"),
+                    "items": len(parsed_gdelt),
+                    "error": ", ".join(gdelt_errors) or None,
+                }
+            )
         else:
             health.append({"source_id": "gdelt_cloud", "status": "ready_for_credentials", "items": 0, "error": None})
     return events, health

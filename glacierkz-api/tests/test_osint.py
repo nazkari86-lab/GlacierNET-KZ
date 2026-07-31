@@ -11,6 +11,7 @@ from app.services.osint_service import (
     parse_feed,
     parse_gdacs,
     parse_gdelt,
+    parse_gdelt_stories,
     parse_reliefweb,
     parse_usgs,
 )
@@ -163,6 +164,31 @@ def test_gdelt_parser_keeps_only_relevant_geolocated_event_cards():
     assert events[0]["event_type"] == "glacier_lake"
     assert events[0]["provider_model_confidence"] == 0.75
     assert events[0]["source_tier"] == "open_news_intelligence"
+
+
+def test_gdelt_story_parser_retains_relevant_multilingual_cluster_metadata_only():
+    events = parse_gdelt_stories(
+        {
+            "data": [
+                {
+                    "story_id": "story-1",
+                    "title": "Ледниковое озеро: обновление наблюдений",
+                    "description": "Краткая сводка об озере и селевой опасности.",
+                    "story_date": "2026-07-30T12:00:00Z",
+                    "geo": {"latitude": 43.1, "longitude": 77.1, "country": "Kazakhstan"},
+                    "metrics": {"article_count": 4},
+                    "top_articles": [{"url": "https://example.test/cluster-story"}],
+                },
+                {"story_id": "story-2", "title": "Политическая встреча", "description": "Без темы проекта."},
+            ]
+        },
+        NOW,
+    )
+    assert len(events) == 1
+    assert events[0]["event_type"] == "glacier_lake"
+    assert events[0]["record_kind"] == "story_cluster"
+    assert events[0]["article_count"] == 4
+    assert events[0]["url"] == "https://example.test/cluster-story"
 
 
 def test_reliefweb_parser_retains_metadata_only_and_stays_unresolved():

@@ -26,6 +26,7 @@ import {
 } from "@/lib/api";
 
 const OsintEventMap = dynamic(() => import("@/components/OsintEventMap"), { ssr: false });
+const AUTO_REFRESH_MS = 15 * 60 * 1000;
 
 const SCOPE_LABELS: Record<string, string> = {
   near_glacier: "до 25 км",
@@ -92,6 +93,11 @@ export default function EventRadarPage() {
     void loadEvents(false);
   }, [loadEvents]);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => void loadEvents(true), AUTO_REFRESH_MS);
+    return () => window.clearInterval(timer);
+  }, [loadEvents]);
+
   const selected = useMemo(
     () => radar?.events.find((event) => event.id === selectedId) ?? null,
     [radar, selectedId],
@@ -145,7 +151,7 @@ export default function EventRadarPage() {
             ["Сигналов в окне", radar?.summary.events_total ?? 0, "не событий GLOF"],
             ["Для выбранного фильтра", radar?.matched ?? 0, "до 350 км от RGI"],
             ["Официальные / каталожные", radar?.summary.official_or_authoritative ?? 0, "по типу источника"],
-            ["Кэш", radar?.cache.status ?? "—", `${radar?.cache.ttl_seconds ?? 0} с TTL`],
+            ["Кэш", radar?.cache.status ?? "—", `Автообновление каждые ${Math.round(AUTO_REFRESH_MS / 60_000)} мин`],
           ].map(([label, value, note]) => (
             <div key={String(label)} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{label}</p>
@@ -263,6 +269,7 @@ function EventEvidence({ event }: { event: OsintEvent }) {
         <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.12em]">
           <span className="rounded-full bg-orange-400/10 px-2.5 py-1 text-orange-200">{event.event_type}</span>
           <span className="rounded-full bg-slate-800 px-2.5 py-1 text-slate-300">{SCOPE_LABELS[event.link_scope]}</span>
+          {event.record_kind === "story_cluster" && <span className="rounded-full bg-violet-400/10 px-2.5 py-1 text-violet-200">новостной кластер</span>}
         </div>
         <h2 className="mt-3 text-xl font-black leading-7">{event.title}</h2>
         <p className="mt-2 text-xs text-slate-400">{event.source_name} · {new Date(event.published_at).toLocaleString("ru-RU")}</p>

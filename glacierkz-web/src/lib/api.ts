@@ -1013,6 +1013,7 @@ export interface OsintEvent {
   geolocation_uncertainty_km: number | null;
   magnitude: number | null;
   severity_label: string | null;
+  record_kind?: "event_card" | "story_cluster";
   linked_glacier: {
     rgi_id: string;
     name: string;
