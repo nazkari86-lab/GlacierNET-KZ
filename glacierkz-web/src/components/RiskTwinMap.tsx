@@ -19,6 +19,7 @@ interface RiskTwinMapProps {
   yearLayer: YearMapLayer | null;
   comparisonLayer: YearMapLayer | null;
   mlEvidence?: MlEvidenceCase | null;
+  compact?: boolean;
 }
 
 const KIND_LABELS: Record<EvidenceKind, string> = {
@@ -43,12 +44,13 @@ const KIND_STYLE: Record<EvidenceKind, L.PathOptions> = {
   asset: { color: "#ffffff", weight: 1.5, fillColor: "#8b5cf6", fillOpacity: 0.95 },
 };
 
-function popup(object: EvidenceMapObject): HTMLElement {
+function popup(object: EvidenceMapObject, compact = false): HTMLElement {
   const root = document.createElement("div");
   const heading = document.createElement("strong");
   heading.textContent = object.name;
   root.append(heading);
-  for (const line of [object.source, object.visibleFact, `Можно: ${object.allowedClaim}`, `Нельзя: ${object.prohibitedClaim}`]) {
+  const lines = compact ? [object.source, object.visibleFact] : [object.source, object.visibleFact, `Можно: ${object.allowedClaim}`, `Нельзя: ${object.prohibitedClaim}`];
+  for (const line of lines) {
     const paragraph = document.createElement("p");
     paragraph.className = "mt-1 text-xs leading-4";
     paragraph.textContent = line;
@@ -62,7 +64,7 @@ function pointStyle(kind: EvidenceKind, latlng: L.LatLng): L.CircleMarker {
   return L.circleMarker(latlng, { ...style, radius: kind === "historical_record" ? 7 : 6 });
 }
 
-export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSelectObject, mode, yearLayer, comparisonLayer, mlEvidence = null }: RiskTwinMapProps) {
+export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSelectObject, mode, yearLayer, comparisonLayer, mlEvidence = null, compact = false }: RiskTwinMapProps) {
   const elementRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const contentLayerRef = useRef<L.LayerGroup | null>(null);
@@ -140,7 +142,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
     setMapError("");
 
     const attach = (object: EvidenceMapObject, layer: L.Layer & { bindPopup?: (content: HTMLElement) => unknown }) => {
-      layer.bindPopup?.(popup(object));
+      layer.bindPopup?.(popup(object, compact));
       // Keep the geographic evidence readable: object names belong in the
       // click-triggered popup and inspector, not as permanently overlapping labels.
       layer.on("click", () => onSelectObject(object.id));
@@ -200,7 +202,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
       if (bounds.isValid()) map.fitBounds(bounds, { padding: [44, 44], maxZoom: 13 });
       fittedGlacierRef.current = glacier?.rgi_id ?? null;
     }
-  }, [comparisonLayer, glacier, mapObjects, mlEvidence, mode, onSelectObject, selectedObjectId, showMlBoundary, visibleKinds, yearLayer]);
+  }, [comparisonLayer, compact, glacier, mapObjects, mlEvidence, mode, onSelectObject, selectedObjectId, showMlBoundary, visibleKinds, yearLayer]);
 
   useEffect(() => {
     if (!selectedObjectId) return;
@@ -226,7 +228,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
         <div ref={elementRef} className="h-[620px] w-full" aria-label="Risk Twin evidence map" />
         <div className="absolute left-3 top-3 z-[500] max-w-[268px] rounded-xl border border-white/15 bg-slate-950/90 p-3 text-white shadow-lg backdrop-blur">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-200">Карта доказательств</p>
-          {selectedObject?.screening ? <>
+          {compact ? <><p className="mt-1 text-sm font-semibold">Выбранный объект и его проверяемый контекст</p><p className="mt-1 text-xs leading-4 text-slate-300">Нажмите контур, чтобы увидеть источник и измерение.</p></> : selectedObject?.screening ? <>
             <p className="mt-1 text-sm font-semibold">Точный кейс: {selectedObject.name}</p>
             <p className="mt-1 text-xs leading-4 text-slate-200">{(selectedObject.screening.areaM2 / 1_000_000).toFixed(3)} км² · {selectedObject.screening.distanceToRgiBoundaryM.toFixed(0)} м до RGI · {selectedObject.screening.areaChangePercent === null ? "нет надёжного match 2020" : `${selectedObject.screening.areaChangePercent > 0 ? "+" : ""}${selectedObject.screening.areaChangePercent.toFixed(1)}% к 2020`}</p>
           </> : <>
@@ -235,15 +237,15 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
           </>}
           {selectedObject && <a href="#case-action-plan" className="mt-3 inline-flex min-h-9 items-center rounded-lg bg-cyan-300 px-2.5 text-xs font-bold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">{selectedObject.screening ? "Открыть действия по кейсу" : "Открыть план проверки"}</a>}
         </div>
-        <div className="absolute right-3 top-3 z-[500] flex max-w-[calc(100%-24px)] flex-wrap justify-end gap-1.5">
+        {!compact && <div className="absolute right-3 top-3 z-[500] flex max-w-[calc(100%-24px)] flex-wrap justify-end gap-1.5">
           <button type="button" onClick={() => setBasemap("offline")} aria-pressed={basemap === "offline"} className={`min-h-10 rounded-lg border px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur ${basemap === "offline" ? "border-cyan-200 bg-cyan-100 text-cyan-950" : "border-white/20 bg-slate-950/85 text-white"}`}>Локально</button>
           <button type="button" onClick={() => setBasemap("terrain")} aria-pressed={basemap === "terrain"} className={`min-h-10 rounded-lg border px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur ${basemap === "terrain" ? "border-cyan-200 bg-cyan-100 text-cyan-950" : "border-white/20 bg-slate-950/85 text-white"}`}>Карта</button>
           <button type="button" onClick={() => setBasemap("satellite")} aria-pressed={basemap === "satellite"} className={`min-h-10 rounded-lg border px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur ${basemap === "satellite" ? "border-cyan-200 bg-cyan-100 text-cyan-950" : "border-white/20 bg-slate-950/85 text-white"}`}>Спутник</button>
-        </div>
-        <div className="absolute bottom-8 left-3 right-16 z-[500] flex flex-wrap gap-1.5">
+        </div>}
+        {!compact && <div className="absolute bottom-8 left-3 right-16 z-[500] flex flex-wrap gap-1.5">
           {mlEvidence && <button type="button" aria-pressed={showMlBoundary} onClick={() => setShowMlBoundary((current) => !current)} className={`min-h-9 rounded-full border px-3 py-2 text-[11px] font-semibold shadow-sm backdrop-blur ${showMlBoundary ? "border-emerald-200 bg-emerald-950/90 text-emerald-100" : "border-slate-500 bg-slate-950/70 text-slate-400 line-through"}`}>ML boundary · {mlEvidence.year}</button>}
           {(Object.keys(KIND_LABELS) as EvidenceKind[]).map((kind) => <button key={kind} type="button" aria-pressed={visibleKinds[kind]} onClick={() => toggleKind(kind)} className={`min-h-9 rounded-full border px-3 py-2 text-[11px] font-semibold shadow-sm backdrop-blur ${visibleKinds[kind] ? "border-cyan-100 bg-slate-950/90 text-white" : "border-slate-500 bg-slate-950/70 text-slate-400 line-through"}`}>{KIND_LABELS[kind]}{!mapObjects.some((object) => object.kind === kind) ? " · нет точного кейса" : ""}</button>)}
-        </div>
+        </div>}
       </div>
       {basemap === "offline" && <p role="status" aria-live="polite" className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-950">Локальный презентационный режим: внешняя подложка отключена, но все локальные научные слои и выбранный кейс остаются доступны.</p>}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600" aria-label="Map legend"><span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-emerald-500" />ML boundary</span><span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-cyan-400" />инвентарь/слой</span><span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-blue-500" />вода и русла</span><span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-violet-500" />бассейн/OSM</span><span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-red-500" />архивная запись</span></div>

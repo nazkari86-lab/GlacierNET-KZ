@@ -1,5 +1,5 @@
-import JuryCommandCenter from "@/components/jury/JuryCommandCenter";
+import CommandCenter from "@/components/jury/CommandCenter";
 
 export default function JuryPage() {
-  return <JuryCommandCenter />;
+  return <CommandCenter />;
 }
