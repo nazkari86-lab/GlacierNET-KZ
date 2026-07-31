@@ -178,3 +178,24 @@ def test_regional_scan_uses_previous_available_inventory_and_keeps_1990_as_basel
     assert baseline["previous_inventory_year"] is None
     assert "baseline_inventory_no_earlier_comparison" in baseline["candidates"][0]["flags"]
     assert comparison["previous_inventory_year"] == 2010
+
+
+def test_follow_up_priority_breakdown_is_bounded_and_not_a_hazard_score():
+    from app.services.risk_twin_context_service import _observation_priority_components
+
+    components = _observation_priority_components(
+        area_m2=250_000,
+        area_change_percent=90,
+        distance_to_glacier_m=500,
+        previous_match_available=False,
+    )
+
+    assert components == {
+        "base_follow_up": 20.0,
+        "area_change": 40.0,
+        "lake_size": 20.0,
+        "rgi_proximity": 20.0,
+        "no_reliable_previous_match": 20.0,
+        "total_before_cap": 120.0,
+        "observation_priority_0_100": 100.0,
+    }

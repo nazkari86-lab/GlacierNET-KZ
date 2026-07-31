@@ -25,11 +25,14 @@ class AdminAuthMiddleware(BaseHTTPMiddleware):
                 content={"detail": "Admin API is not configured (ADMIN_API_KEY not set)"},
             )
 
-        raw_key = request.headers.get("X-API-Key") or request.query_params.get("api_key")
+        # Credentials in a URL leak into browser history and infrastructure
+        # logs even when our own request logger masks them.  Admin access is
+        # intentionally header-only.
+        raw_key = request.headers.get("X-API-Key")
         if not raw_key or not admin_api_key_auth.validate(raw_key):
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                content={"detail": "Admin API key required (X-API-Key header or api_key query param)"},
+                content={"detail": "Admin API key required (X-API-Key header)"},
                 headers={"WWW-Authenticate": "ApiKey"},
             )
 

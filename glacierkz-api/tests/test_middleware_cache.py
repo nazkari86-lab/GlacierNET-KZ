@@ -5,7 +5,7 @@ from __future__ import annotations
 import time
 
 import pytest
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from httpx import ASGITransport, AsyncClient
 
 from app.middleware.cache import CacheConfig, CacheMiddleware, _CacheEntry
@@ -89,6 +89,11 @@ class TestCacheConfig:
         assert cfg.max_size == 100
         assert cfg.exempt_paths == ["/custom"]
 
+    def test_credentials_are_part_of_the_safe_default_boundary(self):
+        cfg = CacheConfig()
+        assert "X-API-Key" in cfg.credential_headers
+        assert "Cookie" in cfg.credential_headers
+
 
 class TestCacheEntry:
     def test_is_valid_not_expired(self):
@@ -157,6 +162,48 @@ class TestCacheMiddleware:
             assert r.status_code == 200
 
     @pytest.mark.asyncio
+    async def test_credential_bearing_requests_are_never_cached(self):
+        app = FastAPI()
+        calls = 0
+
+        @app.get("/data")
+        async def data():
+            nonlocal calls
+            calls += 1
+            return {"calls": calls}
+
+        app.add_middleware(CacheMiddleware, config=CacheConfig(default_ttl=60))
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            first = await client.get("/data", headers={"X-API-Key": "secret-a"})
+            second = await client.get("/data", headers={"X-API-Key": "secret-a"})
+
+        assert first.json()["calls"] == 1
+        assert second.json()["calls"] == 2
+        assert first.headers["cache-control"] == "private, no-store"
+        assert "x-cache-status" not in first.headers
+
+    @pytest.mark.asyncio
+    async def test_handler_no_store_response_is_not_cached(self):
+        app = FastAPI()
+        calls = 0
+
+        @app.get("/data")
+        async def data():
+            nonlocal calls
+            calls += 1
+            return Response(content=str(calls), headers={"Cache-Control": "no-store"})
+
+        app.add_middleware(CacheMiddleware, config=CacheConfig(default_ttl=60))
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            first = await client.get("/data")
+            second = await client.get("/data")
+
+        assert first.text == "1"
+        assert second.text == "2"
+
+    @pytest.mark.asyncio
     async def test_eviction_under_max_size(self, monkeypatch):
         app = FastAPI()
 
@@ -170,6 +217,20 @@ class TestCacheMiddleware:
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             for i in range(5):
                 await client.get(f"/data?q={i}")
+
+        middleware = app.middleware_stack
+        while hasattr(middleware, "app") and not isinstance(middleware, CacheMiddleware):
+            middleware = middleware.app
+        assert isinstance(middleware, CacheMiddleware)
+        assert len(middleware._cache) <= config.max_size
+
+    def test_evicts_at_capacity_when_configured_for_one_entry(self):
+        middleware = CacheMiddleware(FastAPI(), config=CacheConfig(max_size=1))
+        middleware._cache["first"] = _CacheEntry(b"first", {}, 200, time.monotonic() + 60)
+
+        middleware._evict_expired()
+
+        assert middleware._cache == {}
 
     def test_build_key_default(self, app_with_cache):
         mw = app_with_cache.middleware_stack

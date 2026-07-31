@@ -188,7 +188,7 @@ Applied in reverse order (outermost first):
 
 **Three layers:**
 
-1. **API Key** (`app/auth/api_key.py`): SHA-256 hashed key comparison from `X-API-Key` header or `?api_key=` query param. Keys loaded from `app/permissions/api_keys.json`.
+1. **API Key** (`app/auth/api_key.py`): SHA-256 hashed key comparison from the `X-API-Key` header only. Query-parameter keys are rejected to prevent URL and proxy-log leakage. Keys loaded from `app/permissions/api_keys.json`.
 
 2. **JWT** (`app/auth/jwt_auth.py`): Bearer token in `Authorization` header. Supports HS256 (symmetric secret) and RS256 (public/private key). Token payload carries `sub`, `role`, `scopes`.
 

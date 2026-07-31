@@ -19,7 +19,8 @@ class CacheConfig:
     max_size: int = 1000
     exempt_paths: list[str] = field(default_factory=lambda: ["/health", "/docs"])
     cache_control_header: bool = True
-    vary_headers: list[str] = field(default_factory=lambda: ["Authorization", "Accept-Language"])
+    vary_headers: list[str] = field(default_factory=lambda: ["Authorization", "Accept-Language", "X-API-Key"])
+    credential_headers: list[str] = field(default_factory=lambda: ["Authorization", "X-API-Key", "Cookie"])
     key_func: Optional[Callable[[Request], str]] = None
 
 
@@ -55,21 +56,49 @@ class CacheMiddleware(BaseHTTPMiddleware):
         return hashlib.sha256(raw.encode()).hexdigest()[:32]
 
     def _evict_expired(self) -> None:
-        if len(self._cache) > self.config.max_size:
-            time.monotonic()
+        if len(self._cache) >= self.config.max_size:
             expired = [k for k, v in self._cache.items() if not v.is_valid]
             for k in expired:
                 del self._cache[k]
-            if len(self._cache) > self.config.max_size:
+            if len(self._cache) >= self.config.max_size:
                 oldest = sorted(self._cache, key=lambda k: self._cache[k].expires)
-                for k in oldest[: len(oldest) // 2]:
+                # ``max_size=1`` is useful in deterministic tests and tiny
+                # deployments: floor division would otherwise evict nothing.
+                for k in oldest[: max(1, len(oldest) // 2)]:
                     del self._cache[k]
+
+    def _request_has_credentials(self, request: Request) -> bool:
+        """Never cache a response addressed to a credential-bearing request."""
+        return any(request.headers.get(name) for name in self.config.credential_headers)
+
+    @staticmethod
+    def _response_allows_storage(response: Response) -> bool:
+        cache_control = response.headers.get("cache-control", "").lower()
+        return "no-store" not in cache_control and "private" not in cache_control
+
+    def _add_vary_header(self, headers: dict[str, str]) -> None:
+        existing = [item.strip() for item in headers.get("vary", "").split(",") if item.strip()]
+        lowered = {item.lower() for item in existing}
+        for header in self.config.vary_headers:
+            if header.lower() not in lowered:
+                existing.append(header)
+                lowered.add(header.lower())
+        if existing:
+            headers["vary"] = ", ".join(existing)
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         path = request.url.path
         for exempt in self.config.exempt_paths:
             if path.startswith(exempt):
                 return await call_next(request)
+
+        # Do not create a private server-side or intermediary cache entry for
+        # authenticated requests.  ``Authorization`` is standard cache-aware,
+        # while ``X-API-Key`` and cookies often are not at reverse proxies.
+        if self._request_has_credentials(request):
+            response = await call_next(request)
+            response.headers["cache-control"] = "private, no-store"
+            return response
 
         if request.method == "GET":
             cache_key = self._build_key(request)
@@ -93,7 +122,7 @@ class CacheMiddleware(BaseHTTPMiddleware):
 
         response = await call_next(request)
 
-        if request.method == "GET" and response.status_code == 200:
+        if request.method == "GET" and response.status_code == 200 and self._response_allows_storage(response):
             body = b""
             async for chunk in response.body_iterator:
                 if isinstance(chunk, str):
@@ -105,7 +134,8 @@ class CacheMiddleware(BaseHTTPMiddleware):
             headers = dict(response.headers)
             headers["etag"] = f'"{etag}"'
             if self.config.cache_control_header:
-                headers["cache-control"] = f"max-age={self.config.default_ttl}"
+                headers["cache-control"] = f"public, max-age={self.config.default_ttl}"
+            self._add_vary_header(headers)
             headers["x-cache-status"] = "MISS"
 
             self._evict_expired()

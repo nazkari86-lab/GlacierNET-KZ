@@ -183,6 +183,7 @@ def get_metrics() -> MetricsCollector:
         _metrics.counter("http_requests_total", "Total HTTP requests", {"method": "POST"})
         _metrics.counter("http_requests_total", "Total HTTP requests", {"method": "PUT"})
         _metrics.counter("http_requests_total", "Total HTTP requests", {"method": "DELETE"})
+        _metrics.counter("http_server_errors_total", "Total unhandled or 5xx HTTP responses")
         _metrics.histogram(
             "http_request_duration_seconds",
             "Request duration",

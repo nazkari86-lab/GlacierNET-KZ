@@ -81,6 +81,11 @@ class TestRateLimitConfig:
         request.headers = {}
         assert cfg.get_client_key(request) == "custom"
 
+    def test_bounded_client_state_defaults(self):
+        cfg = RateLimitConfig()
+        assert cfg.max_clients > 0
+        assert cfg.client_idle_ttl_seconds > 0
+
 
 class TestTokenBucket:
     @pytest.mark.asyncio
@@ -152,6 +157,32 @@ class TestRateLimitMiddleware:
 
 
 class TestRateLimitMiddlewareEdgeCases:
+    def test_evicts_least_recently_seen_client_at_capacity(self):
+        middleware = RateLimitMiddleware(
+            FastAPI(),
+            config=RateLimitConfig(max_clients=2, cleanup_interval_seconds=0),
+        )
+        middleware._get_or_create_bucket("old")
+        middleware._last_seen["old"] = time.monotonic() - 10
+        middleware._get_or_create_bucket("recent")
+        middleware._get_or_create_bucket("new")
+
+        assert set(middleware._buckets) == {"recent", "new"}
+        assert set(middleware._hourly_counts).issubset({"recent", "new"})
+
+    def test_removes_idle_client_state(self):
+        middleware = RateLimitMiddleware(
+            FastAPI(),
+            config=RateLimitConfig(client_idle_ttl_seconds=1, cleanup_interval_seconds=0),
+        )
+        middleware._get_or_create_bucket("idle")
+        middleware._hourly_counts["idle"].append(time.time())
+        middleware._last_seen["idle"] = time.monotonic() - 2
+        middleware._cleanup_idle_clients(time.monotonic(), force=True)
+
+        assert "idle" not in middleware._buckets
+        assert "idle" not in middleware._hourly_counts
+
     @pytest.mark.asyncio
     async def test_hourly_limit(self, monkeypatch):
         app = FastAPI()

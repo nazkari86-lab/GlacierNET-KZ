@@ -105,14 +105,16 @@ export default function AdminUsersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold text-gray-900">Users</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {users.length} total users
-          </p>
+          <p className="text-sm text-gray-500 mt-0.5">Identity management is not configured for this local deployment.</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+        <button disabled title="Connect an identity provider before managing users" className="flex cursor-not-allowed items-center gap-2 rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-500">
           <UserPlus className="w-4 h-4" />
           Add User
         </button>
+      </div>
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        No user directory is connected. This page intentionally does not invent users or permissions.
       </div>
 
       <div className="flex items-center gap-3">

@@ -143,12 +143,11 @@ async def get_configuration():
 
 @router.post("/config/update", response_model=AdminResponse)
 async def update_configuration(update: ConfigUpdate):
-    """Обновление конфигурации."""
-    logger.info(f"Конфигурация обновлена: {update.key} = {update.value}")
-    return AdminResponse(
-        success=True,
-        message=f"Ключ '{update.key}' обновлён",
-        data={"key": update.key, "value": update.value},
+    """Fail closed: runtime configuration is not persisted by this API."""
+    logger.warning("Rejected non-persistent runtime configuration update for key %r", update.key)
+    raise HTTPException(
+        status_code=409,
+        detail="Runtime configuration is read-only. Update the deployment configuration and restart the service.",
     )
 
 
@@ -212,28 +211,11 @@ async def get_running_processes():
 
 @router.post("/maintenance/cleanup", response_model=AdminResponse)
 async def cleanup_old_files(days: int = Query(30, ge=1, le=365)):
-    """Очистка старых файлов."""
-    cleaned = 0
-    dirs_to_clean = ["logs", "tmp", "cache"]
-
-    for dir_name in dirs_to_clean:
-        if not os.path.exists(dir_name):
-            continue
-        for f in os.listdir(dir_name):
-            filepath = os.path.join(dir_name, f)
-            try:
-                if os.path.isfile(filepath):
-                    age_days = (time.time() - os.path.getmtime(filepath)) / 86400
-                    if age_days > days:
-                        os.remove(filepath)
-                        cleaned += 1
-            except Exception:
-                continue
-
-    return AdminResponse(
-        success=True,
-        message=f"Очищено {cleaned} файлов старше {days} дней",
-        data={"cleaned_files": cleaned, "days_threshold": days},
+    """Fail closed: this API must not delete local project data."""
+    logger.warning("Rejected destructive maintenance cleanup request for days=%s", days)
+    raise HTTPException(
+        status_code=501,
+        detail="Server-side deletion is disabled. Inspect explicit targets and use a reviewed local maintenance command.",
     )
 
 
@@ -257,97 +239,45 @@ class RoleUpdate(BaseModel):
     role: str = Field(..., pattern="^(admin|operator|viewer)$")
 
 
-_users: list[dict[str, Any]] = [
-    {
-        "id": "usr-001",
-        "name": "Admin User",
-        "email": "admin@glaciernet.kz",
-        "role": "admin",
-        "status": "active",
-        "lastLogin": datetime.now(timezone.utc).isoformat(),
-        "datasetsCount": 12,
-        "predictionsCount": 156,
-        "createdAt": "2025-01-15T00:00:00+00:00",
-    },
-    {
-        "id": "usr-002",
-        "name": "Operator One",
-        "email": "operator@glaciernet.kz",
-        "role": "operator",
-        "status": "active",
-        "lastLogin": datetime.now(timezone.utc).isoformat(),
-        "datasetsCount": 5,
-        "predictionsCount": 89,
-        "createdAt": "2025-03-01T00:00:00+00:00",
-    },
-    {
-        "id": "usr-003",
-        "name": "Viewer Guest",
-        "email": "viewer@glaciernet.kz",
-        "role": "viewer",
-        "status": "inactive",
-        "lastLogin": "",
-        "datasetsCount": 0,
-        "predictionsCount": 3,
-        "createdAt": "2025-06-01T00:00:00+00:00",
-    },
-]
-
-_audit_entries: list[dict[str, Any]] = [
-    {
-        "id": "aud-001",
-        "userId": "usr-001",
-        "userName": "Admin User",
-        "action": "login",
-        "resource": "auth",
-        "ipAddress": "127.0.0.1",
-        "userAgent": "GlacierNET-Web",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "level": "info",
-    },
-    {
-        "id": "aud-002",
-        "userId": "usr-002",
-        "userName": "Operator One",
-        "action": "predict",
-        "resource": "segmentation",
-        "resourceId": "task-demo",
-        "details": "U-Net prediction on Zailiysky tile",
-        "ipAddress": "10.0.0.5",
-        "userAgent": "GlacierNET-Web",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "level": "info",
-    },
-]
+# The local research deployment has no identity provider or durable audit sink.
+# Empty responses are honest; invented users, events, and activity cannot be
+# used as operational evidence.
+_users: list[dict[str, Any]] = []
+_audit_entries: list[dict[str, Any]] = []
 
 
 @router.get("/stats")
 async def admin_stats():
     from app.monitoring.metrics import get_metrics
+    from app.services.data_coverage_service import get_data_coverage
     from app.storage.results import get_history
 
     mem = psutil.virtual_memory()
     disk = psutil.disk_usage("/")
     history = get_history(limit=1000)
     metrics = get_metrics()
+    coverage = get_data_coverage()
 
     req_total = sum(
         metrics.get_counter("http_requests_total", {"method": m}) for m in ("GET", "POST", "PUT", "DELETE", "PATCH")
     )
+    duration = metrics.get_histogram("http_request_duration_seconds")
+    server_errors = metrics.get_counter("http_server_errors_total")
+    verified_sources = ("raw_sentinel2", "raw_landsat", "predictions", "glacier_area_rf_series")
 
     return {
         "totalUsers": len(_users),
         "activeUsers": sum(1 for u in _users if u["status"] == "active"),
-        "totalDatasets": 4,
+        "totalDatasets": sum(bool(coverage.get(source)) for source in verified_sources),
         "totalPredictions": len(history),
         "storageUsed": disk.used,
         "storageTotal": disk.total,
         "cpuUsage": psutil.cpu_percent(interval=0.1),
         "memoryUsage": mem.percent,
         "uptime": time.time() - _start_time,
-        "errorRate": 0.0,
+        "errorRate": round(server_errors / req_total * 100, 3) if req_total else 0.0,
         "requestsPerMinute": round(req_total / max((time.time() - _start_time) / 60, 1), 1),
-        "avgResponseTime": 42,
+        "avgResponseTime": round(duration["avg"] * 1000, 1),
     }
 
 
@@ -376,9 +306,11 @@ async def admin_request_metrics():
     total = sum(
         metrics.get_counter("http_requests_total", {"method": m}) for m in ("GET", "POST", "PUT", "DELETE", "PATCH")
     )
-    rate = max(total / max(int(time.time() - _start_time), 1), 0.5)
-    points = [{"timestamp": now - (59 - i), "value": round(rate + (i % 5) * 0.3, 2)} for i in range(60)]
-    return {"points": points}
+    # The browser appends one measured process-wide sample at each poll.  Do
+    # not manufacture a historical curve when this lightweight deployment has
+    # no time-series database.
+    rate = total / max(time.time() - _start_time, 1)
+    return {"points": [{"timestamp": now, "value": round(rate, 3)}], "source": "process_counter"}
 
 
 @router.get("/system/info")
@@ -422,13 +354,26 @@ async def admin_system_info():
 
 @router.get("/system/services")
 async def admin_system_services():
+    from app.config import RESULTS_DIR
+
     now = datetime.now(timezone.utc).isoformat()
     return {
         "services": [
-            {"name": "GlacierNET API", "status": "healthy", "latency": 3, "lastChecked": now, "url": "/health"},
-            {"name": "Task Manager", "status": "healthy", "latency": 5, "lastChecked": now},
-            {"name": "WebSocket", "status": "healthy", "latency": 8, "lastChecked": now, "url": "/ws"},
-            {"name": "Results Storage", "status": "healthy", "latency": 12, "lastChecked": now},
+            {
+                "name": "GlacierNET API",
+                "status": "healthy",
+                "latency": None,
+                "lastChecked": now,
+                "url": "/health",
+                "evidence": "This health endpoint completed in the current process.",
+            },
+            {
+                "name": "Results storage",
+                "status": "healthy" if RESULTS_DIR.is_dir() else "down",
+                "latency": None,
+                "lastChecked": now,
+                "evidence": "Local results directory existence check.",
+            },
         ]
     }
 
@@ -452,6 +397,8 @@ async def admin_list_users(
 
 @router.patch("/users/{user_id}/role")
 async def admin_update_user_role(user_id: str, body: RoleUpdate):
+    if not _users:
+        raise HTTPException(status_code=409, detail="Identity management is not configured for this deployment")
     for user in _users:
         if user["id"] == user_id:
             user["role"] = body.role
@@ -461,6 +408,8 @@ async def admin_update_user_role(user_id: str, body: RoleUpdate):
 
 @router.post("/users/{user_id}/suspend")
 async def admin_suspend_user(user_id: str):
+    if not _users:
+        raise HTTPException(status_code=409, detail="Identity management is not configured for this deployment")
     for user in _users:
         if user["id"] == user_id:
             user["status"] = "active" if user["status"] == "suspended" else "suspended"
@@ -471,6 +420,8 @@ async def admin_suspend_user(user_id: str):
 @router.delete("/users/{user_id}")
 async def admin_delete_user(user_id: str):
     global _users
+    if not _users:
+        raise HTTPException(status_code=409, detail="Identity management is not configured for this deployment")
     before = len(_users)
     _users = [u for u in _users if u["id"] != user_id]
     if len(_users) == before:

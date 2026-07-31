@@ -314,7 +314,7 @@ GeoTIFF/Landsat → Загрузка (rasterio) → Спектральные и�
 
 | Файл | Назначение |
 |------|-----------|
-| `api_key.py` | API ключ: генерация, хэширование (SHA-256), валидация, проверка scope, заголовок/query param |
+| `api_key.py` | API ключ: генерация, хэширование (SHA-256), валидация, проверка scope, только заголовок `X-API-Key` |
 | `jwt_auth.py` | JWT: HS256/RS256, access/refresh токены, claims, верификация |
 | `rbac.py` | RBAC: 3 роли (Viewer/Analyst/Admin), маппинг scope, dependency injection для FastAPI |
 

@@ -494,6 +494,36 @@ def _lake_identifier(row: Any) -> Any:
     return _clean(row.get("GLAKE_ID") or row.get("GLID"))
 
 
+def _observation_priority_components(
+    *,
+    area_m2: float,
+    area_change_percent: float | None,
+    distance_to_glacier_m: float,
+    previous_match_available: bool,
+) -> dict[str, float]:
+    """Expose the fixed follow-up score as inspectable, non-hazard terms.
+
+    Each component is bounded before summing.  The breakdown lets an analyst
+    verify why a lake is ranked without mistaking the score for a likelihood of
+    failure, a GLOF probability, or a consequence estimate.
+    """
+    base_follow_up = 20.0
+    area_change = min(abs(area_change_percent or 0.0), 40.0)
+    lake_size = min(max(area_m2, 0.0) / 100_000 * 20, 20.0)
+    rgi_proximity = 20.0 if distance_to_glacier_m <= 1000 else 10.0 if distance_to_glacier_m <= 5000 else 0.0
+    no_reliable_previous_match = 0.0 if previous_match_available else 20.0
+    total_before_cap = base_follow_up + area_change + lake_size + rgi_proximity + no_reliable_previous_match
+    return {
+        "base_follow_up": round(base_follow_up, 1),
+        "area_change": round(area_change, 1),
+        "lake_size": round(lake_size, 1),
+        "rgi_proximity": round(rgi_proximity, 1),
+        "no_reliable_previous_match": round(no_reliable_previous_match, 1),
+        "total_before_cap": round(total_before_cap, 1),
+        "observation_priority_0_100": round(min(100.0, total_before_cap), 1),
+    }
+
+
 def _lake_screening_candidates(
     current: Any,
     previous: Any | None,
@@ -542,13 +572,14 @@ def _lake_screening_candidates(
         if historical_count:
             flags.append("historical_events_in_same_10km_context")
         area = float(row["AREA"] or 0)
-        # Transparent observation-priority components. This is intentionally a
-        # data-collection score, not a threat, failure, or probability score.
-        change_component = min(abs(change_percent or 0), 40)
-        size_component = min(area / 100_000 * 20, 20)
-        proximity_component = 20 if distance_to_glacier <= 1000 else 10 if distance_to_glacier <= 5000 else 0
-        match_component = 20 if previous_area is None else 0
-        priority = round(min(100, 20 + change_component + size_component + proximity_component + match_component), 1)
+        priority_components = _observation_priority_components(
+            area_m2=area,
+            area_change_percent=change_percent,
+            distance_to_glacier_m=distance_to_glacier,
+            # A baseline inventory has no prior epoch to match.  It must not
+            # receive a synthetic "missing match" contribution.
+            previous_match_available=previous_area is not None or previous_inventory_year is None,
+        )
         original = current.loc[index]
         candidates.append(
             {
@@ -563,7 +594,9 @@ def _lake_screening_candidates(
                 "geometric_match_distance_m": round(match_distance, 1) if match_distance is not None else None,
                 "distance_to_rgi_boundary_m": round(distance_to_glacier, 1),
                 "elevation_m": _clean(original.get("ELEV")),
-                "observation_priority_0_100": priority,
+                "observation_priority_0_100": priority_components["observation_priority_0_100"],
+                "priority_formula": "glaciernet-kz.followup-priority.v1",
+                "priority_components": priority_components,
                 "flags": flags,
                 "interpretation": "Real inventory-screening candidate. Priority ranks follow-up value only; it is not a hazard or event probability.",
             }
@@ -623,13 +656,11 @@ def regional_lake_screening(inventory_year: int = 2023, buffer_km: float = 10.0)
             flags.append("within_1km_of_rgi_boundary")
         if historical_count:
             flags.append("historical_events_in_same_10km_context")
-        priority = min(
-            100,
-            20
-            + min(abs(change or 0), 40)
-            + min(area / 100_000 * 20, 20)
-            + (20 if glacier_distance <= 1000 else 10 if glacier_distance <= 5000 else 0)
-            + (20 if previous_year is not None and previous_area is None else 0),
+        priority_components = _observation_priority_components(
+            area_m2=area,
+            area_change_percent=change,
+            distance_to_glacier_m=glacier_distance,
+            previous_match_available=previous_area is not None or previous_year is None,
         )
         # Derive public fields from the original WGS84 row; the metric copy is
         # used only for distances.
@@ -648,7 +679,9 @@ def regional_lake_screening(inventory_year: int = 2023, buffer_km: float = 10.0)
                 "area_change_percent": round(change, 1) if change is not None else None,
                 "geometric_match_distance_m": round(match_distance, 1) if match_distance is not None else None,
                 "distance_to_rgi_boundary_m": round(glacier_distance, 1),
-                "observation_priority_0_100": round(priority, 1),
+                "observation_priority_0_100": priority_components["observation_priority_0_100"],
+                "priority_formula": "glaciernet-kz.followup-priority.v1",
+                "priority_components": priority_components,
                 "flags": flags,
                 "glacier": {key: glacier[key] for key in ("rgi_id", "name", "name_ru", "centroid", "rgi_area_km2")},
                 "historical_event_count_in_glacier_context": historical_count,

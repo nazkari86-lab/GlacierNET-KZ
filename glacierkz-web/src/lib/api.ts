@@ -1123,6 +1123,16 @@ export interface GeoJsonFeatureCollection {
   features: Array<{ type: "Feature"; properties: Record<string, unknown>; geometry: { type: string; coordinates: unknown } }>;
 }
 
+export interface ObservationPriorityComponents {
+  base_follow_up: number;
+  area_change: number;
+  lake_size: number;
+  rgi_proximity: number;
+  no_reliable_previous_match: number;
+  total_before_cap: number;
+  observation_priority_0_100: number;
+}
+
 export interface RiskTwinSpatialContext {
   schema: string;
   query: { year: number; buffer_km: number; lake_inventory_year: number; previous_lake_inventory_year: number | null };
@@ -1147,6 +1157,8 @@ export interface RiskTwinSpatialContext {
     distance_to_rgi_boundary_m: number;
     elevation_m: number | null;
     observation_priority_0_100: number;
+    priority_formula?: string;
+    priority_components?: ObservationPriorityComponents;
     flags: string[];
     interpretation: string;
   }>;
@@ -1253,6 +1265,8 @@ export interface RegionalObservationScan {
     geometric_match_distance_m: number | null;
     distance_to_rgi_boundary_m: number;
     observation_priority_0_100: number;
+    priority_formula?: string;
+    priority_components?: ObservationPriorityComponents;
     flags: string[];
     glacier: { rgi_id: string; name: string; name_ru: string; centroid: { latitude: number; longitude: number }; rgi_area_km2: number };
     historical_event_count_in_glacier_context: number;
@@ -1559,9 +1573,10 @@ export interface AdminSystemInfo {
 export interface AdminServiceHealth {
   name: string;
   status: "healthy" | "degraded" | "down";
-  latency: number;
+  latency: number | null;
   lastChecked: string;
   url?: string;
+  evidence?: string;
 }
 
 export interface AuditEntry {

@@ -125,6 +125,22 @@ function finiteNumber(value: unknown): number | null {
   return Number.isFinite(result) ? result : null;
 }
 
+function priorityComponentSummary(value: unknown): string | null {
+  if (!value || typeof value !== "object") return null;
+  const components = value as Record<string, unknown>;
+  const labels: Array<[string, string]> = [
+    ["area_change", "изменение площади"],
+    ["lake_size", "размер озера"],
+    ["rgi_proximity", "близость к RGI"],
+    ["no_reliable_previous_match", "нет надёжного match"],
+  ];
+  const parts = labels.flatMap(([key, label]) => {
+    const amount = finiteNumber(components[key]);
+    return amount && amount > 0 ? [`${label}: +${amount.toFixed(0)}`] : [];
+  });
+  return parts.length ? parts.join(" · ") : null;
+}
+
 function featureObjects(
   features: FeatureLike[],
   kind: Exclude<EvidenceKind, "glacier" | "annual_segmentation">,
@@ -272,6 +288,7 @@ export function buildEvidenceMapObjects(
         ...(finiteNumber(properties.area_change_percent) === null ? [] : [{ label: `Изменение к ${sourceValue(properties.previous_inventory_year)}`, value: `${Number(properties.area_change_percent).toFixed(1)}%` }]),
         ...(finiteNumber(properties.distance_to_rgi_boundary_m) === null ? [] : [{ label: "До границы RGI", value: `${Number(properties.distance_to_rgi_boundary_m).toFixed(0)} м` }]),
         ...(finiteNumber(properties.geometric_match_distance_m) === null ? [] : [{ label: "Расстояние геометрического match", value: `${Number(properties.geometric_match_distance_m).toFixed(0)} м` }]),
+        ...(priorityComponentSummary(properties.priority_components) ? [{ label: "Почему приоритет", value: priorityComponentSummary(properties.priority_components)! }] : []),
       ],
       "spatial_context",
       (properties) => {

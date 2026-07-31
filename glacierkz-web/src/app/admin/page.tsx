@@ -8,8 +8,6 @@ import {
   Activity,
   Shield,
   Cpu,
-  ArrowUpRight,
-  ArrowDownRight,
   TrendingUp,
 } from "lucide-react";
 import RealTimeChart from "@/components/RealTimeChart";
@@ -59,32 +57,24 @@ export default function AdminOverviewPage() {
     {
       label: t("admin.total_users"),
       value: stats?.totalUsers ?? 0,
-      change: "+12%",
-      up: true,
       icon: Users,
       color: "bg-blue-50 text-blue-600",
     },
     {
       label: t("admin.datasets"),
       value: stats?.totalDatasets ?? 0,
-      change: "+5%",
-      up: true,
       icon: Database,
       color: "bg-green-50 text-green-600",
     },
     {
       label: t("admin.predictions"),
       value: stats?.totalPredictions ?? 0,
-      change: "+23%",
-      up: true,
       icon: Activity,
       color: "bg-purple-50 text-purple-600",
     },
     {
       label: t("admin.active_users"),
       value: stats?.activeUsers ?? 0,
-      change: "+8%",
-      up: true,
       icon: Shield,
       color: "bg-amber-50 text-amber-600",
     },
@@ -129,20 +119,15 @@ export default function AdminOverviewPage() {
               </div>
               <div className="mt-2 flex items-end gap-2">
                 <span className="text-2xl font-bold text-gray-900">{card.value.toLocaleString()}</span>
-                <span
-                  className={cn(
-                    "text-xs font-medium flex items-center gap-0.5 mb-1",
-                    card.up ? "text-green-600" : "text-red-600"
-                  )}
-                >
-                  {card.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                  {card.change}
-                </span>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      <p className="text-xs text-gray-500">
+        Counts are process-local and derived from verified local sources. Identity management and a durable audit store are not configured in this deployment.
+      </p>
 
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 p-4">

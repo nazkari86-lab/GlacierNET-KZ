@@ -86,6 +86,16 @@ export default function CaseActionPlan({ glacier, candidate, object, year }: Cas
   // guard so TypeScript also preserves that fact inside the export callbacks.
   if (!plan) return null;
 
+  const priorityComponents = candidate?.priority_components;
+  const priorityDrivers: Array<[string, number]> = priorityComponents
+    ? ([
+        ["Изменение площади", priorityComponents.area_change],
+        ["Размер озера", priorityComponents.lake_size],
+        ["Близость к RGI", priorityComponents.rgi_proximity],
+        ["Нет надёжного прошлого match", priorityComponents.no_reliable_previous_match],
+      ] as Array<[string, number]>).filter(([, value]) => value > 0)
+    : [];
+
   const copy = async () => {
     try {
       await navigator.clipboard?.writeText(plan.summary);
@@ -167,6 +177,7 @@ export default function CaseActionPlan({ glacier, candidate, object, year }: Cas
           <ul className="mt-3 grid gap-2 lg:grid-cols-2" aria-label="Статус доказательств кейса">{plan.decisionGates.map((gate) => { const meta = GATE_STYLE[gate.status]; const Icon = meta.icon; return <li key={gate.label} className={`rounded-xl border p-3 ${meta.className}`}><p className="flex items-center gap-1.5 text-xs font-bold"><Icon aria-hidden="true" className="h-3.5 w-3.5" />{meta.label}</p><h4 className="mt-1 text-sm font-bold">{gate.label}</h4><p className="mt-1 text-xs leading-5">{gate.detail}</p></li>; })}</ul>
         </section>
         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{plan.facts.map((fact) => <div key={fact.label} className="rounded-xl border border-cyan-100 bg-white p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-cyan-800">{fact.label}</p><p className="mt-1 text-sm font-bold text-slate-900">{fact.value}</p></div>)}</div>
+        {priorityComponents && <section aria-labelledby="case-priority-breakdown" className="mt-4 rounded-2xl border border-cyan-200 bg-cyan-50 p-4"><div className="flex flex-wrap items-baseline justify-between gap-2"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-cyan-900">Проверяемая формула очереди</p><h3 id="case-priority-breakdown" className="mt-1 text-base font-bold text-slate-950">Почему этому объекту назначен приоритет {candidate?.observation_priority_0_100.toFixed(0)}/100</h3></div><span className="text-xs font-semibold text-cyan-900">Сбор доказательств ≠ риск</span></div><div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{priorityDrivers.map(([label, value]) => <div key={label} className="rounded-xl bg-white p-3 text-sm"><p className="text-xs font-medium text-slate-600">{label}</p><p className="mt-1 font-bold text-slate-950">+{value.toFixed(0)} баллов</p></div>)}</div><p className="mt-3 text-xs leading-5 text-cyan-950">Базовый балл: {priorityComponents.base_follow_up.toFixed(0)}. Сумма до ограничения: {priorityComponents.total_before_cap.toFixed(0)}; итог ограничен шкалой 0–100. Это прозрачная очередность проверки инвентарных данных, не вероятность прорыва и не оценка последствий.</p></section>}
         <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm"><MapPin className="h-3.5 w-3.5 text-cyan-700" />{plan.coordinates}</p>
         <div className="mt-5 flex flex-wrap gap-2" role="tablist" aria-label="Роль пользователя">
           {AUDIENCES.map((item) => {

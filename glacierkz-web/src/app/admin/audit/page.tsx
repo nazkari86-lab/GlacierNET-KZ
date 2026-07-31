@@ -82,11 +82,16 @@ export default function AuditLogPage() {
         </div>
         <button
           onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          disabled={entries.length === 0}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
         >
           <Download className="w-4 h-4" />
           Export CSV
         </button>
+      </div>
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        A durable audit sink is not configured in this local deployment. No placeholder events are shown or exported.
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">

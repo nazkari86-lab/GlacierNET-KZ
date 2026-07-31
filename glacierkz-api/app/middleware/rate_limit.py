@@ -23,6 +23,9 @@ class RateLimitConfig:
     burst_window: float = 1.0
     exempt_paths: list[str] = field(default_factory=lambda: ["/health", "/docs", "/openapi.json"])
     key_func: Optional[Callable[[Request], str]] = None
+    max_clients: int = 10_000
+    client_idle_ttl_seconds: float = 3_600.0
+    cleanup_interval_seconds: float = 60.0
 
     def get_client_key(self, request: Request) -> str:
         if self.key_func:
@@ -78,14 +81,44 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.config = config or RateLimitConfig()
         self._buckets: dict[str, _TokenBucket] = {}
         self._hourly_counts: dict[str, list[float]] = defaultdict(list)
+        self._last_seen: dict[str, float] = {}
+        self._last_cleanup = 0.0
+
+    def _remove_client(self, client_key: str) -> None:
+        self._buckets.pop(client_key, None)
+        self._hourly_counts.pop(client_key, None)
+        self._last_seen.pop(client_key, None)
+
+    def _cleanup_idle_clients(self, now: float, *, force: bool = False) -> None:
+        if not force and now - self._last_cleanup < self.config.cleanup_interval_seconds:
+            return
+        stale = [
+            key for key, last_seen in self._last_seen.items() if now - last_seen >= self.config.client_idle_ttl_seconds
+        ]
+        for key in stale:
+            self._remove_client(key)
+        self._last_cleanup = now
+
+    def _evict_least_recently_seen_client(self) -> None:
+        if not self._last_seen:
+            return
+        oldest_key = min(self._last_seen, key=self._last_seen.__getitem__)
+        self._remove_client(oldest_key)
 
     def _get_or_create_bucket(self, client_key: str) -> _TokenBucket:
+        now = time.monotonic()
+        self._cleanup_idle_clients(now)
         if client_key not in self._buckets:
+            # An attacker must not be able to grow process memory forever by
+            # sending requests through a stream of spoofed/real client IPs.
+            while len(self._buckets) >= max(1, self.config.max_clients):
+                self._evict_least_recently_seen_client()
             refill = self.config.requests_per_minute / 60.0
             self._buckets[client_key] = _TokenBucket(
                 capacity=self.config.burst_size,
                 refill_rate=refill,
             )
+        self._last_seen[client_key] = now
         return self._buckets[client_key]
 
     def _check_hourly_limit(self, client_key: str) -> bool:

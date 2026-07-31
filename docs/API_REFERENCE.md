@@ -29,16 +29,13 @@ The API supports three authentication mechanisms. All protected endpoints requir
 
 ### API Key (Header or Query)
 
-Include the key via header **or** query parameter:
+Include the key in the request header:
 
 ```
 X-API-Key: your-api-key-here
 ```
-```
-GET /api/history?api_key=your-api-key-here
-```
 
-Keys are SHA-256 hashed before comparison. The key file is loaded from `API_KEYS_FILE` (default `app/permissions/api_keys.json`).
+Keys are sent only in `X-API-Key` and are SHA-256 hashed before comparison. URL query parameters are deliberately rejected because URLs can leak through history, referrers, and proxy logs. The key file is loaded from `API_KEYS_FILE` (default `app/permissions/api_keys.json`).
 
 ### JWT Bearer Token
 

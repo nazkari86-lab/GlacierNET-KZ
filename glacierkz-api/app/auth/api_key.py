@@ -1,4 +1,9 @@
-"""API key authentication — header and query parameter based."""
+"""API key authentication using a request header only.
+
+Putting an API key in a URL makes it easy to leak through browser history,
+reverse-proxy access logs, bookmarks, referrer headers, and screenshots.  The
+project deliberately accepts credentials only in ``X-API-Key``.
+"""
 
 from __future__ import annotations
 
@@ -9,7 +14,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from fastapi import HTTPException, Security, status
-from fastapi.security import APIKeyHeader, APIKeyQuery
+from fastapi.security import APIKeyHeader
 
 
 def _hash_key(raw: str) -> str:
@@ -41,7 +46,6 @@ class APIKeyEntry:
 
 
 _header = APIKeyHeader(name="X-API-Key", auto_error=False)
-_query = APIKeyQuery(name="api_key", auto_error=False)
 
 
 class APIKeyAuth:
@@ -110,21 +114,20 @@ class APIKeyAuth:
             for e in self._keys.values()
         ]
 
-    async def __call__(self, header: str = Security(_header), query: str = Security(_query)) -> str:
-        raw = header or query
-        if not raw:
+    async def __call__(self, header: str = Security(_header)) -> str:
+        if not header:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="API key required (X-API-Key header or api_key query param)",
+                detail="API key required (X-API-Key header)",
                 headers={"WWW-Authenticate": "ApiKey"},
             )
-        entry = self.validate(raw)
+        entry = self.validate(header)
         if not entry:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid or expired API key",
             )
-        return raw
+        return header
 
 
 api_key_auth = APIKeyAuth()

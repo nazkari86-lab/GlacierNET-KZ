@@ -147,7 +147,7 @@ app.add_middleware(
     CacheMiddleware,
     config=CacheConfig(
         default_ttl=60,
-        exempt_paths=["/health", "/metrics", "/ws", "/docs", "/api/operations"],
+        exempt_paths=["/health", "/metrics", "/ws", "/docs", "/api/operations", "/api/admin"],
     ),
 )
 app.add_middleware(
@@ -286,8 +286,19 @@ def status():
 @app.middleware("http")
 async def metrics_middleware(request: Request, call_next):
     collector = get_metrics()
+    started_at = time.perf_counter()
     collector.inc("http_requests_total", labels={"method": request.method})
     collector.inc("http_active_requests")
-    response = await call_next(request)
-    collector.set("http_active_requests", max(0, collector.get_gauge("http_active_requests") - 1))
-    return response
+    try:
+        response = await call_next(request)
+        if response.status_code >= 500:
+            collector.inc("http_server_errors_total")
+        return response
+    except Exception:
+        # This is deliberately separate from client-side 4xx outcomes: the
+        # dashboard's error rate must represent server failures only.
+        collector.inc("http_server_errors_total")
+        raise
+    finally:
+        collector.observe("http_request_duration_seconds", time.perf_counter() - started_at)
+        collector.set("http_active_requests", max(0, collector.get_gauge("http_active_requests") - 1))

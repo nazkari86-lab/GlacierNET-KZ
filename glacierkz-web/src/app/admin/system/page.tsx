@@ -76,7 +76,7 @@ export default function AdminSystemPage() {
     return `${d}d ${h}h ${m}m`;
   };
 
-  const allHealthy = services.every((s) => s.status === "healthy");
+  const allHealthy = services.length > 0 && services.every((s) => s.status === "healthy");
   const anyDown = services.some((s) => s.status === "down");
 
   return (
@@ -114,9 +114,11 @@ export default function AdminSystemPage() {
           <AlertTriangle className="w-4 h-4" />
         )}
         <span className="text-sm font-medium">
-          {allHealthy
-            ? "All services operational"
-            : anyDown
+          {services.length === 0
+            ? "No service checks available"
+            : allHealthy
+              ? "All services operational"
+              : anyDown
               ? "Some services are down"
               : "Some services degraded"}
         </span>
@@ -274,7 +276,8 @@ export default function AdminSystemPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">{svc.name}</p>
-                        <p className="text-[10px] text-gray-400">{svc.latency}ms</p>
+                        <p className="text-[10px] text-gray-400">{svc.latency === null ? "Latency not measured" : `${svc.latency}ms`}</p>
+                        {svc.evidence && <p className="text-[10px] text-gray-400">{svc.evidence}</p>}
                       </div>
                       <span
                         className={cn(

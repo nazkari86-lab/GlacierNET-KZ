@@ -186,6 +186,22 @@ class TestAPIKeyAuthCallable:
             r = await client.get("/test", headers={"X-API-Key": "invalid"})
             assert r.status_code == 401
 
+    @pytest.mark.asyncio
+    async def test_query_parameter_is_not_accepted_for_a_key(self):
+        auth = APIKeyAuth()
+        key = generate_api_key()
+        auth.add_key(key, name="test")
+        app = FastAPI()
+
+        @app.get("/test")
+        async def test_route(value: str = Depends(auth)):
+            return {"key": value}
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.get("/test", params={"api_key": key})
+
+        assert response.status_code == 401
+
 
 class TestGlobalApiKeyAuth:
     def test_instance_exists(self):
