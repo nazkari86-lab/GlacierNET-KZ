@@ -131,7 +131,7 @@ body {
   animation: glacierFlow 4s ease-in-out infinite;
 }
 
-/* Jury Command Center: the hero scene is decorative; its facts are real HTML. */
+/* Command Center: the hero scene is decorative; its facts are real HTML. */
 @keyframes jury-glacier-breathe {
   0%, 100% { opacity: 0.92; transform: translateY(0) scaleY(1); }
   50% { opacity: 1; transform: translateY(1px) scaleY(1.015); }

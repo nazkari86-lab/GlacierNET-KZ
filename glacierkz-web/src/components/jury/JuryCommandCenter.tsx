@@ -225,11 +225,11 @@ export default function JuryCommandCenter() {
   };
 
   return <>
-    <a href="#main" aria-label="Skip to main content" className="sr-only z-[1000] rounded-md bg-slate-950 px-4 py-3 font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Перейти к содержанию Jury Command Center</a>
+    <a href="#main" aria-label="Skip to main content" className="sr-only z-[1000] rounded-md bg-slate-950 px-4 py-3 font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Перейти к содержанию Command Center</a>
     <main id="main" className="min-h-screen bg-slate-50 text-slate-900">
-      <nav aria-label="Навигация Jury Command Center" className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
+      <nav aria-label="Навигация Command Center" className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
-          <a href="#overview" className="flex items-center gap-2 font-bold tracking-tight text-slate-950"><span className="grid h-8 w-8 place-items-center rounded-lg bg-cyan-500 text-sm text-slate-950">G</span>GlacierNET‑KZ <span className="hidden text-slate-400 sm:inline">/ Jury Command Center</span></a>
+          <a href="#overview" className="flex items-center gap-2 font-bold tracking-tight text-slate-950"><span className="grid h-8 w-8 place-items-center rounded-lg bg-cyan-500 text-sm text-slate-950">G</span>GlacierNET‑KZ <span className="hidden text-slate-400 sm:inline">/ Command Center</span></a>
           <div className="flex flex-wrap gap-1 text-xs font-semibold text-slate-700">
             <a href="#overview" className="rounded-full px-3 py-2 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-700">Суть</a>
             <a href="#live-case" className="rounded-full px-3 py-2 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-700">Живой кейс</a>

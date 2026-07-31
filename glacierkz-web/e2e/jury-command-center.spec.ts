@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("Jury Command Center", () => {
-  test("keeps the jury story, real Risk Twin case, map and claim boundaries on one page", async ({ page }) => {
+test.describe("Command Center", () => {
+  test("keeps the real Risk Twin case, comparisons, map and claim boundaries on one page", async ({ page }) => {
     await page.goto("/jury", { waitUntil: "domcontentloaded" });
 
     await expect(page.getByRole("heading", { name: /От спутникового слоя — к проверяемому следующему действию/i })).toBeVisible();
-    await expect(page.getByRole("navigation", { name: "Навигация Jury Command Center" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Навигация Command Center" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Skip to main content" })).toBeAttached();
     await expect(page.getByRole("region", { name: "Анимация ледника и ключевые факты" })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Проверка похожих ледников/i })).toBeVisible();
