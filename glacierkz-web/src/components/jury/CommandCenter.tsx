@@ -60,6 +60,7 @@ export default function CommandCenter() {
   const [yearLayer, setYearLayer] = useState<YearMapLayer | null>(null);
   const [selectedCaseKey, setSelectedCaseKey] = useState("");
   const [context, setContext] = useState<RiskTwinSpatialContext | null>(null);
+  const [contextStatus, setContextStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
   const [companyAsset, setCompanyAsset] = useState<CompanyAsset | null>(null);
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -108,11 +109,18 @@ export default function CommandCenter() {
     if (!selectedCase || !selectedGlacier) return;
     let active = true;
     setContext(null);
+    setContextStatus("loading");
     setSelectedObjectId(selectedCase.lake_id ? `lake:${selectedCase.lake_id}` : `glacier:${selectedGlacier.rgi_id}`);
     fetchRiskTwinContext(selectedGlacier.rgi_id, 2024, 10, selectedCase.inventory_year)
-      .then((next) => { if (active) setContext(next); })
+      .then((next) => {
+        if (!active) return;
+        setContext(next);
+        setContextStatus("ready");
+      })
       .catch((cause) => {
-        if (active) setError(cause instanceof Error ? cause.message : "Не удалось загрузить пространственный контекст выбранного объекта.");
+        if (!active) return;
+        setContextStatus("unavailable");
+        setError(cause instanceof Error ? cause.message : "Не удалось загрузить пространственный контекст выбранного объекта.");
       });
     return () => { active = false; };
   }, [selectedCase, selectedGlacier]);
@@ -197,11 +205,11 @@ export default function CommandCenter() {
           <CompanyAssetMode
             candidates={scan?.candidates ?? []}
             scannedLakes={scan?.summary.scanned_lakes ?? 0}
-            routeContext={companyAsset && context ? {
+            routeContext={companyAsset ? {
               assetId: companyAsset.id,
-              available: context.downstream_route.available,
-              routeLengthKm: context.downstream_route.route_length_km ?? null,
-              corridorWidthM: context.downstream_route.corridor_width_m ?? null,
+              status: contextStatus === "loading" ? "loading" : context?.downstream_route.available ? "available" : "unavailable",
+              routeLengthKm: context?.downstream_route.route_length_km ?? null,
+              corridorWidthM: context?.downstream_route.corridor_width_m ?? null,
             } : null}
             onSelectCandidate={(candidate, asset) => {
               setCompanyAsset(asset);

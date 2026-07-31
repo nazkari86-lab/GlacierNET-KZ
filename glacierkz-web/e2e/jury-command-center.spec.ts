@@ -18,7 +18,7 @@ test.describe("Command Center", () => {
     await page.getByRole("button", { name: /Добавить и проверить/i }).click();
     await expect(page.getByRole("button", { name: /Тестовый водозабор Инфраструктура/i })).toBeVisible();
     await page.getByRole("button", { name: /Показать маршрут на карте/i }).first().click();
-    await expect(page.getByText(/HydroRIVERS‑контекст/i)).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/Контекст HydroRIVERS/i)).toBeVisible({ timeout: 20_000 });
 
     const firstCase = page.getByRole("button", { name: /ОБЪЕКТ №1/i });
     await expect(firstCase).toBeVisible({ timeout: 20_000 });
