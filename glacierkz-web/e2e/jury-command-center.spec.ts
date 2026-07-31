@@ -15,6 +15,7 @@ test.describe("Command Center", () => {
     await expect(firstCase).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText(/заметное изменение площади/i)).toBeVisible();
     await expect(page.locator(".risk-twin-map")).toBeVisible();
+    await page.getByRole("button", { name: "Приблизить выбранное озеро" }).click();
     await expect(page.locator("main [role=alert]")).toHaveCount(0);
 
     await expect(page.getByRole("link", { name: /Полный паспорт/i })).toHaveAttribute("href", /\/risk-twin\?rgi=/);
