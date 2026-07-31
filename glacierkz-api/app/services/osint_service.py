@@ -20,9 +20,9 @@ from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
-from xml.etree import ElementTree
 
 import httpx
+from defusedxml import ElementTree
 
 from app.config import DATA_DIR
 from app.services.glacier_registry_service import list_glaciers

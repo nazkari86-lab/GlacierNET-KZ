@@ -28,14 +28,15 @@ certifi==2026.7.22
     #   fiona
     #   httpcore
     #   httpx
+    #   netcdf4
     #   pyogrio
     #   pyproj
     #   rasterio
     #   requests
-cftime==1.6.5
-    # via netcdf4
 cffi==2.1.0
     # via cryptography
+cftime==1.6.5
+    # via netcdf4
 charset-normalizer==3.4.9
     # via requests
 click==8.4.2
@@ -59,6 +60,8 @@ cryptography==49.0.0
     # via google-auth
 cycler==0.12.1
     # via matplotlib
+defusedxml==0.7.1
+    # via -r glacierkz-api/requirements-api.txt
 exceptiongroup==1.3.1
     # via anyio
 fastapi==0.140.0
@@ -143,8 +146,8 @@ numpy==1.26.4
     # via
     #   -r glacierkz-api/requirements-api.txt
     #   -r requirements.txt
-    #   contourpy
     #   cftime
+    #   contourpy
     #   geopandas
     #   h5py
     #   matplotlib
@@ -159,8 +162,8 @@ numpy==1.26.4
     #   seaborn
     #   shapely
     #   tensorboard
-    #   xarray
     #   tensorflow
+    #   xarray
 oauthlib==3.3.1
     # via requests-oauthlib
 opencv-python==4.9.0.80
@@ -174,12 +177,14 @@ packaging==26.2
     #   pyogrio
     #   tensorflow
     #   wheel
+    #   xarray
 pandas==2.2.3
     # via
     #   -r glacierkz-api/requirements-api.txt
     #   -r requirements.txt
     #   geopandas
     #   seaborn
+    #   xarray
 pillow==12.3.0
     # via
     #   -r glacierkz-api/requirements-api.txt
@@ -197,6 +202,8 @@ protobuf==4.25.9
     #   tensorflow
 psutil==7.2.2
     # via -r glacierkz-api/requirements-api.txt
+pyarrow==23.0.1
+    # via -r requirements.txt
 pyasn1==0.6.4
     # via pyasn1-modules
 pyasn1-modules==0.4.2
@@ -209,8 +216,6 @@ pydantic==2.13.4
     #   fastapi
 pydantic-core==2.46.4
     # via pydantic
-pyarrow==23.0.1
-    # via -r requirements.txt
 pyogrio==0.13.0
     # via geopandas
 pyparsing==3.3.2
