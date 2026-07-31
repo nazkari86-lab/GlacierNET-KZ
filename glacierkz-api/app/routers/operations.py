@@ -19,7 +19,6 @@ from app.storage.operations import (
     new_id,
     overview,
     row_by_id,
-    seed_demo,
     update_task,
     utc_now,
     verify_audit_chain,
@@ -53,7 +52,7 @@ class BasinCreate(BaseModel):
     name: str = Field(min_length=2, max_length=160)
     region: str = Field(min_length=2, max_length=240)
     status: Literal["shadow_mode", "active", "archived"] = "shadow_mode"
-    evidence_tier: Literal["operational_unverified", "customer_verified", "synthetic_demo"] = "operational_unverified"
+    evidence_tier: Literal["operational_unverified", "customer_verified"] = "operational_unverified"
 
 
 class AssetCreate(BaseModel):
@@ -63,7 +62,7 @@ class AssetCreate(BaseModel):
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     status: str = "monitoring"
-    evidence_tier: Literal["operational_unverified", "customer_verified", "synthetic_demo"] = "operational_unverified"
+    evidence_tier: Literal["operational_unverified", "customer_verified"] = "operational_unverified"
     model_version: str | None = None
     data_version: str | None = None
     allowed_use: str = "screening and evidence management with human review"
@@ -97,7 +96,7 @@ class CandidateCreate(DomainShiftRequest):
     staleness: float = Field(ge=0, le=1)
     data_quality_gap: float = Field(ge=0, le=1)
     expected_information_gain: float = Field(ge=0, le=1)
-    evidence_tier: Literal["operational_unverified", "customer_verified", "synthetic_demo"] = "operational_unverified"
+    evidence_tier: Literal["operational_unverified", "customer_verified"] = "operational_unverified"
     detected_at: str
 
 
@@ -213,15 +212,6 @@ def readiness() -> dict[str, Any]:
 def operations_overview() -> dict[str, Any]:
     with database() as connection:
         return overview(connection)
-
-
-@router.get("/demo")
-def demo_overview() -> dict[str, Any]:
-    with database(Path(":memory:")) as connection:
-        result = seed_demo(connection)
-        result["demo_only"] = True
-        result["persistence"] = "none"
-        return result
 
 
 @router.get("/assets")

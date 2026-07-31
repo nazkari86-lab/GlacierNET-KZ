@@ -64,7 +64,6 @@ Read-only endpoints:
 ```text
 GET  /api/operations/readiness
 GET  /api/operations/overview
-GET  /api/operations/demo
 GET  /api/operations/assets
 GET  /api/operations/audit
 GET  /api/operations/domain-shift/current-model
@@ -98,10 +97,10 @@ Start the stack and open:
 http://localhost:8080/operations
 ```
 
-An empty registry automatically shows a non-persistent `synthetic_demo`
-preview. It is visibly marked as shadow mode. The field form saves an offline
-draft in browser storage; synchronisation is offered only for a persisted task
-and an authenticated analyst.
+An empty registry remains empty. The application never substitutes a synthetic
+object or observation for missing local evidence.
+The field form saves an offline draft in browser storage; synchronisation is
+offered only for a persisted task and an authenticated analyst.
 
 ### Decision-first interface
 

@@ -34,7 +34,8 @@ SHA-256 audit chain.
 
 It is deliberately a shadow-mode monitoring workspace—not an automatic warning
 system. Open `http://localhost:8080/operations` after `./scripts/start.sh`. An
-empty registry displays a clearly labelled, non-persistent synthetic workflow.
+empty registry remains empty until a real local case or a typed field
+observation is added.
 
 ## What It Does
 
@@ -157,16 +158,9 @@ GLOF probability (`hazard_probability` remains `null`).
 See the [method and API contract](docs/OSINT_EVENT_RADAR.md) and the
 [licence-aware open-source evaluation](docs/OSINT_OPEN_SOURCE_EVALUATION.md).
 
-Run the explicitly synthetic example:
-
-```bash
-python scripts/run_risk_twin.py \
-  examples/risk_twin/resilience_screening.synthetic.json \
-  --output /tmp/glaciernet-resilience-demo.json
-```
-
-The example verifies software behaviour only; its coefficients and outputs are
-not scientific evidence.
+Use the Risk Twin interface to open a local RGI object or add a typed
+observation. Missing local evidence produces an abstention and a collection
+request; the product does not ship fabricated risk examples.
 
 ## Lake and GLOF evidence
 

@@ -1803,8 +1803,6 @@ export interface OperationsOverview {
     head_sha256?: string | null;
   };
   safety_statement: string;
-  demo_only?: boolean;
-  persistence?: string;
 }
 
 export interface FieldReportInput {
@@ -1862,11 +1860,6 @@ export interface RiskTwinHandoffResult {
 
 export async function fetchOperationsOverview(): Promise<OperationsOverview> {
   const res = checkResponse(await fetch(apiUrl("/api/operations/overview")));
-  return res.json();
-}
-
-export async function fetchOperationsDemo(): Promise<OperationsOverview> {
-  const res = checkResponse(await fetch(apiUrl("/api/operations/demo")));
   return res.json();
 }
 
