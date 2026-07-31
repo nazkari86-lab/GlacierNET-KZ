@@ -10,6 +10,14 @@ test.describe("Command Center", () => {
     await expect(page.getByRole("region", { name: "Анимация ледника и ключевые факты" })).toBeVisible();
     await expect(page.getByText(/Просмотрено 317 озёр/i)).toBeVisible({ timeout: 20_000 });
     await expect(page.getByRole("heading", { name: /Следующее действие: проверить контур воды/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Покажите, что проверить рядом с объектом компании/i })).toBeVisible();
+
+    await page.getByLabel("Название объекта").fill("Тестовый водозабор");
+    await page.getByLabel("Широта").fill("42.9753");
+    await page.getByLabel("Долгота").fill("76.9723");
+    await page.getByRole("button", { name: /Добавить и проверить/i }).click();
+    await expect(page.getByRole("button", { name: /Тестовый водозабор Инфраструктура/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Открыть на карте/i }).first()).toBeVisible();
 
     const firstCase = page.getByRole("button", { name: /ОБЪЕКТ №1/i });
     await expect(firstCase).toBeVisible({ timeout: 20_000 });

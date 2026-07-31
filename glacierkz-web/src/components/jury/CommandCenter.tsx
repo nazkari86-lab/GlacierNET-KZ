@@ -12,6 +12,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import GlacierEvidenceIntro from "@/components/jury/GlacierEvidenceIntro";
+import CompanyAssetMode from "@/components/jury/CompanyAssetMode";
 import { riskTwinHref } from "@/lib/evidenceCase";
 import { buildEvidenceMapObjects } from "@/lib/riskTwinEvidence";
 import {
@@ -67,7 +68,7 @@ export default function CommandCenter() {
     let active = true;
     Promise.all([
       fetchJuryEvidence(),
-      fetchRegionalObservationScan(6, 10, 2023),
+      fetchRegionalObservationScan(500, 10, 2023),
       fetchGlaciers("", false, 1000, true),
       fetchYearMapLayer(2024).catch(() => null),
     ])
@@ -135,7 +136,7 @@ export default function CommandCenter() {
       <nav aria-label="Навигация Command Center" className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
           <a href="#decision" className="flex items-center gap-2 font-bold tracking-tight text-slate-950"><span className="grid h-8 w-8 place-items-center rounded-lg bg-cyan-500 text-sm text-slate-950">G</span>GlacierNET‑KZ <span className="hidden text-slate-400 sm:inline">/ Command Center</span></a>
-          <div className="flex gap-1 text-xs font-semibold text-slate-700"><a href="#decision" className="rounded-full px-3 py-2 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-700">Решение</a><a href="#map" className="rounded-full px-3 py-2 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-700">Карта</a><a href="#details" className="rounded-full px-3 py-2 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-700">Доказательства</a></div>
+          <div className="flex gap-1 text-xs font-semibold text-slate-700"><a href="#decision" className="rounded-full px-3 py-2 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-700">Решение</a><a href="#asset-mode" className="rounded-full px-3 py-2 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-emerald-700">Объект компании</a><a href="#map" className="rounded-full px-3 py-2 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-700">Карта</a><a href="#details" className="rounded-full px-3 py-2 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-700">Доказательства</a></div>
         </div>
       </nav>
 
@@ -166,6 +167,8 @@ export default function CommandCenter() {
           </section>
 
           <section aria-labelledby="action-title" className="rounded-3xl border border-amber-200 bg-amber-50 p-5 shadow-sm sm:p-7"><div className="flex items-start gap-3"><AlertTriangle className="mt-0.5 h-6 w-6 shrink-0 text-amber-700" /><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-800">Практический результат</p><h2 id="action-title" className="mt-1 text-2xl font-bold tracking-tight text-amber-950">Следующее действие: проверить контур воды</h2><p className="mt-2 max-w-4xl text-sm leading-6 text-amber-950">Получить чистую спутниковую сцену, сопоставить границу воды с контуром инвентаря и только при расхождении направлять полевую или БПЛА‑проверку. Так сотни объектов превращаются в объяснимую очередь задач.</p></div></div><ol className="mt-5 grid gap-3 md:grid-cols-3"><li className="rounded-xl bg-white/80 p-4"><span className="text-xs font-black text-amber-700">01</span><p className="mt-2 font-bold text-slate-950">Чистый снимок</p><p className="mt-1 text-sm text-slate-600">Исключить облачность и сезонные помехи.</p></li><li className="rounded-xl bg-white/80 p-4"><span className="text-xs font-black text-amber-700">02</span><p className="mt-2 font-bold text-slate-950">Проверка контура</p><p className="mt-1 text-sm text-slate-600">Сравнить воду с контуром 2020 и 2023.</p></li><li className="rounded-xl bg-white/80 p-4"><span className="text-xs font-black text-amber-700">03</span><p className="mt-2 font-bold text-slate-950">Только при необходимости — поле</p><p className="mt-1 text-sm text-slate-600">БПЛА или выезд нужны после дистанционной проверки.</p></li></ol></section>
+
+          <CompanyAssetMode candidates={scan?.candidates ?? []} scannedLakes={scan?.summary.scanned_lakes ?? 0} onSelectCandidate={(candidate) => setSelectedCaseKey(regionalObservationCandidateKey(candidate))} />
 
           {scan && <section aria-labelledby="queue-title" className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"><div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Прозрачная очередь</p><h2 id="queue-title" className="mt-1 text-xl font-bold text-slate-950">Можно сравнить следующие реальные кандидаты</h2></div><p className="text-sm text-slate-600">Выбор меняет только объект проверки, а не формулу.</p></div><div className="mt-4 grid gap-3 lg:grid-cols-3">{scan.candidates.slice(0, 3).map((candidate, index) => { const key = regionalObservationCandidateKey(candidate); const active = key === regionalObservationCandidateKey(selectedCase); return <button key={key} type="button" onClick={() => setSelectedCaseKey(key)} aria-pressed={active} className={`min-w-0 rounded-2xl border p-4 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-700 ${active ? "border-cyan-500 bg-cyan-50" : "border-slate-200 hover:border-cyan-300 hover:bg-slate-50"}`}><div className="flex items-center justify-between gap-2"><span className="text-xs font-black text-cyan-800">ОБЪЕКТ №{index + 1}</span><span className="rounded-full bg-slate-950 px-2 py-1 text-xs font-bold text-white">{candidate.observation_priority_0_100.toFixed(0)}/100</span></div><p className="mt-3 text-sm font-bold text-slate-950">{areaKm2(candidate.area_current_m2)} км² · {candidate.area_change_percent === null ? "нет сравнения" : `${candidate.area_change_percent > 0 ? "+" : ""}${candidate.area_change_percent.toFixed(1)}%`}</p><p className="mt-1 text-xs text-slate-600">{coordinate(candidate.latitude)}° N · {coordinate(candidate.longitude)}° E</p></button>; })}</div></section>}
 
