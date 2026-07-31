@@ -10,6 +10,7 @@ from typing import Any
 
 from .active_evidence import build_active_evidence_readiness
 from .hma_reference import build_hma_reference_metrics
+from .osint_evidence import build_osint_prediction_readiness
 from .reference_tracks import (
     build_event_colocation_metrics,
     build_hugonnet_reference_metrics,
@@ -447,9 +448,27 @@ def build_benchmark_report(project_root: str | Path) -> dict[str, Any]:
         }
     )
 
+    osint_evidence = build_osint_prediction_readiness(root)
+    tracks.append(
+        {
+            "id": "osint_event_radar_prediction",
+            "title": "OSINT Event Radar retrospective prediction",
+            "category": "decision_support_evaluation",
+            "status": osint_evidence["status"],
+            "evidence_tier": "source_reviewed_pre_event_replay_required",
+            "scope": "source-backed signals, matched controls and immutable pre-event cutoffs",
+            "metrics": osint_evidence["counts"],
+            "headline_metrics": osint_evidence["counts"],
+            "blockers": osint_evidence["blockers"],
+            "claim_allowed": osint_evidence["claim_allowed"],
+            "claim_not_allowed": osint_evidence["claim_not_allowed"],
+            "artifacts": osint_evidence["artifacts"],
+        }
+    )
+
     return {
         "schema": "centralasia-glacierbench.report.v2",
-        "benchmark_version": "0.4.0",
+        "benchmark_version": "0.5.0",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "benchmark_name": "CentralAsia-GlacierBench",
         "policy": {

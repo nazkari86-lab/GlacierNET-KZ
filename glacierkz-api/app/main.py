@@ -35,6 +35,7 @@ from app.routers import (
     models,
     monitoring,
     operations,
+    osint,
     pipeline,
     risk_twin,
     segmentation,
@@ -54,7 +55,7 @@ from app.ws import get_ws_manager, ws_router
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
-PROJECT_VERSION = "0.4.0"
+PROJECT_VERSION = "0.5.0"
 
 
 @asynccontextmanager
@@ -118,6 +119,10 @@ app = FastAPI(
         {
             "name": "cryogenesis",
             "description": "Validated retrospective matched-glacier Discovery Passports",
+        },
+        {
+            "name": "osint",
+            "description": "Source-backed event signals linked to RGI evidence for acquisition prioritization",
         },
     ],
     lifespan=lifespan,
@@ -204,6 +209,7 @@ app.include_router(risk_twin.router)
 app.include_router(evidence_cases.router)
 app.include_router(operations.router)
 app.include_router(cryogenesis.router)
+app.include_router(osint.router)
 app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(mcp_router)

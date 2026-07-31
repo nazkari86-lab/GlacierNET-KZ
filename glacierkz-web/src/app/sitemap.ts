@@ -16,13 +16,14 @@ const ROUTES = [
   "/history",
   "/analysis",
   "/benchmark",
+  "/event-radar",
   "/discovery",
   "/settings",
   "/pipeline",
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date("2026-06-27");
+  const lastModified = new Date("2026-07-31");
 
   return ROUTES.map((path) => ({
     url: `${BASE_URL}${path}`,

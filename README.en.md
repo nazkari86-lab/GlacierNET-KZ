@@ -100,6 +100,12 @@ python scripts/validate_cascade_benchmark.py --allow-incomplete
 python scripts/run_risk_twin.py evidence.json --output risk_twin_result.json
 ```
 
+The source-backed Event Radar at `/event-radar` adds live USGS/GDACS event
+metadata, optional official feeds, ReliefWeb, and GDELT Cloud. It links each
+signal to the explicitly selected RGI glacier, preserves provenance and
+recommends the next observation. It does not infer causality or a GLOF
+probability. See [the method contract](docs/OSINT_EVENT_RADAR.md).
+
 ## Lake and GLOF evidence
 
 The local evidence layer includes NASA HMA_GLI 2015–2018, five Tien Shan lake

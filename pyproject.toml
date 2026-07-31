@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "glaciernet-kz"
-version = "0.4.0"
+version = "0.5.0"
 description = "Multi-language glacier monitoring platform for Kazakhstan"
 readme = "README.md"
 license = {text = "MIT"}

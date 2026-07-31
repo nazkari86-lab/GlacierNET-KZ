@@ -992,6 +992,122 @@ export async function fetchRiskTwinReadiness(): Promise<RiskTwinReadiness> {
   return res.json();
 }
 
+export type OsintLinkScope = "near_glacier" | "regional_trigger_context" | "broad_context" | "unresolved";
+
+export interface OsintEvent {
+  id: string;
+  external_id: string;
+  source_id: string;
+  source_name: string;
+  source_tier: string;
+  title: string;
+  summary: string;
+  url: string;
+  published_at: string;
+  event_type: string;
+  matched_topics: string[];
+  latitude: number | null;
+  longitude: number | null;
+  location_name: string;
+  geolocation_method: string;
+  geolocation_uncertainty_km: number | null;
+  magnitude: number | null;
+  severity_label: string | null;
+  linked_glacier: {
+    rgi_id: string;
+    name: string;
+    name_ru: string;
+    centroid: { longitude: number; latitude: number };
+  } | null;
+  distance_to_glacier_km: number | null;
+  link_scope: OsintLinkScope;
+  link_rationale: string;
+  evidence_confidence_0_1: number;
+  observation_priority_0_100: number;
+  recommended_action: string;
+  hazard_probability: null;
+  claim_status: "reported_signal_not_validated_hazard";
+  content_sha256: string;
+}
+
+export interface OsintRadar {
+  schema: string;
+  generated_at: string;
+  region: {
+    name: string;
+    bounds: { minlatitude: number; maxlatitude: number; minlongitude: number; maxlongitude: number };
+  };
+  events: OsintEvent[];
+  source_health: Array<{ source_id: string; status: string; items: number; error: string | null }>;
+  summary: {
+    events_total: number;
+    near_glacier: number;
+    regional_trigger_context: number;
+    official_or_authoritative: number;
+    unresolved: number;
+  };
+  method: Record<string, string>;
+  claims_allowed: string[];
+  claims_not_allowed: string[];
+  warnings: string[];
+  cache: { status: string; ttl_seconds: number };
+  returned: number;
+  matched: number;
+}
+
+export interface OsintSourceCatalog {
+  schema: string;
+  sources: Array<{
+    id: string;
+    name: string;
+    tier: string;
+    mode: string;
+    url: string;
+    license_note: string;
+    role: string;
+    configured: boolean;
+  }>;
+  content_policy: string;
+}
+
+export interface OsintReadiness {
+  schema: string;
+  status: string;
+  available: string[];
+  blocked: string[];
+  unlock_requires: string[];
+  safety_statement: string;
+}
+
+export async function fetchOsintEvents(options: {
+  rgiId?: string;
+  eventType?: string;
+  sourceTier?: string;
+  scope?: "all" | OsintLinkScope;
+  limit?: number;
+  refresh?: boolean;
+} = {}): Promise<OsintRadar> {
+  const params = new URLSearchParams();
+  if (options.rgiId) params.set("rgi_id", options.rgiId);
+  if (options.eventType) params.set("event_type", options.eventType);
+  if (options.sourceTier) params.set("source_tier", options.sourceTier);
+  if (options.scope && options.scope !== "all") params.set("scope", options.scope);
+  params.set("limit", String(options.limit ?? 100));
+  if (options.refresh) params.set("refresh", "true");
+  const res = checkResponse(await fetch(apiUrl(`/api/osint/events?${params.toString()}`)));
+  return res.json();
+}
+
+export async function fetchOsintSources(): Promise<OsintSourceCatalog> {
+  const res = checkResponse(await fetch(apiUrl("/api/osint/sources")));
+  return res.json();
+}
+
+export async function fetchOsintReadiness(): Promise<OsintReadiness> {
+  const res = checkResponse(await fetch(apiUrl("/api/osint/readiness")));
+  return res.json();
+}
+
 export async function evaluateRiskTwin(payload: RiskTwinRequest): Promise<RiskTwinResult> {
   const res = checkResponse(await fetch(apiUrl("/api/risk-twin/evaluate"), {
     method: "POST",

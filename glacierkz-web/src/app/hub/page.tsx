@@ -7,6 +7,7 @@ import {
   HeartPulse,
   ClipboardCheck,
   FlaskConical,
+  RadioTower,
 } from "lucide-react";
 import { useI18n } from "@/lib/I18nProvider";
 
@@ -20,6 +21,11 @@ const SERVICES = [
     href: "/risk-twin",
     key: "hub.risk",
     icon: HeartPulse,
+  },
+  {
+    href: "/event-radar",
+    key: "hub.radar",
+    icon: RadioTower,
   },
   {
     href: "/operations",

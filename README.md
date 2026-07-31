@@ -145,6 +145,18 @@ separate potential-hazard versus observation priorities. See the
 [stress-test contract](docs/RESILIENCE_STRESS_TEST.md). An uncalibrated model
 never produces a physical resilience claim.
 
+### Source-backed Event Radar
+
+`/event-radar` adds a live evidence queue above the Risk Twin. USGS and GDACS
+work without credentials; optional official RSS/Atom feeds, ReliefWeb and
+GDELT Cloud are enabled only when configured. Every signal keeps its source,
+timestamp, coordinates, SHA-256 digest, distance to the selected RGI glacier
+and a specific next observation. The system never turns media volume into a
+GLOF probability (`hazard_probability` remains `null`).
+
+See the [method and API contract](docs/OSINT_EVENT_RADAR.md) and the
+[licence-aware open-source evaluation](docs/OSINT_OPEN_SOURCE_EVALUATION.md).
+
 Run the explicitly synthetic example:
 
 ```bash

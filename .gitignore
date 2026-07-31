@@ -93,6 +93,8 @@ data/results/
 data/water/
 glacierkz-api/data/
 glacierkz-api/experiments/
+glacierkz-api/osint/
+data/osint/
 *.aux.xml
 data/external/glathida/**
 # Downloaded third-party benchmark archives, weights, and cloud catalog

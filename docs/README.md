@@ -4,6 +4,8 @@
 |----------|----------|-------------|
 | [BEGINNER_GUIDE.md](./BEGINNER_GUIDE.md) | **Newcomers** | Plain-language full project tour (start here) |
 | [OPERATIONS_MVP.md](./OPERATIONS_MVP.md) | Monitoring teams / developers | Shadow-mode observation, field, evidence, and decision workflow |
+| [OSINT_EVENT_RADAR.md](./OSINT_EVENT_RADAR.md) | Analysts / developers | Source-backed event ingestion, glacier linking, caching, and claim limits |
+| [OSINT_OPEN_SOURCE_EVALUATION.md](./OSINT_OPEN_SOURCE_EVALUATION.md) | Maintainers | Licence-aware adopt/reject review of relevant open-source projects |
 | [PROJECT_FULL_REFERENCE.md](./PROJECT_FULL_REFERENCE.md) | Developers | Every file described in detail (RU) |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Developers | System design, API layers, ML pipeline |
 | [API_REFERENCE.md](./API_REFERENCE.md) | Developers | REST, WebSocket, MCP endpoints |

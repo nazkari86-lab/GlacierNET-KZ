@@ -66,7 +66,7 @@ class TestHealthEndpoint:
         from app.main import health
         result = health()
         assert result["status"] == "ok"
-        assert result["version"] == "0.4.0"
+        assert result["version"] == "0.5.0"
         assert result["service"] == "GlacierNET-KZ API"
         assert "uptime_seconds" in result
         assert result["uptime_seconds"] >= 0

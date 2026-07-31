@@ -1,7 +1,7 @@
 {
   "schema": "centralasia-glacierbench.report.v2",
-  "benchmark_version": "0.4.0",
-  "created_at": "2026-07-30T22:57:43.122660+00:00",
+  "benchmark_version": "0.5.0",
+  "created_at": "2026-07-30T23:38:19.543961+00:00",
   "benchmark_name": "CentralAsia-GlacierBench",
   "policy": {
     "no_composite_score": true,
@@ -928,6 +928,63 @@
           "size_bytes": 1112
         }
       ]
+    },
+    {
+      "id": "osint_event_radar_prediction",
+      "title": "OSINT Event Radar retrospective prediction",
+      "category": "decision_support_evaluation",
+      "status": "blocked_evidence_incomplete",
+      "evidence_tier": "source_reviewed_pre_event_replay_required",
+      "scope": "source-backed signals, matched controls and immutable pre-event cutoffs",
+      "metrics": {
+        "event_rows": 0,
+        "strict_verified_events": 0,
+        "strict_verified_controls": 0,
+        "immutable_pre_event_snapshots": 0,
+        "independent_event_sources": 0
+      },
+      "headline_metrics": {
+        "event_rows": 0,
+        "strict_verified_events": 0,
+        "strict_verified_controls": 0,
+        "immutable_pre_event_snapshots": 0,
+        "independent_event_sources": 0
+      },
+      "blockers": [
+        "no_primary_source_verified_events",
+        "no_coverage_matched_non_event_controls",
+        "no_immutable_pre_event_snapshots",
+        "development_temporal_external_splits_incomplete",
+        "fewer_than_two_independent_event_sources"
+      ],
+      "claim_allowed": "implemented source-backed Event Radar and measured prediction-evidence readiness",
+      "claim_not_allowed": "news-based event forecast, calibrated GLOF probability, operational warning skill, or claimed lead time until every blocker is resolved and metrics are computed",
+      "artifacts": [
+        {
+          "path": "benchmarks/osint_event_radar/protocol.md",
+          "exists": true,
+          "sha256": "0b70bfd53f76fadb73207d608617736537af471abce6217384dd8880a81310d1",
+          "size_bytes": 1857
+        },
+        {
+          "path": "benchmarks/osint_event_radar/tables/events.csv",
+          "exists": false,
+          "sha256": null,
+          "size_bytes": null
+        },
+        {
+          "path": "benchmarks/osint_event_radar/tables/controls.csv",
+          "exists": false,
+          "sha256": null,
+          "size_bytes": null
+        },
+        {
+          "path": "benchmarks/osint_event_radar/manifests/pre_event_snapshots.jsonl",
+          "exists": false,
+          "sha256": null,
+          "size_bytes": null
+        }
+      ]
     }
   ],
   "summary": {
@@ -936,14 +993,14 @@
     "sources_verified": 11,
     "sources_metadata_only": 0,
     "sources_missing": 2,
-    "tracks_total": 10,
+    "tracks_total": 11,
     "tracks_data_ready": 0,
-    "tracks_blocked": 1,
+    "tracks_blocked": 2,
     "model_evaluations_total": 5,
     "model_evaluations_measured": 5,
     "reference_evidence_total": 4,
     "reference_evidence_available": 4,
-    "decision_support_evaluations_total": 1,
+    "decision_support_evaluations_total": 2,
     "decision_support_evaluations_ready": 0
   },
   "claims_not_unlocked": [

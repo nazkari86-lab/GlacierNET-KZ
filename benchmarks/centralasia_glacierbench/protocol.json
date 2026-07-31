@@ -1,7 +1,7 @@
 {
   "schema": "centralasia-glacierbench.protocol.v1",
   "benchmark_name": "CentralAsia-GlacierBench",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "purpose": "Evidence-bound evaluation of glacier mapping, transfer, physical consistency and retrospective glacier-lake cascade screening in Central Asia.",
   "sampling_unit": "glacier",
   "policies": {

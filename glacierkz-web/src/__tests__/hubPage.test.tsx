@@ -15,6 +15,7 @@ describe("project hub", () => {
     expect(screen.getByText("Primary evidence workflow")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /ML Evidence Workspace/i })).toHaveAttribute("href", "/ml");
     expect(screen.getByRole("link", { name: /Active Cryosphere Risk Twin/i })).toHaveAttribute("href", "/risk-twin");
+    expect(screen.getByRole("link", { name: /Source-backed Event Radar/i })).toHaveAttribute("href", "/event-radar");
     expect(screen.getByRole("link", { name: /Operations & action queue/i })).toHaveAttribute("href", "/operations");
     expect(screen.getByRole("link", { name: /Scientific evidence cockpit/i })).toHaveAttribute("href", "/jury");
     expect(screen.queryByRole("link", { name: /demo/i })).not.toBeInTheDocument();

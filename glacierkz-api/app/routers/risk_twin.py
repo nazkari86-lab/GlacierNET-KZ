@@ -98,8 +98,14 @@ def risk_twin_readiness() -> dict[str, Any]:
             "field-validated bathymetry/freeboard/dam state",
             "calibrated physical resilience margins",
             "official warning integration",
+            "calibrated OSINT-to-event likelihood",
         ],
         "safety_statement": "screening evidence only; not an official warning",
+        "event_radar": {
+            "available": True,
+            "endpoint": "/api/osint/events",
+            "role": "source-backed acquisition prioritization; never a physical hazard probability",
+        },
     }
 
 

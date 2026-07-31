@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No unreleased changes.
 
+## [0.5.0] - 2026-07-31
+
+### Added
+
+- Source-backed OSINT Event Radar with live USGS/GDACS adapters, optional
+  official RSS/Atom, ReliefWeb and GDELT Cloud connectors, source health,
+  bounded retries, atomic caching, stale fallback and content digests.
+- Object-specific event-to-RGI linking, map filters, exact next-observation
+  guidance and a fail-closed readiness contract that keeps
+  `hazard_probability` null.
+- Licence-aware open-source adoption review and deterministic backend,
+  frontend and Playwright regression tests.
+
 ## [0.4.0] - 2026-07-31
 
 ### Added
@@ -88,3 +101,4 @@ unlock those stronger claims.
 [0.2.0]: https://github.com/nazkari86-lab/GlacierNET-KZ/releases/tag/v0.2.0
 [0.1.0]: https://github.com/nazkari86-lab/GlacierNET-KZ/releases/tag/v0.1.0
 [0.4.0]: https://github.com/nazkari86-lab/GlacierNET-KZ/releases/tag/v0.4.0
+[0.5.0]: https://github.com/nazkari86-lab/GlacierNET-KZ/releases/tag/v0.5.0

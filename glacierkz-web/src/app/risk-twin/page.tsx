@@ -381,6 +381,7 @@ export default function RiskTwinPage() {
               <a href="#risk-twin-workspace" className="inline-flex min-h-11 items-center rounded-full bg-white/10 px-4 py-2 font-medium transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Карта</a>
               <a href="#observation-queue" className="inline-flex min-h-11 items-center rounded-full bg-white/10 px-4 py-2 font-medium transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Очередь наблюдений</a>
               <a href="#evidence-ledger" className="inline-flex min-h-11 items-center rounded-full bg-white/10 px-4 py-2 font-medium transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Evidence ledger</a>
+              <Link href="/event-radar" className="inline-flex min-h-11 items-center rounded-full bg-cyan-300/20 px-4 py-2 font-bold text-cyan-50 transition hover:bg-cyan-300/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Live Event Radar</Link>
             </nav>
             <div className="flex flex-wrap items-start justify-between gap-6">
               <div className="max-w-3xl">
@@ -388,7 +389,7 @@ export default function RiskTwinPage() {
                 <h1 className="text-3xl font-black tracking-tight sm:text-5xl">Active Cryosphere<br className="hidden sm:block" /> Risk Twin</h1>
                 <p className="mt-4 max-w-2xl text-sm leading-6 text-cyan-50 sm:text-base">Прозрачная рабочая область для исследования ледников: карта объединяет локальные снимки, озёра, гидрографию, климатический каталог и evidence gaps. Она помогает выбрать следующую проверку, но не имитирует официальное предупреждение.</p>
               </div>
-              <Link href="/operations" className="inline-flex min-h-11 items-center rounded-xl border border-white/30 bg-white/10 px-4 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Открыть Operations workflow</Link>
+              <div className="flex flex-wrap gap-2"><Link href="/event-radar" className="inline-flex min-h-11 items-center rounded-xl bg-cyan-300 px-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 hover:bg-cyan-200">Проверить текущие сигналы</Link><Link href="/operations" className="inline-flex min-h-11 items-center rounded-xl border border-white/30 bg-white/10 px-4 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Открыть Operations workflow</Link></div>
             </div>
             <div className="mt-7 grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-white/10 bg-slate-950/25 p-4 backdrop-blur-sm"><p className="text-xs font-semibold uppercase tracking-wider text-cyan-200">Spatial sources</p><p className="mt-1 text-2xl font-bold">9+</p><p className="mt-1 text-xs text-slate-200">RGI, lakes, rivers, basins, JRC, DEM, S1, ERA5, GHSL/OSM</p></div>
@@ -446,6 +447,7 @@ export default function RiskTwinPage() {
                 <div className="rounded-xl border border-violet-100 bg-white p-3"><Database className="h-5 w-5 text-violet-700" /><p className="mt-2 text-sm font-semibold">7. Люди: context</p><p className="mt-1 text-xs text-slate-600">GHSL + OSM, без «пострадавших»</p></div>
                 <div className="rounded-xl border border-teal-100 bg-white p-3"><Radar className="h-5 w-5 text-teal-700" /><p className="mt-2 text-sm font-semibold">8. Water & climate</p><p className="mt-1 text-xs text-slate-600">JRC water + ERA5 catalog</p></div>
                 <div className="rounded-xl border border-amber-100 bg-white p-3"><ShieldAlert className="h-5 w-5 text-amber-700" /><p className="mt-2 text-sm font-semibold">9. Чего не знаем</p><p className="mt-1 text-xs text-slate-600">{gaps.length} данных нужны для вывода</p></div>
+                <Link href={`/event-radar?rgi=${encodeURIComponent(selected?.rgi_id ?? "")}`} className="rounded-xl border border-orange-100 bg-white p-3 transition hover:border-orange-300 hover:shadow-sm"><Radar className="h-5 w-5 text-orange-700" /><p className="mt-2 text-sm font-semibold">10. Текущие OSINT-сигналы</p><p className="mt-1 text-xs text-slate-600">Источник, расстояние, точное следующее наблюдение</p></Link>
               </div>
             </section>
 

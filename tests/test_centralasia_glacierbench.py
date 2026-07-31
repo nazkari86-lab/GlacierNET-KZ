@@ -11,6 +11,7 @@ from src.centralasia_benchmark.metrics import (
     physical_consistency_metrics,
     temporal_stability_metrics,
 )
+from src.centralasia_benchmark.osint_evidence import build_osint_prediction_readiness
 from src.centralasia_benchmark.registry import build_source_registry
 from src.centralasia_benchmark.report import build_benchmark_report
 
@@ -63,7 +64,7 @@ def test_report_exposes_real_metrics_and_claim_boundaries(tmp_path):
         encoding="utf-8",
     )
     report = build_benchmark_report(tmp_path)
-    assert report["benchmark_version"] == "0.4.0"
+    assert report["benchmark_version"] == "0.5.0"
     temporal = next(track for track in report["tracks"] if track["id"] == "temporal_segmentation")
     assert temporal["status"] == "measured"
     assert temporal["category"] == "model_evaluation"
@@ -73,6 +74,10 @@ def test_report_exposes_real_metrics_and_claim_boundaries(tmp_path):
     active = next(track for track in report["tracks"] if track["id"] == "active_evidence_acquisition")
     assert active["status"] == "blocked_evidence_incomplete"
     assert active["metrics"]["primary_source_verified_strict_events"] == 0
+    osint = next(track for track in report["tracks"] if track["id"] == "osint_event_radar_prediction")
+    assert osint["status"] == "blocked_evidence_incomplete"
+    assert osint["metrics"]["strict_verified_events"] == 0
+    assert report["summary"]["decision_support_evaluations_total"] == 2
     assert report["policy"]["no_synthetic_metrics"] is True
     assert "independent expert gold-label accuracy" in report["claims_not_unlocked"]
 
@@ -102,3 +107,36 @@ def test_active_evidence_gate_counts_only_verified_real_rows(tmp_path):
     assert readiness["status"] == "evaluation_ready"
     assert readiness["performance_metrics_computed"] is True
     assert readiness["counts"]["primary_source_verified_strict_events"] == 1
+
+
+def test_osint_prediction_gate_requires_verified_controls_snapshots_and_splits(tmp_path):
+    base = tmp_path / "benchmarks/osint_event_radar"
+    (base / "tables").mkdir(parents=True)
+    (base / "manifests").mkdir()
+    (base / "tables/events.csv").write_text(
+        "event_id,basin_id,event_time,source_id,primary_source_verified,eligible_for_strict_benchmark\n"
+        "E1,B1,2025-07-01T00:00:00Z,official_a,true,true\n"
+        "E2,B2,2025-07-02T00:00:00Z,official_b,true,true\n",
+        encoding="utf-8",
+    )
+    (base / "tables/controls.csv").write_text(
+        "control_id,basin_id,absence_window_verified,coverage_matched\nC1,B3,true,true\n",
+        encoding="utf-8",
+    )
+    snapshots = [
+        {
+            "snapshot_id": f"S-{split}",
+            "cutoff_time": "2025-06-01T00:00:00Z",
+            "manifest_sha256": "abc",
+            "split": split,
+        }
+        for split in ("development", "temporal_test", "external_test")
+    ]
+    (base / "manifests/pre_event_snapshots.jsonl").write_text(
+        "\n".join(json.dumps(row) for row in snapshots),
+        encoding="utf-8",
+    )
+    readiness = build_osint_prediction_readiness(tmp_path)
+    assert readiness["status"] == "evaluation_ready"
+    assert readiness["counts"]["strict_verified_events"] == 2
+    assert readiness["counts"]["independent_event_sources"] == 2
