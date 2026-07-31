@@ -49,4 +49,3 @@ events, coverage-matched controls, immutable pre-event snapshots, at least two
 independent event sources, and complete development/temporal/external splits.
 Before that point the project may claim only an implemented Event Radar and a
 measured evidence-readiness gate.
-

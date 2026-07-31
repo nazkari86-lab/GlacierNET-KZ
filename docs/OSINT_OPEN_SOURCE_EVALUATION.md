@@ -40,4 +40,3 @@ on provenance, distance, failure handling, claim boundaries, and tests.
   consent, privacy, and misinformation controls.
 - Add OpenEWS only after an authorized agency owns the warning decision and a
   separate operational validation is complete.
-

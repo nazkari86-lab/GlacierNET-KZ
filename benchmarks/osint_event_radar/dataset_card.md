@@ -18,4 +18,3 @@ live API results are operational metadata, not ground-truth labels.
 Personal identifiers and full article bodies are excluded. Canonical URLs and
 short normalized metadata are retained only when licensing and source terms
 permit.
-

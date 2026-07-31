@@ -104,4 +104,3 @@ requires a frozen retrospective cohort containing:
 
 Until those conditions are met, OSINT is useful for *where to look next*, not
 for *what will happen*.
-
