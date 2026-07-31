@@ -84,7 +84,10 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
   useEffect(() => {
     if (!elementRef.current || mapRef.current) return;
     const objectLayers = objectLayerRef.current;
-    const map = L.map(elementRef.current, { preferCanvas: true, zoomControl: false, attributionControl: true });
+    // Leaflet's shared canvas renderer can redraw after its canvas is torn
+    // down during React/Turbopack updates, producing a visible dev overlay.
+    // SVG keeps this evidence map stable while preserving the same GeoJSON.
+    const map = L.map(elementRef.current, { preferCanvas: false, zoomControl: false, attributionControl: true });
     mapRef.current = map;
     L.control.zoom({ position: "bottomright" }).addTo(map);
     L.control.scale({ position: "bottomleft", imperial: false }).addTo(map);

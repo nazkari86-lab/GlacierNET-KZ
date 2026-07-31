@@ -1362,7 +1362,7 @@ export interface JuryEvidence {
   claim_policy: string;
   release_checks: { local_package_complete: boolean; required_artifact_count: number };
   claim_status_counts: Record<string, number>;
-  supported_now: { title: string; value: Record<string, number | string | null>; scope: string }[];
+  supported_now: { title: string; value: Record<string, number | string | null> | string; scope: string }[];
   honest_negative_result: { title: string; hard_dice: { estimate: number; ci_lower: number; ci_upper: number }; area_error_percent: { estimate: number; ci_lower: number; ci_upper: number }; meaning: string };
   strict_trend: { n_years: number; slope_km2_per_year: number; p_value: number; significant: boolean; meaning: string };
   blocked_until_external_work: { id: string; claim: string; scope: string; evidence: string[] }[];
