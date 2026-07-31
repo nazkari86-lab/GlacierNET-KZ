@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ChevronRight,
   FileCheck2,
+  GitCompareArrows,
   MapPinned,
   Route,
   ShieldCheck,
@@ -19,7 +20,10 @@ import ScientificEvidenceCockpit from "@/components/ScientificEvidenceCockpit";
 import GlacierEvidenceIntro from "@/components/jury/GlacierEvidenceIntro";
 import { riskTwinHref } from "@/lib/evidenceCase";
 import { buildEvidenceMapObjects } from "@/lib/riskTwinEvidence";
+import type { CryoGenesisDiscoverySummary, DiscoveryPassport } from "@/lib/cryogenesis";
 import {
+  fetchCryoGenesisDiscoveries,
+  fetchCryoGenesisPassport,
   fetchGlaciers,
   fetchJuryEvidence,
   fetchRegionalObservationScan,
@@ -54,6 +58,15 @@ function compact(value: number | null | undefined, digits = 0) {
   return value === null || value === undefined || !Number.isFinite(value) ? "—" : value.toLocaleString("ru-RU", { maximumFractionDigits: digits });
 }
 
+function readableSurpriseClass(value: CryoGenesisDiscoverySummary["surprise_class"]) {
+  return {
+    observation_inconclusive: "наблюдение неполно",
+    comparison_inconclusive: "сравнение неполно",
+    trajectory_consistent: "траектория согласована",
+    unexplained_divergence_candidate: "кандидат на расхождение",
+  }[value];
+}
+
 function caseHref(candidate: RegionalObservationScan["candidates"][number]) {
   return riskTwinHref({
     rgiId: candidate.glacier.rgi_id,
@@ -83,6 +96,11 @@ export default function JuryCommandCenter() {
   const [selectedCaseKey, setSelectedCaseKey] = useState("");
   const [context, setContext] = useState<RiskTwinSpatialContext | null>(null);
   const [yearLayer, setYearLayer] = useState<YearMapLayer | null>(null);
+  const [discoveries, setDiscoveries] = useState<CryoGenesisDiscoverySummary[]>([]);
+  const [selectedDiscoveryId, setSelectedDiscoveryId] = useState("");
+  const [passport, setPassport] = useState<DiscoveryPassport | null>(null);
+  const [discoveryError, setDiscoveryError] = useState("");
+  const [discoveriesLoading, setDiscoveriesLoading] = useState(true);
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
   const [mapMode, setMapMode] = useState<MapMode>("evidence");
   const [error, setError] = useState("");
@@ -115,6 +133,45 @@ export default function JuryCommandCenter() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    fetchCryoGenesisDiscoveries()
+      .then((payload) => {
+        if (!active) return;
+        setDiscoveries(payload.items);
+        setSelectedDiscoveryId(payload.items[0]?.target_rgi_id ?? "");
+        if (payload.status !== "ready") setDiscoveryError("Сохранённый cohort CryoGenesis пока не готов к показу.");
+      })
+      .catch(() => {
+        if (active) setDiscoveryError("CryoGenesis сейчас недоступен; Risk Twin продолжает работать независимо.");
+      })
+      .finally(() => {
+        if (active) setDiscoveriesLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!selectedDiscoveryId) {
+      setPassport(null);
+      return;
+    }
+    let active = true;
+    setPassport(null);
+    fetchCryoGenesisPassport(selectedDiscoveryId)
+      .then((next) => {
+        if (active) setPassport(next);
+      })
+      .catch(() => {
+        if (active) setDiscoveryError("Паспорт выбранного сравнительного кейса недоступен.");
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedDiscoveryId]);
 
   const selectedCase = useMemo(
     () => scan?.candidates.find((candidate) => regionalObservationCandidateKey(candidate) === selectedCaseKey) ?? scan?.candidates[0] ?? null,
@@ -176,6 +233,7 @@ export default function JuryCommandCenter() {
           <div className="flex flex-wrap gap-1 text-xs font-semibold text-slate-700">
             <a href="#overview" className="rounded-full px-3 py-2 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-700">Суть</a>
             <a href="#live-case" className="rounded-full px-3 py-2 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-700">Живой кейс</a>
+            <a href="#comparisons" className="rounded-full px-3 py-2 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-700">Похожие ледники</a>
             <a href="#science" className="rounded-full px-3 py-2 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-700">Наука</a>
             <a href="#limits" className="rounded-full px-3 py-2 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-700">Границы</a>
           </div>
@@ -223,6 +281,18 @@ export default function JuryCommandCenter() {
           </ol>
         </section>
 
+        <section id="comparisons" aria-labelledby="comparisons-title" className="scroll-mt-20 rounded-2xl border border-violet-200 bg-violet-50 p-5 shadow-sm sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4"><div className="max-w-4xl"><p className="text-xs font-bold uppercase tracking-[0.16em] text-violet-800">CryoGenesis · matched physical comparisons</p><h2 id="comparisons-title" className="mt-1 text-2xl font-bold tracking-tight text-violet-950">Проверка похожих ледников: контрольная группа до результата</h2><p className="mt-2 text-sm leading-6 text-violet-950">Это отдельный исследовательский слой: для целевого ледника заранее подбираются физически похожие ледники по площади, высоте, склону, экспозиции, климату и снегу. Затем видимое расхождение траекторий становится <strong>гипотезой для проверки</strong>, а не заявлением о причине.</p></div><Link href="/discovery" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-violet-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-800">Открыть все сравнения <ChevronRight className="h-4 w-4" /></Link></div>
+
+          {discoveriesLoading && <p role="status" aria-live="polite" className="mt-5 rounded-xl bg-white/80 p-4 text-sm text-violet-900">Загружаем сохранённые паспорта похожих ледников…</p>}
+          {discoveryError && <p role="status" aria-live="polite" className="mt-5 rounded-xl border border-violet-200 bg-white/80 p-4 text-sm text-violet-900">{discoveryError}</p>}
+          {discoveries.length > 0 && <><div className="mt-5 grid gap-3 lg:grid-cols-3">{discoveries.slice(0, 3).map((item, index) => {
+            const active = item.target_rgi_id === selectedDiscoveryId;
+            return <button key={item.target_rgi_id} type="button" onClick={() => setSelectedDiscoveryId(item.target_rgi_id)} aria-pressed={active} className={`min-w-0 rounded-2xl border p-4 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-800 ${active ? "border-violet-500 bg-white shadow-sm" : "border-violet-200 bg-violet-50/40 hover:border-violet-400 hover:bg-white/70"}`}><div className="flex items-start justify-between gap-2"><span className="text-xs font-black text-violet-800">ПАСПОРТ {index + 1}</span><span className="rounded-full bg-violet-100 px-2 py-1 text-[10px] font-bold text-violet-950">{item.twin_count} twin</span></div><p className="mt-2 break-all font-mono text-xs font-bold text-slate-950">{item.target_rgi_id}</p><p className="mt-2 text-xs leading-5 text-slate-600">{readableSurpriseClass(item.surprise_class)} · {item.match_status.replaceAll("_", " ")}</p></button>;
+          })}</div>
+          {passport && <div className="mt-4 grid gap-3 lg:grid-cols-[0.72fr_1.28fr]"><article className="rounded-2xl bg-slate-950 p-5 text-white"><div className="flex items-start gap-2"><GitCompareArrows className="mt-0.5 h-5 w-5 shrink-0 text-violet-200" /><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-violet-200">Выбранное сравнение</p><h3 className="mt-1 break-all font-mono text-sm font-bold">{passport.target_rgi_id}</h3></div></div><dl className="mt-4 grid grid-cols-2 gap-2 text-sm"><div className="rounded-xl bg-white/10 p-3"><dt className="text-xs text-violet-100">Подобрано twin</dt><dd className="mt-1 text-xl font-bold">{passport.match.twins.length}</dd></div><div className="rounded-xl bg-white/10 p-3"><dt className="text-xs text-violet-100">Cohort</dt><dd className="mt-1 break-all font-mono text-xs font-bold">{passport.cohort_id}</dd></div>{passport.divergence && <><div className="rounded-xl bg-white/10 p-3"><dt className="text-xs text-violet-100">Raw divergence</dt><dd className="mt-1 text-xl font-bold">{passport.divergence.raw_divergence.toFixed(3)}</dd></div><div className="rounded-xl bg-white/10 p-3"><dt className="text-xs text-violet-100">Standardised</dt><dd className="mt-1 text-xl font-bold">{passport.divergence.standardized_divergence?.toFixed(2) ?? "—"}</dd></div></>}</dl><p className="mt-4 text-xs leading-5 text-slate-300">Наблюдаемое расхождение в сохранённом cohort; не причинный эффект и не прогноз.</p></article><article className="rounded-2xl border border-violet-200 bg-white p-5"><p className="text-xs font-bold uppercase tracking-[0.16em] text-violet-800">Физически подобранные twin</p><ol className="mt-3 space-y-2">{passport.match.twins.slice(0, 5).map((twin, index) => <li key={twin.rgi_id} className="flex min-w-0 items-center justify-between gap-3 rounded-xl bg-violet-50 px-3 py-2.5"><div className="min-w-0"><span className="mr-2 text-xs font-black text-violet-700">{index + 1}</span><span className="break-all font-mono text-xs font-bold text-slate-950">{twin.rgi_id}</span></div><span className="shrink-0 rounded-full bg-white px-2 py-1 text-xs font-bold text-violet-950">d={twin.total_distance.toFixed(3)}</span></li>)}</ol><p className="mt-4 rounded-xl bg-violet-50 p-3 text-xs leading-5 text-violet-950"><strong>Можно:</strong> {passport.claims_allowed[0]}. <strong>Нельзя:</strong> {passport.claims_not_allowed[0]}.</p></article></div>}</>}
+        </section>
+
         <section id="live-case" aria-labelledby="live-case-title" className="scroll-mt-20 space-y-5">
           <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-800">Live Risk Twin · real inventory screening</p><h2 id="live-case-title" className="mt-1 text-2xl font-bold tracking-tight text-slate-950">Живой кейс: объект найден автоматически, а не добавлен для демонстрации</h2><p className="mt-2 max-w-4xl text-sm leading-6 text-slate-600">Выберите любой из первых реальных кандидатов. Приоритет — это ценность проверки инвентарного объекта, <strong>не вероятность прорыва, не уровень угрозы и не официальное предупреждение.</strong></p></div><span className="rounded-full bg-cyan-100 px-3 py-1.5 text-xs font-bold text-cyan-950">{scan ? `${scan.returned} кандидатов из ${scan.summary.scanned_lakes.toLocaleString("ru-RU")} озёр` : "Загрузка scan…"}</span></div>
 
@@ -258,7 +328,7 @@ export default function JuryCommandCenter() {
 
         {evidence && <section id="limits" aria-labelledby="limits-title" className="scroll-mt-20 rounded-2xl border border-slate-300 bg-slate-100 p-5 sm:p-6"><div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-6 w-6 shrink-0 text-slate-700" /><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-600">Научная честность — часть продукта</p><h2 id="limits-title" className="mt-1 text-2xl font-bold tracking-tight text-slate-950">Что GlacierNET‑KZ не будет обещать без внешней проверки</h2></div></div><ul className="mt-5 grid gap-3 lg:grid-cols-3">{evidence.blocked_until_external_work.map((item) => <li key={item.id} className="min-w-0 rounded-xl border border-slate-200 bg-white p-4"><div className="flex min-w-0 gap-2"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" /><div className="min-w-0"><h3 className="font-bold text-slate-950">{item.claim}</h3><p className="mt-2 text-sm leading-5 text-slate-600">{item.scope}</p><p className="mt-3 break-all text-xs font-medium text-slate-700">Нужно: {item.evidence.join(" · ")}</p></div></div></li>)}</ul></section>}
 
-        <footer className="rounded-2xl bg-slate-950 p-5 text-slate-200 sm:p-6"><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-200">Один экран для показа — глубокие инструменты по ссылке</p><p className="mt-2 text-sm text-slate-300">На защите начните с «Живого кейса», кликните объект на карте, покажите объяснение очереди и завершите блоком границ.</p></div><div className="flex flex-wrap gap-2"><Link href="/risk-twin" className="rounded-lg bg-cyan-400 px-3 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-300">Полный Risk Twin</Link><Link href="/operations" className="rounded-lg border border-white/20 px-3 py-2 text-sm font-semibold text-white hover:bg-white/10">Operations</Link><Link href="/analysis" className="rounded-lg border border-white/20 px-3 py-2 text-sm font-semibold text-white hover:bg-white/10">AI Evidence</Link></div></div></footer>
+        <footer className="rounded-2xl bg-slate-950 p-5 text-slate-200 sm:p-6"><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-200">Один экран для показа — глубокие инструменты по ссылке</p><p className="mt-2 text-sm text-slate-300">На защите начните с «Живого кейса», покажите сравнение физических twin, кликните объект на карте и завершите блоком границ.</p></div><div className="flex flex-wrap gap-2"><Link href="/risk-twin" className="rounded-lg bg-cyan-400 px-3 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-300">Полный Risk Twin</Link><Link href="/discovery" className="rounded-lg border border-violet-300/50 px-3 py-2 text-sm font-semibold text-violet-100 hover:bg-violet-500/20">CryoGenesis</Link><Link href="/operations" className="rounded-lg border border-white/20 px-3 py-2 text-sm font-semibold text-white hover:bg-white/10">Operations</Link><Link href="/analysis" className="rounded-lg border border-white/20 px-3 py-2 text-sm font-semibold text-white hover:bg-white/10">AI Evidence</Link></div></div></footer>
       </div>
     </main>
   </>;
