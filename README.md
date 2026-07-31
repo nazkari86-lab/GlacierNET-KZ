@@ -37,6 +37,19 @@ system. Open `http://localhost:8080/operations` after `./scripts/start.sh`. An
 empty registry remains empty until a real local case or a typed field
 observation is added.
 
+### Infrastructure screening in Command Center
+
+The Command Center (`/jury`) also provides a browser-local **Asset Mode** for
+an infrastructure team. Add one coordinate or import up to 100 GeoJSON Point
+objects (maximum file size: 1 MB); the coordinates stay in that browser and
+are not sent to the API. The interface ranks real local inventory lakes by
+straight-line proximity, then can display the selected user object with the
+existing HydroRIVERS NEXT_DOWN planning route and its 750 m planning corridor.
+
+This is an acquisition-planning aid only. Neither proximity nor the displayed
+corridor establishes a lake-to-asset pathway, flood extent, consequence,
+damage estimate, or an evacuation decision.
+
 ## What It Does
 
 - Builds glacier segmentation datasets from Sentinel-2, Landsat, and RGI data.

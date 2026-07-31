@@ -20,6 +20,7 @@ interface RiskTwinMapProps {
   comparisonLayer: YearMapLayer | null;
   mlEvidence?: MlEvidenceCase | null;
   compact?: boolean;
+  pinnedObjectIds?: string[];
 }
 
 const KIND_LABELS: Record<EvidenceKind, string> = {
@@ -43,6 +44,7 @@ const KIND_STYLE: Record<EvidenceKind, L.PathOptions> = {
   historical_record: { color: "#ffffff", weight: 2, fillColor: "#ef4444", fillOpacity: 0.95 },
   asset: { color: "#ffffff", weight: 1.5, fillColor: "#8b5cf6", fillOpacity: 0.95 },
 };
+const NO_PINNED_OBJECT_IDS: string[] = [];
 
 function popup(object: EvidenceMapObject, compact = false): HTMLElement {
   const root = document.createElement("div");
@@ -64,7 +66,7 @@ function pointStyle(kind: EvidenceKind, latlng: L.LatLng): L.CircleMarker {
   return L.circleMarker(latlng, { ...style, radius: kind === "historical_record" ? 7 : 6 });
 }
 
-export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSelectObject, mode, yearLayer, comparisonLayer, mlEvidence = null, compact = false }: RiskTwinMapProps) {
+export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSelectObject, mode, yearLayer, comparisonLayer, mlEvidence = null, compact = false, pinnedObjectIds = NO_PINNED_OBJECT_IDS }: RiskTwinMapProps) {
   const elementRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const contentLayerRef = useRef<L.LayerGroup | null>(null);
@@ -187,7 +189,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
     }
 
     for (const object of mapObjects) {
-      if (!visibleKinds[object.kind]) continue;
+      if (!visibleKinds[object.kind] && !pinnedObjectIds.includes(object.id)) continue;
       const selected = object.id === selectedObjectId;
       const routeStyle = object.isRoute ? { color: "#f97316", weight: 5, opacity: 1 } : {};
       const style = { ...KIND_STYLE[object.kind], ...routeStyle, weight: (object.isRoute ? 5 : KIND_STYLE[object.kind].weight ?? 2) + (selected ? 1.7 : 0), className: mode === "route" && object.isRoute ? "risk-twin-route-flow" : undefined };
@@ -205,7 +207,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
       if (bounds.isValid()) map.fitBounds(bounds, { padding: [44, 44], maxZoom: 13 });
       fittedGlacierRef.current = glacier?.rgi_id ?? null;
     }
-  }, [comparisonLayer, compact, glacier, mapObjects, mlEvidence, mode, onSelectObject, selectedObjectId, showMlBoundary, visibleKinds, yearLayer]);
+  }, [comparisonLayer, compact, glacier, mapObjects, mlEvidence, mode, onSelectObject, pinnedObjectIds, selectedObjectId, showMlBoundary, visibleKinds, yearLayer]);
 
   useEffect(() => {
     if (!selectedObjectId) return;

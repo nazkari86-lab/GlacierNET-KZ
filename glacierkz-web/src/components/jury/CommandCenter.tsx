@@ -12,9 +12,9 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import GlacierEvidenceIntro from "@/components/jury/GlacierEvidenceIntro";
-import CompanyAssetMode from "@/components/jury/CompanyAssetMode";
+import CompanyAssetMode, { type CompanyAsset } from "@/components/jury/CompanyAssetMode";
 import { riskTwinHref } from "@/lib/evidenceCase";
-import { buildEvidenceMapObjects } from "@/lib/riskTwinEvidence";
+import { buildEvidenceMapObjects, type EvidenceMapObject } from "@/lib/riskTwinEvidence";
 import {
   fetchGlaciers,
   fetchJuryEvidence,
@@ -60,6 +60,7 @@ export default function CommandCenter() {
   const [yearLayer, setYearLayer] = useState<YearMapLayer | null>(null);
   const [selectedCaseKey, setSelectedCaseKey] = useState("");
   const [context, setContext] = useState<RiskTwinSpatialContext | null>(null);
+  const [companyAsset, setCompanyAsset] = useState<CompanyAsset | null>(null);
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -116,9 +117,34 @@ export default function CommandCenter() {
     return () => { active = false; };
   }, [selectedCase, selectedGlacier]);
 
+  const companyAssetMapObject = useMemo<EvidenceMapObject | null>(() => {
+    if (!companyAsset) return null;
+    return {
+      id: `company-asset:${companyAsset.id}`,
+      kind: "asset",
+      name: companyAsset.name,
+      geometry: { type: "Point", coordinates: [companyAsset.longitude, companyAsset.latitude] },
+      source: "Координата, введённая пользователем в этом браузере",
+      temporalCoverage: "пользовательский ввод; не отправляется API",
+      maturity: "requires_verification",
+      visibleFact: `${companyAsset.type}. Используется только для пространственной проверки рядом с инвентарными объектами.`,
+      allowedClaim: "Можно показать введённую пользователем координату рядом с локальными справочными слоями.",
+      prohibitedClaim: "Координата объекта не доказывает воздействие, зону затопления, ущерб или необходимость эвакуации.",
+      inspectorFacts: [
+        { label: "Тип", value: companyAsset.type },
+        { label: "Широта", value: coordinate(companyAsset.latitude) },
+        { label: "Долгота", value: coordinate(companyAsset.longitude) },
+        { label: "Хранение", value: "только в этом браузере" },
+      ],
+    };
+  }, [companyAsset]);
   const mapObjects = useMemo(
-    () => buildEvidenceMapObjects(selectedGlacier, yearLayer, context, []),
-    [context, selectedGlacier, yearLayer],
+    () => [...buildEvidenceMapObjects(selectedGlacier, yearLayer, context, []), ...(companyAssetMapObject ? [companyAssetMapObject] : [])],
+    [companyAssetMapObject, context, selectedGlacier, yearLayer],
+  );
+  const pinnedObjectIds = useMemo(
+    () => companyAssetMapObject ? [companyAssetMapObject.id] : [],
+    [companyAssetMapObject],
   );
   const selectedObject = useMemo(
     () => mapObjects.find((object) => object.id === selectedObjectId) ?? null,
@@ -168,11 +194,25 @@ export default function CommandCenter() {
 
           <section aria-labelledby="action-title" className="rounded-3xl border border-amber-200 bg-amber-50 p-5 shadow-sm sm:p-7"><div className="flex items-start gap-3"><AlertTriangle className="mt-0.5 h-6 w-6 shrink-0 text-amber-700" /><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-800">Практический результат</p><h2 id="action-title" className="mt-1 text-2xl font-bold tracking-tight text-amber-950">Следующее действие: проверить контур воды</h2><p className="mt-2 max-w-4xl text-sm leading-6 text-amber-950">Получить чистую спутниковую сцену, сопоставить границу воды с контуром инвентаря и только при расхождении направлять полевую или БПЛА‑проверку. Так сотни объектов превращаются в объяснимую очередь задач.</p></div></div><ol className="mt-5 grid gap-3 md:grid-cols-3"><li className="rounded-xl bg-white/80 p-4"><span className="text-xs font-black text-amber-700">01</span><p className="mt-2 font-bold text-slate-950">Чистый снимок</p><p className="mt-1 text-sm text-slate-600">Исключить облачность и сезонные помехи.</p></li><li className="rounded-xl bg-white/80 p-4"><span className="text-xs font-black text-amber-700">02</span><p className="mt-2 font-bold text-slate-950">Проверка контура</p><p className="mt-1 text-sm text-slate-600">Сравнить воду с контуром 2020 и 2023.</p></li><li className="rounded-xl bg-white/80 p-4"><span className="text-xs font-black text-amber-700">03</span><p className="mt-2 font-bold text-slate-950">Только при необходимости — поле</p><p className="mt-1 text-sm text-slate-600">БПЛА или выезд нужны после дистанционной проверки.</p></li></ol></section>
 
-          <CompanyAssetMode candidates={scan?.candidates ?? []} scannedLakes={scan?.summary.scanned_lakes ?? 0} onSelectCandidate={(candidate) => setSelectedCaseKey(regionalObservationCandidateKey(candidate))} />
+          <CompanyAssetMode
+            candidates={scan?.candidates ?? []}
+            scannedLakes={scan?.summary.scanned_lakes ?? 0}
+            routeContext={companyAsset && context ? {
+              assetId: companyAsset.id,
+              available: context.downstream_route.available,
+              routeLengthKm: context.downstream_route.route_length_km ?? null,
+              corridorWidthM: context.downstream_route.corridor_width_m ?? null,
+            } : null}
+            onSelectCandidate={(candidate, asset) => {
+              setCompanyAsset(asset);
+              setSelectedCaseKey(regionalObservationCandidateKey(candidate));
+              window.requestAnimationFrame(scrollToMap);
+            }}
+          />
 
           {scan && <section aria-labelledby="queue-title" className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"><div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Прозрачная очередь</p><h2 id="queue-title" className="mt-1 text-xl font-bold text-slate-950">Можно сравнить следующие реальные кандидаты</h2></div><p className="text-sm text-slate-600">Выбор меняет только объект проверки, а не формулу.</p></div><div className="mt-4 grid gap-3 lg:grid-cols-3">{scan.candidates.slice(0, 3).map((candidate, index) => { const key = regionalObservationCandidateKey(candidate); const active = key === regionalObservationCandidateKey(selectedCase); return <button key={key} type="button" onClick={() => setSelectedCaseKey(key)} aria-pressed={active} className={`min-w-0 rounded-2xl border p-4 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-700 ${active ? "border-cyan-500 bg-cyan-50" : "border-slate-200 hover:border-cyan-300 hover:bg-slate-50"}`}><div className="flex items-center justify-between gap-2"><span className="text-xs font-black text-cyan-800">ОБЪЕКТ №{index + 1}</span><span className="rounded-full bg-slate-950 px-2 py-1 text-xs font-bold text-white">{candidate.observation_priority_0_100.toFixed(0)}/100</span></div><p className="mt-3 text-sm font-bold text-slate-950">{areaKm2(candidate.area_current_m2)} км² · {candidate.area_change_percent === null ? "нет сравнения" : `${candidate.area_change_percent > 0 ? "+" : ""}${candidate.area_change_percent.toFixed(1)}%`}</p><p className="mt-1 text-xs text-slate-600">{coordinate(candidate.latitude)}° N · {coordinate(candidate.longitude)}° E</p></button>; })}</div></section>}
 
-          <section id="map" aria-labelledby="map-title" className="scroll-mt-20 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-800">Проверка на карте</p><h2 id="map-title" className="mt-1 text-2xl font-bold tracking-tight text-slate-950">Контур озера, ледник и локальный слой — в одном месте</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">Нажмите на геометрию, чтобы увидеть её источник и измерение. На карте намеренно оставлены только слои, нужные для выбранного решения.</p></div><MapPinned className="h-7 w-7 text-cyan-700" /></div><div className="mt-4"><RiskTwinMap glacier={selectedGlacier} objects={mapObjects} selectedObjectId={selectedObjectId} onSelectObject={setSelectedObjectId} mode="evidence" yearLayer={yearLayer} comparisonLayer={null} compact /></div>{selectedObject && <p role="status" aria-live="polite" className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"><strong>Выбрано на карте:</strong> {selectedObject.name}. {selectedObject.visibleFact}</p>}</section>
+          <section id="map" aria-labelledby="map-title" className="scroll-mt-20 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-800">Проверка на карте</p><h2 id="map-title" className="mt-1 text-2xl font-bold tracking-tight text-slate-950">Контур озера, ледник и локальный слой — в одном месте</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">Нажмите на геометрию, чтобы увидеть её источник и измерение. После выбора объекта компании карта добавляет его координату, HydroRIVERS‑маршрут и planning‑corridor — это контекст проверки, не зона воздействия.</p></div><MapPinned className="h-7 w-7 text-cyan-700" /></div><div className="mt-4"><RiskTwinMap glacier={selectedGlacier} objects={mapObjects} selectedObjectId={selectedObjectId} onSelectObject={setSelectedObjectId} mode={companyAsset ? "route" : "evidence"} yearLayer={yearLayer} comparisonLayer={null} compact pinnedObjectIds={pinnedObjectIds} /></div>{selectedObject && <p role="status" aria-live="polite" className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"><strong>Выбрано на карте:</strong> {selectedObject.name}. {selectedObject.visibleFact}</p>}</section>
 
           <section id="details" aria-labelledby="details-title" className="scroll-mt-20 rounded-3xl border border-slate-200 bg-slate-100 p-5 shadow-sm sm:p-7"><div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-6 w-6 shrink-0 text-slate-700" /><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-600">Всё исследование сохранено</p><h2 id="details-title" className="mt-1 text-2xl font-bold tracking-tight text-slate-950">Подробные доказательства — после основного решения</h2><p className="mt-2 text-sm leading-6 text-slate-600">Эти инструменты важны для проверки, но не нужны, чтобы понять главный результат за первые 30 секунд.</p></div></div><div className="mt-5 grid gap-3 md:grid-cols-3"><Link href={caseHref(selectedCase)} className="rounded-2xl bg-slate-950 p-5 text-white transition hover:bg-slate-800"><p className="text-xs font-bold uppercase tracking-wide text-cyan-200">Полный Risk Twin</p><p className="mt-2 font-bold">Все локальные слои, контекст маршрута и паспорт объекта.</p><span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-cyan-200">Открыть <ChevronRight className="h-4 w-4" /></span></Link><Link href="/discovery" className="rounded-2xl bg-violet-700 p-5 text-white transition hover:bg-violet-600"><p className="text-xs font-bold uppercase tracking-wide text-violet-100">Похожие ледники</p><p className="mt-2 font-bold">100 сохранённых CryoGenesis‑паспортов и физически подобранные twin‑ледники.</p><span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-violet-100">Открыть <ChevronRight className="h-4 w-4" /></span></Link><Link href="/analysis" className="rounded-2xl bg-white p-5 text-slate-950 transition hover:bg-slate-50"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">Научная проверка</p><p className="mt-2 font-bold">ML‑метрики, uncertainty, строгий ряд и реестр утверждений.</p><span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-cyan-800">Открыть <ChevronRight className="h-4 w-4" /></span></Link></div>{evidence && <details className="mt-4 rounded-2xl border border-slate-200 bg-white p-4"><summary className="cursor-pointer font-bold text-slate-950 focus-visible:outline-2 focus-visible:outline-cyan-700">Научные границы утверждений</summary><div className="mt-4 grid gap-3 md:grid-cols-2"><p className="rounded-xl bg-emerald-50 p-4 text-sm leading-6 text-emerald-950"><CheckCircle2 className="mr-2 inline h-4 w-4 text-emerald-700" />Локальный пакет: {evidence.release_checks.local_package_complete ? "готов" : "неполный"}; {evidence.release_checks.required_artifact_count} обязательных артефактов.</p><p className="rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-950"><AlertTriangle className="mr-2 inline h-4 w-4 text-amber-700" />Не заявляются: вероятность GLOF, официальное предупреждение, независимая внешняя точность или прогноз до 2050 года.</p></div></details>}</section>
         </>}
