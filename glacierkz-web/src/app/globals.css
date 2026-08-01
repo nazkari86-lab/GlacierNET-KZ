@@ -132,9 +132,9 @@ body {
 }
 
 /* Command Center: the hero scene is decorative; its facts are real HTML. */
-@keyframes jury-glacier-breathe {
-  0%, 100% { opacity: 0.92; transform: translateY(0) scaleY(1); }
-  50% { opacity: 1; transform: translateY(1px) scaleY(1.015); }
+@keyframes jury-glacier-drift {
+  0%, 100% { opacity: 0.9; transform: translateY(-5px) scale(0.99); }
+  50% { opacity: 1; transform: translateY(6px) scale(1.018); }
 }
 
 @keyframes jury-glacier-flow {
@@ -166,7 +166,7 @@ body {
 
 @media (prefers-reduced-motion: no-preference) {
   .jury-glacier-ice {
-    animation: jury-glacier-breathe 7s ease-in-out infinite;
+    animation: jury-glacier-drift 4.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
     transform-box: fill-box;
     transform-origin: center bottom;
   }
