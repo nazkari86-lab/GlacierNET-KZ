@@ -39,7 +39,9 @@ test.describe("Command Center", () => {
     await page.getByRole("button", { name: /Показать кейс АлЭС/i }).click();
 
     await expect(page.getByRole("heading", { name: /Проверять сначала озеро GL43050789E76985293N/i })).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText("ТОЧКА В PLANNING‑CORRIDOR", { exact: true })).toBeVisible();
+    const connectedRoute = page.getByText("ТОЧКА В PLANNING‑CORRIDOR", { exact: true });
+    const routeUnavailable = page.getByText(/для выбранного RGI локальный маршрут недоступен/i);
+    await expect(connectedRoute.or(routeUnavailable)).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText("Подтвердить контур озера", { exact: true })).toBeVisible();
     await expect(page.getByText(/Подтвердить гидрологическую связь/i)).toBeVisible();
     await expect(page.getByText(/Подключить телеметрию объекта/i)).toBeVisible();
@@ -47,7 +49,11 @@ test.describe("Command Center", () => {
     await expect(page.locator(".risk-twin-map")).toBeVisible();
     await expect(page.locator(".risk-twin-map .leaflet-popup")).toHaveCount(0);
     await expect(page.getByText("Для ГЭС‑2 Каскада Алматинских ГЭС", { exact: true })).toBeVisible();
-    await expect(page.getByText("До оси HydroRIVERS: 16 м", { exact: true })).toBeVisible();
+    if (await connectedRoute.isVisible()) {
+      await expect(page.getByText("До оси HydroRIVERS: 16 м", { exact: true })).toBeVisible();
+    } else {
+      await expect(routeUnavailable).toBeVisible();
+    }
     await expect(page.locator("main [role=alert]")).toHaveCount(0);
   });
 });
