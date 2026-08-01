@@ -2,15 +2,53 @@
 
 import { useEffect, useState } from "react";
 import { ArrowDown } from "lucide-react";
+import { useI18n } from "@/lib/I18nProvider";
 
-const FACTS = [
-  "Since 1950, Kazakhstan's glaciers have lost over 40% of their area.",
-  "By 2050, most glaciers in the Zailiysky Alatau may disappear entirely.",
-  "Glacier melt threatens water supply for 6 million people in Central Asia.",
-  "The Tuyuksu glacier has receded more than 1 km in the last 60 years.",
-];
+const COPY = {
+  en: {
+    eyebrow: "Evidence-led cryosphere intelligence",
+    titleLead: "Glaciers move.",
+    titleAccent: "Evidence moves with them.",
+    subtitle: "From satellite pixels to one explainable next observation",
+    facts: [
+      "The local 2023 inventory scan screens 317 real lake polygons.",
+      "225 candidates lie within 10 km of an RGI boundary and can be ranked for follow-up.",
+      "Observation priority is not a breach or hazard probability.",
+      "HydroRIVERS routes are planning context, never a claimed flood extent.",
+    ],
+    continueLabel: "Continue to the project workspace",
+  },
+  ru: {
+    eyebrow: "Доказательный интеллект криосферы",
+    titleLead: "Ледники движутся.",
+    titleAccent: "Доказательства движутся вместе с ними.",
+    subtitle: "От спутниковых пикселей — к одному объяснимому следующему наблюдению",
+    facts: [
+      "Локальный инвентарь 2023 года содержит 317 реальных контуров озёр.",
+      "225 кандидатов находятся в пределах 10 км от границ RGI и доступны для очереди проверки.",
+      "Приоритет наблюдения не является вероятностью прорыва или опасности.",
+      "Маршруты HydroRIVERS — контекст планирования, а не заявленная зона затопления.",
+    ],
+    continueLabel: "Перейти к рабочему пространству проекта",
+  },
+  kk: {
+    eyebrow: "Криосфераның дәлелдерге негізделген интеллекті",
+    titleLead: "Мұздықтар қозғалады.",
+    titleAccent: "Дәлелдер де бірге қозғалады.",
+    subtitle: "Спутниктік пиксельдерден түсіндірілетін келесі бақылауға дейін",
+    facts: [
+      "2023 жылғы жергілікті түгендеу 317 нақты көл контурын қамтиды.",
+      "225 нысан RGI шекарасынан 10 км ішінде орналасқан және тексеру кезегіне енгізіледі.",
+      "Бақылау басымдығы жарылу немесе қауіп ықтималдығы емес.",
+      "HydroRIVERS бағыттары — жоспарлау контексті, су басу аймағы емес.",
+    ],
+    continueLabel: "Жобаның жұмыс кеңістігіне өту",
+  },
+} as const;
 
 export default function GlacierHero() {
+  const { locale } = useI18n();
+  const copy = COPY[locale];
   const [factIndex, setFactIndex] = useState(0);
   const [showStat, setShowStat] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -43,16 +81,16 @@ export default function GlacierHero() {
     );
     const t1 = setTimeout(() => setShowStat(true), 2500);
     const t2 = setInterval(() => {
-      setFactIndex((i) => (i + 1) % FACTS.length);
+      setFactIndex((i) => (i + 1) % copy.facts.length);
     }, 4000);
     return () => {
       clearTimeout(t1);
       clearInterval(t2);
     };
-  }, []);
+  }, [copy.facts.length]);
 
   return (
-    <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-sky-950 via-blue-900 to-blue-800">
+    <section aria-labelledby="glacier-hero-title" className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-sky-950 via-blue-900 to-blue-800">
       {/* Ice particles */}
       {mounted && (
         <div className="pointer-events-none absolute inset-0">
@@ -172,39 +210,38 @@ export default function GlacierHero() {
       <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
         <div className="mb-6">
           <span className="inline-block animate-fadeIn rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-blue-200 backdrop-blur-sm">
-            Climate Crisis in Central Asia
+            {copy.eyebrow}
           </span>
         </div>
 
-        <h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight text-white md:text-7xl">
+        <h1 id="glacier-hero-title" className="mb-6 text-5xl font-bold leading-tight tracking-tight text-white md:text-7xl">
           <span className="animate-fadeInUp inline-block" style={{ animationDelay: "0.3s" }}>
-            Қазақстанның
+            {copy.titleLead}
           </span>{" "}
           <br />
           <span className="animate-fadeInUp inline-block" style={{ animationDelay: "0.6s" }}>
             <span className="bg-gradient-to-r from-blue-300 to-cyan-200 bg-clip-text text-transparent">
-              мұздықтары
-            </span>{" "}
-            ериді
+              {copy.titleAccent}
+            </span>
           </span>
         </h1>
 
         <p className="animate-fadeInUp mb-2 text-lg text-blue-200/80 md:text-xl" style={{ animationDelay: "0.9s" }}>
-          Kazakhstan&apos;s glaciers are disappearing at an alarming rate
+          {copy.subtitle}
         </p>
 
         {/* Animated facts */}
         <div className="animate-fadeInUp mt-8 h-16" style={{ animationDelay: "1.2s" }}>
           {showStat && (
             <p key={factIndex} className="animate-fadeIn text-base text-blue-100/70 md:text-lg">
-              {FACTS[factIndex]}
+              {copy.facts[factIndex]}
             </p>
           )}
         </div>
 
         {/* Dots indicator */}
         <div className="mt-4 flex items-center justify-center gap-2">
-          {FACTS.map((_, i) => (
+          {copy.facts.map((_, i) => (
             <div
               key={i}
               className={`h-1.5 rounded-full transition-all duration-500 ${
@@ -215,9 +252,9 @@ export default function GlacierHero() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="animate-fadeInUp mt-12" style={{ animationDelay: "1.5s" }}>
-          <ArrowDown className="mx-auto h-6 w-6 animate-bounce text-blue-300/60" />
-        </div>
+        <a href="#main-content" aria-label={copy.continueLabel} className="animate-fadeInUp mt-12 inline-flex min-h-11 items-center justify-center rounded-full px-5 text-blue-100/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-200" style={{ animationDelay: "1.5s" }}>
+          <ArrowDown className="h-6 w-6 animate-bounce" />
+        </a>
       </div>
     </section>
   );

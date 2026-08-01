@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { GlacierRecord, MlEvidenceCase, YearMapLayer } from "@/lib/api";
@@ -21,6 +21,7 @@ interface RiskTwinMapProps {
   mlEvidence?: MlEvidenceCase | null;
   compact?: boolean;
   pinnedObjectIds?: string[];
+  focusObjectId?: string | null;
 }
 
 const KIND_LABELS: Record<EvidenceKind, string> = {
@@ -66,13 +67,27 @@ function pointStyle(kind: EvidenceKind, latlng: L.LatLng): L.CircleMarker {
   return L.circleMarker(latlng, { ...style, radius: kind === "historical_record" ? 7 : 6 });
 }
 
-export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSelectObject, mode, yearLayer, comparisonLayer, mlEvidence = null, compact = false, pinnedObjectIds = NO_PINNED_OBJECT_IDS }: RiskTwinMapProps) {
+function fitLayerGroup(map: L.Map, objectLayers: Map<string, L.Layer>, objectIds: string[], maxZoom: number) {
+  let combined: L.LatLngBounds | null = null;
+  for (const objectId of objectIds) {
+    const layer = objectLayers.get(objectId) as (L.Layer & { getBounds?: () => L.LatLngBounds }) | undefined;
+    const bounds = layer?.getBounds?.();
+    if (!bounds?.isValid()) continue;
+    combined = combined
+      ? combined.extend(bounds)
+      : L.latLngBounds(bounds.getSouthWest(), bounds.getNorthEast());
+  }
+  if (combined?.isValid()) map.fitBounds(combined, { padding: [54, 54], maxZoom, animate: false });
+}
+
+export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSelectObject, mode, yearLayer, comparisonLayer, mlEvidence = null, compact = false, pinnedObjectIds = NO_PINNED_OBJECT_IDS, focusObjectId = null }: RiskTwinMapProps) {
   const elementRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const contentLayerRef = useRef<L.LayerGroup | null>(null);
   const objectLayerRef = useRef(new Map<string, L.Layer>());
   const baseLayersRef = useRef<Partial<Record<Basemap, L.TileLayer>>>({});
   const fittedGlacierRef = useRef<string | null>(null);
+  const fittedDecisionContextRef = useRef<string | null>(null);
   const [mapError, setMapError] = useState("");
   const [basemap, setBasemap] = useState<Basemap>(() => compact ? "satellite" : "offline");
   const [showMlBoundary, setShowMlBoundary] = useState(true);
@@ -84,6 +99,17 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
   // so hiding all but the three highest ranked lakes loses useful evidence.
   // Render every supplied local object; users can still toggle source kinds.
   const mapObjects = objects;
+  const decisionContextIds = useMemo(() => mapObjects.filter((object) => {
+    if (object.id === focusObjectId || object.id === `glacier:${glacier?.rgi_id}` || pinnedObjectIds.includes(object.id)) return true;
+    return mode === "route" && (object.isRoute || object.kind === "corridor");
+  }).map((object) => object.id), [focusObjectId, glacier?.rgi_id, mapObjects, mode, pinnedObjectIds]);
+  const decisionContextKey = `${mode}:${glacier?.rgi_id ?? "none"}:${focusObjectId ?? "none"}:${pinnedObjectIds.join(",")}`;
+
+  const focusDecisionContext = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    fitLayerGroup(map, objectLayerRef.current, decisionContextIds, mode === "route" ? 10 : 13);
+  };
 
   useEffect(() => {
     if (!elementRef.current || mapRef.current) return;
@@ -202,18 +228,25 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
     }
 
     const glacierLayer = glacier ? objectLayerRef.current.get(`glacier:${glacier.rgi_id}`) as L.FeatureGroup | undefined : undefined;
-    if (glacierLayer && fittedGlacierRef.current !== glacier?.rgi_id) {
+    if (compact && fittedDecisionContextRef.current !== decisionContextKey) {
+      fitLayerGroup(map, objectLayerRef.current, decisionContextIds, mode === "route" ? 10 : 13);
+      fittedDecisionContextRef.current = decisionContextKey;
+    } else if (!compact && glacierLayer && fittedGlacierRef.current !== glacier?.rgi_id) {
       const bounds = glacierLayer.getBounds();
       if (bounds.isValid()) map.fitBounds(bounds, { padding: [44, 44], maxZoom: 13 });
       fittedGlacierRef.current = glacier?.rgi_id ?? null;
     }
-  }, [comparisonLayer, compact, glacier, mapObjects, mlEvidence, mode, onSelectObject, pinnedObjectIds, selectedObjectId, showMlBoundary, visibleKinds, yearLayer]);
+  }, [comparisonLayer, compact, decisionContextIds, decisionContextKey, glacier, mapObjects, mlEvidence, mode, onSelectObject, pinnedObjectIds, selectedObjectId, showMlBoundary, visibleKinds, yearLayer]);
 
   useEffect(() => {
     if (!selectedObjectId) return;
     const map = mapRef.current;
     const layer = objectLayerRef.current.get(selectedObjectId) as (L.Layer & { getBounds?: () => L.LatLngBounds; openPopup?: () => unknown }) | undefined;
     if (!map || !layer) return;
+    if (compact) {
+      layer.openPopup?.();
+      return;
+    }
     const bounds = layer.getBounds?.();
     const glacierLayer = glacier ? objectLayerRef.current.get(`glacier:${glacier.rgi_id}`) as (L.Layer & { getBounds?: () => L.LatLngBounds }) | undefined : undefined;
     const glacierBounds = glacierLayer?.getBounds?.();
@@ -223,16 +256,9 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
       map.fitBounds(bounds, { padding: [64, 64], maxZoom: 14 });
     }
     layer.openPopup?.();
-  }, [glacier, selectedObjectId]);
+  }, [compact, glacier, selectedObjectId]);
 
   const toggleKind = (kind: EvidenceKind) => setVisibleKinds((current) => ({ ...current, [kind]: !current[kind] }));
-
-  const focusSelectedObject = () => {
-    const map = mapRef.current;
-    const layer = selectedObjectId ? objectLayerRef.current.get(selectedObjectId) as (L.Layer & { getBounds?: () => L.LatLngBounds }) | undefined : undefined;
-    const bounds = layer?.getBounds?.();
-    if (map && bounds?.isValid()) map.fitBounds(bounds, { padding: [64, 64], maxZoom: 14 });
-  };
 
   return (
     <div className="space-y-3">
@@ -240,7 +266,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
         <div ref={elementRef} className="h-[620px] w-full" aria-label="Risk Twin evidence map" />
         <div className="absolute left-3 top-3 z-[500] max-w-[268px] rounded-xl border border-white/15 bg-slate-950/90 p-3 text-white shadow-lg backdrop-blur">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-200">Карта доказательств</p>
-          {compact ? <><p className="mt-1 text-sm font-semibold">Выбранное озеро и граница ледника</p><p className="mt-1 text-xs leading-4 text-slate-300">Синий — озеро из инвентаря; бирюзовый — RGI‑граница. Нажмите контур для источника.</p><button type="button" onClick={focusSelectedObject} className="mt-3 inline-flex min-h-9 items-center rounded-lg bg-cyan-300 px-2.5 text-xs font-bold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Приблизить выбранное озеро</button></> : selectedObject?.screening ? <>
+          {compact ? <>{mode === "route" ? <><p className="mt-1 text-sm font-semibold">Что проверить по маршруту</p><p className="mt-1 text-xs leading-4 text-slate-300">Оранжевый — маршрут HydroRIVERS; пунктир — planning‑corridor; фиолетовый — объект компании. Это не зона затопления.</p></> : <><p className="mt-1 text-sm font-semibold">Что проверить сейчас</p><p className="mt-1 text-xs leading-4 text-slate-300">Сначала сверить синий контур воды со снимком; бирюзовый контур показывает ближайшую RGI‑границу.</p></>}<button type="button" onClick={focusDecisionContext} className="mt-3 inline-flex min-h-9 items-center rounded-lg bg-cyan-300 px-2.5 text-xs font-bold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">{mode === "route" ? "Показать весь маршрут" : "Показать озеро и ледник"}</button></> : selectedObject?.screening ? <>
             <p className="mt-1 text-sm font-semibold">Точный кейс: {selectedObject.name}</p>
             <p className="mt-1 text-xs leading-4 text-slate-200">{(selectedObject.screening.areaM2 / 1_000_000).toFixed(3)} км² · {selectedObject.screening.distanceToRgiBoundaryM.toFixed(0)} м до RGI · {selectedObject.screening.areaChangePercent === null ? "нет надёжного match 2020" : `${selectedObject.screening.areaChangePercent > 0 ? "+" : ""}${selectedObject.screening.areaChangePercent.toFixed(1)}% к 2020`}</p>
           </> : <>
