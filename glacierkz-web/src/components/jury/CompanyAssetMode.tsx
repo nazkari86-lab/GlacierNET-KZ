@@ -1,19 +1,13 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
-import { Building2, FileUp, LocateFixed, MapPinned, Trash2 } from "lucide-react";
+import { ArrowRight, Building2, CheckCircle2, ExternalLink, FileUp, LocateFixed, MapPinned, Radio, ShieldCheck, Trash2 } from "lucide-react";
 import { regionalObservationCandidateKey, type RegionalObservationScan } from "@/lib/api";
+import { ALES_HPP2_EXAMPLE, type CompanyAsset } from "@/lib/companyAssets";
+
+export type { CompanyAsset } from "@/lib/companyAssets";
 
 type Candidate = RegionalObservationScan["candidates"][number];
-
-export type CompanyAsset = {
-  id: string;
-  name: string;
-  type: string;
-  latitude: number;
-  longitude: number;
-  createdAt: string;
-};
 
 type CompanyAssetModeProps = {
   candidates: Candidate[];
@@ -24,11 +18,15 @@ type CompanyAssetModeProps = {
     status: "loading" | "available" | "unavailable";
     routeLengthKm: number | null;
     corridorWidthM: number | null;
+    routeSegmentCount: number | null;
+    planningAssetCount: number | null;
+    assetDistanceToRouteM: number | null;
+    candidateKey: string;
   } | null;
 };
 
 const STORAGE_KEY = "glaciernet-kz.company-assets.v1";
-const ASSET_TYPES = ["Инфраструктура", "Дорога", "ГЭС / водозабор", "Карьер / шахта", "Лагерь / объект", "Другое"];
+const ASSET_TYPES = ["Инфраструктура", "Дорога", "ГЭС", "Водозабор", "Карьер / шахта", "Лагерь / объект", "Другое"];
 export const MAX_GEOJSON_BYTES = 1_000_000;
 const MAX_GEOJSON_FEATURES = 100;
 
@@ -166,9 +164,46 @@ export default function CompanyAssetMode({ candidates, scannedLakes, onSelectCan
   };
 
   const visibleRouteContext = routeContext?.assetId === selectedAsset?.id ? routeContext : null;
+  const activeRouteCandidate = visibleRouteContext
+    ? nearbyCandidates.find(({ candidate }) => regionalObservationCandidateKey(candidate) === visibleRouteContext.candidateKey) ?? null
+    : null;
+  const routeIntersectsPlanningCorridor = visibleRouteContext?.assetDistanceToRouteM !== null
+    && visibleRouteContext?.assetDistanceToRouteM !== undefined
+    && visibleRouteContext.corridorWidthM !== null
+    && visibleRouteContext.assetDistanceToRouteM <= visibleRouteContext.corridorWidthM;
+
+  const openPublicExample = () => {
+    const asset = { ...ALES_HPP2_EXAMPLE };
+    setAssets((current) => current.some((item) => item.id === asset.id) ? current : [...current, asset]);
+    setSelectedAssetId(asset.id);
+    setRadiusKm(25);
+    const nearest = candidates
+      .map((candidate) => ({ candidate, distance: distanceKm(asset.latitude, asset.longitude, candidate.latitude, candidate.longitude) }))
+      .sort((left, right) => left.distance - right.distance)[0];
+    if (nearest) {
+      setMessage("Открыт публичный пример АлЭС: выбран ближайший реальный кандидат из локальной очереди.");
+      onSelectCandidate(nearest.candidate, asset);
+    } else {
+      setMessage("Публичный пример добавлен, но локальная очередь кандидатов пока недоступна.");
+    }
+  };
 
   return <section id="asset-mode" aria-labelledby="asset-mode-title" className="scroll-mt-20 rounded-3xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm sm:p-7">
     <div className="flex flex-wrap items-start justify-between gap-4"><div className="max-w-4xl"><p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-800">Asset mode · для инфраструктурных команд</p><h2 id="asset-mode-title" className="mt-1 text-2xl font-bold tracking-tight text-emerald-950">Покажите, что проверить рядом с объектом компании</h2><p className="mt-2 text-sm leading-6 text-emerald-950">Добавьте координату дороги, карьера, ГЭС, водозабора или другого объекта. GlacierNET‑KZ найдёт реальные инвентарные озёра поблизости и даст объяснимую очередь проверки. Это географическая близость, <strong>не расчёт зоны поражения и не вероятность события.</strong></p></div><Building2 className="h-8 w-8 shrink-0 text-emerald-700" /></div>
+
+    <div className="mt-5 overflow-hidden rounded-2xl border border-sky-200 bg-[linear-gradient(135deg,#082f49_0%,#0f766e_100%)] p-5 text-white shadow-lg sm:p-6">
+      <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-cyan-300 px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-slate-950">Реальный публичный пример</span><span className="text-xs font-semibold text-cyan-100">АО «АлЭС» · Большая Алматинка</span></div><h3 className="mt-3 text-2xl font-black tracking-tight">ГЭС‑2 Каскада Алматинских ГЭС</h3><p className="mt-2 max-w-3xl text-sm leading-6 text-cyan-50">Один клик связывает публичную координату станции с ближайшим реальным озером из локального инвентаря и строит проверяемый HydroRIVERS‑маршрут. Результат отвечает не «случится ли авария», а <strong>какой объект проверять и какие данные нужны оператору дальше.</strong></p><div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-cyan-100"><a href={ALES_HPP2_EXAMPLE.operatorSourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 underline decoration-cyan-300/60 underline-offset-4 hover:text-white">Официальная страница АлЭС <ExternalLink className="h-3.5 w-3.5" /></a><a href={ALES_HPP2_EXAMPLE.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 underline decoration-cyan-300/60 underline-offset-4 hover:text-white">Координата OpenStreetMap <ExternalLink className="h-3.5 w-3.5" /></a></div></div>
+        <button type="button" onClick={openPublicExample} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-cyan-300 px-5 py-3 text-sm font-black text-slate-950 shadow-lg transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Показать кейс АлЭС <ArrowRight className="h-4 w-4" /></button>
+      </div>
+    </div>
+
+    {selectedAsset?.isPublicExample && visibleRouteContext && <section aria-labelledby="company-conclusion-title" className="mt-5 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-5 text-white shadow-xl sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">Операционный вывод для {selectedAsset.operator}</p><h3 id="company-conclusion-title" className="mt-2 text-2xl font-black tracking-tight">Проверять сначала озеро {activeRouteCandidate?.candidate.lake_id ?? "из выбранного RGI‑контекста"}</h3><p className="mt-2 max-w-4xl text-sm leading-6 text-slate-300">Система сократила региональную очередь до одного кандидата, связала его с картографическим маршрутом и показала, какие недостающие измерения нужны до любого операционного решения.</p></div><span className={`rounded-full px-3 py-2 text-xs font-black ${routeIntersectsPlanningCorridor ? "bg-emerald-300 text-emerald-950" : "bg-amber-300 text-amber-950"}`}>{routeIntersectsPlanningCorridor ? "ТОЧКА В PLANNING‑CORRIDOR" : "СВЯЗЬ ТРЕБУЕТ ПРОВЕРКИ"}</span></div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><article className="rounded-xl border border-white/10 bg-white/5 p-4"><p className="text-xs font-bold uppercase text-slate-400">До кандидата</p><p className="mt-2 text-3xl font-black text-white">{activeRouteCandidate ? activeRouteCandidate.distanceKm.toFixed(1) : "—"} <span className="text-sm text-slate-400">км</span></p><p className="mt-1 text-xs leading-5 text-slate-400">Прямая географическая дистанция.</p></article><article className="rounded-xl border border-white/10 bg-white/5 p-4"><p className="text-xs font-bold uppercase text-slate-400">До оси маршрута</p><p className="mt-2 text-3xl font-black text-cyan-300">{visibleRouteContext.assetDistanceToRouteM === null ? "—" : visibleRouteContext.assetDistanceToRouteM < 1000 ? visibleRouteContext.assetDistanceToRouteM.toFixed(0) : (visibleRouteContext.assetDistanceToRouteM / 1000).toFixed(1)} <span className="text-sm text-slate-400">{visibleRouteContext.assetDistanceToRouteM !== null && visibleRouteContext.assetDistanceToRouteM >= 1000 ? "км" : "м"}</span></p><p className="mt-1 text-xs leading-5 text-slate-400">Расчёт по локальной линии HydroRIVERS.</p></article><article className="rounded-xl border border-white/10 bg-white/5 p-4"><p className="text-xs font-bold uppercase text-slate-400">Маршрут проверки</p><p className="mt-2 text-3xl font-black text-white">{visibleRouteContext.routeLengthKm?.toFixed(1) ?? "—"} <span className="text-sm text-slate-400">км</span></p><p className="mt-1 text-xs leading-5 text-slate-400">{visibleRouteContext.routeSegmentCount ?? "—"} сегментов NEXT_DOWN.</p></article><article className="rounded-xl border border-white/10 bg-white/5 p-4"><p className="text-xs font-bold uppercase text-slate-400">Приоритет наблюдения</p><p className="mt-2 text-3xl font-black text-amber-300">{activeRouteCandidate?.candidate.observation_priority_0_100.toFixed(0) ?? "—"}<span className="text-sm text-slate-400">/100</span></p><p className="mt-1 text-xs leading-5 text-slate-400">Не вероятность аварии.</p></article></div>
+      <div className="mt-5 grid gap-3 lg:grid-cols-3"><article className="rounded-xl bg-cyan-950 p-4"><div className="flex items-center gap-2 text-cyan-200"><CheckCircle2 className="h-5 w-5" /><p className="text-xs font-black uppercase tracking-wide">Сегодня</p></div><p className="mt-2 font-bold">Подтвердить контур озера</p><p className="mt-1 text-sm leading-6 text-cyan-50/80">Получить чистую сцену, повторить сегментацию и проверить изменение площади до отправки сигнала оператору.</p></article><article className="rounded-xl bg-indigo-950 p-4"><div className="flex items-center gap-2 text-indigo-200"><ShieldCheck className="h-5 w-5" /><p className="text-xs font-black uppercase tracking-wide">За 7 дней</p></div><p className="mt-2 font-bold">Подтвердить гидрологическую связь</p><p className="mt-1 text-sm leading-6 text-indigo-50/80">Сверить маршрут с инженерной схемой АлЭС и локальной гидравликой. HydroRIVERS задаёт очередь проверки, но не моделирует поток.</p></article><article className="rounded-xl bg-emerald-950 p-4"><div className="flex items-center gap-2 text-emerald-200"><Radio className="h-5 w-5" /><p className="text-xs font-black uppercase tracking-wide">До сезона</p></div><p className="mt-2 font-bold">Подключить телеметрию объекта</p><p className="mt-1 text-sm leading-6 text-emerald-50/80">Связать уровень, расход и мутность с карточкой кандидата; пороги утверждает оператор, система лишь показывает evidence gap.</p></article></div>
+      <div className="mt-4 rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm leading-6 text-amber-50"><strong>Честный итог для АлЭС:</strong> сейчас обоснована приоритетная проверка конкретного озера и речной связности. Не обоснованы остановка ГЭС, предупреждение о GLOF, ущерб или вероятность события. После подтверждения снимка, гидравлики и телеметрии кейс можно превратить в согласованный операторский триггер.</div>
+    </section>}
 
     <div className="mt-5 grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
       <div className="rounded-2xl border border-emerald-200 bg-white p-4"><h3 className="font-bold text-slate-950">Добавить объект</h3><form onSubmit={addAsset} className="mt-4 grid gap-3"><label className="grid gap-1.5 text-sm font-semibold text-slate-700">Название объекта<input aria-label="Название объекта" value={name} onChange={(event) => setName(event.target.value)} className="min-h-11 rounded-lg border border-slate-300 px-3 text-slate-950 focus:border-emerald-600 focus:outline-2 focus:outline-emerald-200" placeholder="Например: водозабор №1" /></label><label className="grid gap-1.5 text-sm font-semibold text-slate-700">Тип<select aria-label="Тип объекта" value={type} onChange={(event) => setType(event.target.value)} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-slate-950 focus:border-emerald-600 focus:outline-2 focus:outline-emerald-200">{ASSET_TYPES.map((option) => <option key={option}>{option}</option>)}</select></label><div className="grid gap-3 sm:grid-cols-2"><label className="grid gap-1.5 text-sm font-semibold text-slate-700">Широта<input aria-label="Широта" inputMode="decimal" value={latitude} onChange={(event) => setLatitude(event.target.value)} className="min-h-11 rounded-lg border border-slate-300 px-3 text-slate-950 focus:border-emerald-600 focus:outline-2 focus:outline-emerald-200" placeholder="42.9753" /></label><label className="grid gap-1.5 text-sm font-semibold text-slate-700">Долгота<input aria-label="Долгота" inputMode="decimal" value={longitude} onChange={(event) => setLongitude(event.target.value)} className="min-h-11 rounded-lg border border-slate-300 px-3 text-slate-950 focus:border-emerald-600 focus:outline-2 focus:outline-emerald-200" placeholder="76.9723" /></label></div><button type="submit" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800"><MapPinned className="h-4 w-4" />Добавить и проверить</button></form><label className="mt-4 flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-emerald-300 px-4 py-2 text-sm font-bold text-emerald-900 transition hover:bg-emerald-50 focus-within:outline-2 focus-within:outline-emerald-700"><FileUp className="h-4 w-4" />Импортировать GeoJSON<input aria-label="Импортировать GeoJSON" type="file" accept=".geojson,application/geo+json,application/json" onChange={importGeoJson} className="sr-only" /></label><p className="mt-3 text-xs leading-5 text-slate-600">Поддерживаются Point‑объекты GeoJSON до 1 МБ; импорт ограничен {MAX_GEOJSON_FEATURES} объектами. Координаты остаются только в браузере и не передаются API.</p></div>

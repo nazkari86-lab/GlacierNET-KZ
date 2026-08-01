@@ -22,6 +22,11 @@ interface RiskTwinMapProps {
   compact?: boolean;
   pinnedObjectIds?: string[];
   focusObjectId?: string | null;
+  decisionContext?: {
+    title: string;
+    instruction: string;
+    metric?: string | null;
+  } | null;
 }
 
 const KIND_LABELS: Record<EvidenceKind, string> = {
@@ -80,7 +85,7 @@ function fitLayerGroup(map: L.Map, objectLayers: Map<string, L.Layer>, objectIds
   if (combined?.isValid()) map.fitBounds(combined, { padding: [54, 54], maxZoom, animate: false });
 }
 
-export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSelectObject, mode, yearLayer, comparisonLayer, mlEvidence = null, compact = false, pinnedObjectIds = NO_PINNED_OBJECT_IDS, focusObjectId = null }: RiskTwinMapProps) {
+export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSelectObject, mode, yearLayer, comparisonLayer, mlEvidence = null, compact = false, pinnedObjectIds = NO_PINNED_OBJECT_IDS, focusObjectId = null, decisionContext = null }: RiskTwinMapProps) {
   const elementRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const contentLayerRef = useRef<L.LayerGroup | null>(null);
@@ -224,7 +229,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
         pointToLayer: (_, latlng) => pointStyle(object.kind, latlng),
       });
       attach(object, vector);
-      if (selected) vector.openPopup();
+      if (selected && !compact) vector.openPopup();
     }
 
     const glacierLayer = glacier ? objectLayerRef.current.get(`glacier:${glacier.rgi_id}`) as L.FeatureGroup | undefined : undefined;
@@ -243,10 +248,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
     const map = mapRef.current;
     const layer = objectLayerRef.current.get(selectedObjectId) as (L.Layer & { getBounds?: () => L.LatLngBounds; openPopup?: () => unknown }) | undefined;
     if (!map || !layer) return;
-    if (compact) {
-      layer.openPopup?.();
-      return;
-    }
+    if (compact) return;
     const bounds = layer.getBounds?.();
     const glacierLayer = glacier ? objectLayerRef.current.get(`glacier:${glacier.rgi_id}`) as (L.Layer & { getBounds?: () => L.LatLngBounds }) | undefined : undefined;
     const glacierBounds = glacierLayer?.getBounds?.();
@@ -266,7 +268,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
         <div ref={elementRef} className="h-[620px] w-full" aria-label="Risk Twin evidence map" />
         <div className="absolute left-3 top-3 z-[500] max-w-[268px] rounded-xl border border-white/15 bg-slate-950/90 p-3 text-white shadow-lg backdrop-blur">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-200">Карта доказательств</p>
-          {compact ? <>{mode === "route" ? <><p className="mt-1 text-sm font-semibold">Что проверить по маршруту</p><p className="mt-1 text-xs leading-4 text-slate-300">Оранжевый — маршрут HydroRIVERS; пунктир — planning‑corridor; фиолетовый — объект компании. Это не зона затопления.</p></> : <><p className="mt-1 text-sm font-semibold">Что проверить сейчас</p><p className="mt-1 text-xs leading-4 text-slate-300">Сначала сверить синий контур воды со снимком; бирюзовый контур показывает ближайшую RGI‑границу.</p></>}<button type="button" onClick={focusDecisionContext} className="mt-3 inline-flex min-h-9 items-center rounded-lg bg-cyan-300 px-2.5 text-xs font-bold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">{mode === "route" ? "Показать весь маршрут" : "Показать озеро и ледник"}</button></> : selectedObject?.screening ? <>
+          {compact ? <>{mode === "route" ? <><p className="mt-1 text-sm font-semibold">{decisionContext?.title ?? "Что проверить по маршруту"}</p><p className="mt-1 text-xs leading-4 text-slate-300">{decisionContext?.instruction ?? "Оранжевый — маршрут HydroRIVERS; пунктир — planning‑corridor; фиолетовый — объект компании. Это не зона затопления."}</p>{decisionContext?.metric && <p className="mt-2 rounded-md bg-white/10 px-2 py-1.5 text-xs font-bold text-cyan-100">{decisionContext.metric}</p>}</> : <><p className="mt-1 text-sm font-semibold">Что проверить сейчас</p><p className="mt-1 text-xs leading-4 text-slate-300">Сначала сверить синий контур воды со снимком; бирюзовый контур показывает ближайшую RGI‑границу.</p></>}<button type="button" onClick={focusDecisionContext} className="mt-3 inline-flex min-h-9 items-center rounded-lg bg-cyan-300 px-2.5 text-xs font-bold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">{mode === "route" ? "Показать весь маршрут" : "Показать озеро и ледник"}</button></> : selectedObject?.screening ? <>
             <p className="mt-1 text-sm font-semibold">Точный кейс: {selectedObject.name}</p>
             <p className="mt-1 text-xs leading-4 text-slate-200">{(selectedObject.screening.areaM2 / 1_000_000).toFixed(3)} км² · {selectedObject.screening.distanceToRgiBoundaryM.toFixed(0)} м до RGI · {selectedObject.screening.areaChangePercent === null ? "нет надёжного match 2020" : `${selectedObject.screening.areaChangePercent > 0 ? "+" : ""}${selectedObject.screening.areaChangePercent.toFixed(1)}% к 2020`}</p>
           </> : <>

@@ -5,6 +5,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { FeatureCollection, Geometry } from "geojson";
 import { fetchYearMapLayer, regionalObservationCandidateKey, type ChangeCandidate, type GlacierRecord, type OperationsAsset, type RegionalObservationScan, type YearMapLayer } from "@/lib/api";
+import { apiUrl } from "@/lib/utils";
 
 interface OperationsInventoryMapProps { glaciers: GlacierRecord[]; assets: OperationsAsset[]; candidates: ChangeCandidate[]; selectedAssetId: string; onSelectAsset: (id: string) => void; riskTwinCandidates: RegionalObservationScan["candidates"]; selectedRiskTwinKey: string; onSelectRiskTwin: (key: string) => void; selectedYear: number; }
 
@@ -70,7 +71,30 @@ export default function OperationsInventoryMap({ glaciers, assets, candidates, s
   useEffect(() => {
     const target = annualRef.current; if (!target) return; target.clearLayers();
     if (!yearLayer || yearLayer.year !== selectedYear) return;
-    const overlay = L.imageOverlay(yearLayer.image_url, yearLayer.bounds as L.LatLngBoundsExpression, { opacity: 0.62, interactive: true, alt: `${selectedYear} segmentation screening layer` }); overlay.bindPopup(popup([["Year layer", `${selectedYear} · ${yearLayer.method.toUpperCase()}`], ["Scope", yearLayer.scope], ["Limitation", yearLayer.caveat]])); overlay.addTo(target);
+    const controller = new AbortController();
+    let objectUrl: string | null = null;
+    let overlay: L.ImageOverlay | null = null;
+    fetch(apiUrl(yearLayer.image_url), { cache: "no-store", signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.blob();
+      })
+      .then((blob) => {
+        if (controller.signal.aborted) return;
+        objectUrl = URL.createObjectURL(blob);
+        overlay = L.imageOverlay(objectUrl, yearLayer.bounds as L.LatLngBoundsExpression, { opacity: 0.62, interactive: true, alt: `${selectedYear} segmentation screening layer` });
+        overlay.on("error", () => setYearLayerError(`${selectedYear} map image could not be decoded by the browser.`));
+        overlay.bindPopup(popup([["Year layer", `${selectedYear} · ${yearLayer.method.toUpperCase()}`], ["Scope", yearLayer.scope], ["Limitation", yearLayer.caveat]]));
+        overlay.addTo(target);
+      })
+      .catch((cause) => {
+        if (!controller.signal.aborted) setYearLayerError(`${selectedYear} map image unavailable: ${cause instanceof Error ? cause.message : String(cause)}`);
+      });
+    return () => {
+      controller.abort();
+      overlay?.remove();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
   }, [selectedYear, yearLayer]);
 
   const matches = useMemo(() => { const normalized = query.trim().toLocaleLowerCase(); return normalized ? glaciers.filter((glacier) => `${glacier.name} ${glacier.name_ru} ${glacier.rgi_id}`.toLocaleLowerCase().includes(normalized)).slice(0, 8) : []; }, [glaciers, query]);
