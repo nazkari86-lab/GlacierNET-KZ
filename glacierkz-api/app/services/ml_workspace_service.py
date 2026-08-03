@@ -109,6 +109,7 @@ def _packaged_cases() -> list[tuple[Path, dict[str, Any]]]:
         filename = item.get("file")
         expected_digest = item.get("sha256")
         expected_case_id = item.get("case_id")
+        expected_schema = item.get("case_schema")
         if (
             not isinstance(filename, str)
             or Path(filename).name != filename
@@ -116,13 +117,14 @@ def _packaged_cases() -> list[tuple[Path, dict[str, Any]]]:
             or not isinstance(expected_digest, str)
             or len(expected_digest) != 64
             or not isinstance(expected_case_id, str)
+            or expected_schema not in {"glaciernet-kz.ml-case.v1", "glaciernet-kz.ml-case-snapshot.v1"}
         ):
             continue
         path = PACKAGED_CASES_DIR / filename
         if not path.is_file() or _sha256(path) != expected_digest.lower():
             continue
         case = _json(path)
-        if case.get("schema") != "glaciernet-kz.ml-case.v1" or case.get("case_id") != expected_case_id:
+        if case.get("schema") != expected_schema or case.get("case_id") != expected_case_id:
             continue
         verified.append((path, case))
     return verified

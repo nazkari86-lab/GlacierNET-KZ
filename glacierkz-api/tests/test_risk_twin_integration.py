@@ -51,7 +51,8 @@ def test_screening_gate_accepts_bounded_boundary_but_still_blocks_temporal_chang
     assert gate["usable_for_temporal_change"] is False
 
 
-def test_packaged_ales_ml_snapshot_is_real_and_source_digested():
+def test_packaged_ales_ml_snapshot_is_real_and_source_digested(tmp_path, monkeypatch):
+    monkeypatch.setattr(ml_workspace_service, "CASES_DIR", tmp_path / "empty-runtime")
     case = find_ml_case("RGI2000-v7.0-G-13-34154", year=2024, model_name="temporal_s2_terrain_s1")
     assert case is not None
     assert case["case_id"] == "260c89a36fbc7d1cd58b"
@@ -84,7 +85,14 @@ def test_packaged_snapshot_fails_closed_when_digest_is_wrong(tmp_path, monkeypat
         json.dumps(
             {
                 "schema": "glaciernet-kz.ml-evidence-manifest.v1",
-                "cases": [{"file": "case.json", "case_id": "b" * 20, "sha256": "0" * 64}],
+                "cases": [
+                    {
+                        "file": "case.json",
+                        "case_id": "b" * 20,
+                        "case_schema": "glaciernet-kz.ml-case.v1",
+                        "sha256": "0" * 64,
+                    }
+                ],
             }
         ),
         encoding="utf-8",
