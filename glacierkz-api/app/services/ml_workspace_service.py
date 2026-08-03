@@ -55,6 +55,8 @@ TERRAIN_PATH = CORE_DIR / "data" / "ancillary" / "terrain" / "terrain_features.t
 SENTINEL1_DIR = CORE_DIR / "data" / "ancillary" / "sentinel1"
 CASES_DIR = RESULTS_DIR / "ml_cases"
 CASES_DIR.mkdir(parents=True, exist_ok=True)
+PACKAGED_CASES_DIR = CORE_DIR / "benchmarks" / "central_asia_cascade" / "ml_evidence"
+PACKAGED_CASES_MANIFEST = PACKAGED_CASES_DIR / "manifest.json"
 TRAINING_DATASET_DIR = CORE_DIR / "data" / "processed" / "patches" / "enhanced_provisional_spatial_holdout"
 TRAINING_DATASET_MANIFEST = TRAINING_DATASET_DIR / "manifest.json"
 TRAINING_DATASET_PREVIEW = TRAINING_DATASET_DIR / "training_qa_preview.png"
@@ -89,6 +91,41 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _packaged_cases() -> list[tuple[Path, dict[str, Any]]]:
+    """Load only snapshots explicitly pinned by the tracked SHA-256 manifest."""
+    manifest = _json(PACKAGED_CASES_MANIFEST)
+    if manifest.get("schema") != "glaciernet-kz.ml-evidence-manifest.v1":
+        return []
+    declared = manifest.get("cases")
+    if not isinstance(declared, list):
+        return []
+
+    verified: list[tuple[Path, dict[str, Any]]] = []
+    for item in declared:
+        if not isinstance(item, dict):
+            continue
+        filename = item.get("file")
+        expected_digest = item.get("sha256")
+        expected_case_id = item.get("case_id")
+        if (
+            not isinstance(filename, str)
+            or Path(filename).name != filename
+            or filename == PACKAGED_CASES_MANIFEST.name
+            or not isinstance(expected_digest, str)
+            or len(expected_digest) != 64
+            or not isinstance(expected_case_id, str)
+        ):
+            continue
+        path = PACKAGED_CASES_DIR / filename
+        if not path.is_file() or _sha256(path) != expected_digest.lower():
+            continue
+        case = _json(path)
+        if case.get("schema") != "glaciernet-kz.ml-case.v1" or case.get("case_id") != expected_case_id:
+            continue
+        verified.append((path, case))
+    return verified
 
 
 def _source_fingerprint(path: Path) -> str:
@@ -911,9 +948,54 @@ def get_ml_case(case_id: str) -> dict[str, Any]:
     manifest_path = CASES_DIR / case_id / "manifest.json"
     case = _json(manifest_path)
     if not case:
+        for _, packaged in _packaged_cases():
+            if packaged.get("case_id") == case_id:
+                packaged["cache"] = {"hit": True, "case_id": case_id}
+                packaged["evidence_origin"] = "packaged_verified_snapshot"
+                return packaged
+    if not case:
         raise HTTPException(404, "ML evidence case not found")
     case["cache"] = {"hit": True, "case_id": case_id}
     return _hydrate_urls(case, manifest_path)
+
+
+def find_ml_case(
+    rgi_id: str,
+    *,
+    year: int,
+    model_name: str | None = None,
+) -> dict[str, Any] | None:
+    """Return the newest matching runtime case or a packaged verified snapshot.
+
+    Runtime inference artifacts are intentionally ignored by Git.  A compact
+    packaged snapshot keeps a real, source-digested evidence case available in
+    CI and presentation deployments without pretending that the heavy rasters
+    or model were executed there.
+    """
+    matches: list[tuple[str, str, Path, dict[str, Any]]] = []
+    sources = (("runtime_local", CASES_DIR.glob("*/manifest.json")),)
+    for origin, manifests in sources:
+        for manifest in manifests:
+            case = _json(manifest)
+            if case.get("glacier", {}).get("rgi_id") != rgi_id or case.get("year") != year:
+                continue
+            if model_name and case.get("model", {}).get("name") != model_name:
+                continue
+            matches.append((str(case.get("created_at", "")), origin, manifest, case))
+    for manifest, case in _packaged_cases():
+        if case.get("glacier", {}).get("rgi_id") != rgi_id or case.get("year") != year:
+            continue
+        if model_name and case.get("model", {}).get("name") != model_name:
+            continue
+        matches.append((str(case.get("created_at", "")), "packaged_verified_snapshot", manifest, case))
+    if not matches:
+        return None
+    _, origin, manifest_path, case = max(matches, key=lambda item: item[0])
+    case["cache"] = {"hit": True, "case_id": case.get("case_id")}
+    case["evidence_origin"] = origin
+    if origin == "runtime_local":
+        return _hydrate_urls(case, manifest_path)
+    return case
 
 
 def list_ml_cases(limit: int = 20) -> dict[str, Any]:

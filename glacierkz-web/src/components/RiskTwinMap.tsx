@@ -90,6 +90,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
   const mapRef = useRef<L.Map | null>(null);
   const contentLayerRef = useRef<L.LayerGroup | null>(null);
   const objectLayerRef = useRef(new Map<string, L.Layer>());
+  const mlLayerRef = useRef<L.GeoJSON | null>(null);
   const baseLayersRef = useRef<Partial<Record<Basemap, L.TileLayer>>>({});
   const fittedGlacierRef = useRef<string | null>(null);
   const fittedDecisionContextRef = useRef<string | null>(null);
@@ -114,6 +115,14 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
     const map = mapRef.current;
     if (!map) return;
     fitLayerGroup(map, objectLayerRef.current, decisionContextIds, mode === "route" ? 10 : 13);
+  };
+
+  const focusMlEvidence = () => {
+    const map = mapRef.current;
+    const layer = mlLayerRef.current;
+    if (!map || !layer) return;
+    const bounds = layer.getBounds();
+    if (bounds.isValid()) map.fitBounds(bounds, { padding: [72, 72], maxZoom: 16, animate: false });
   };
 
   useEffect(() => {
@@ -172,6 +181,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
     if (!map || !content) return;
     content.clearLayers();
     objectLayerRef.current.clear();
+    mlLayerRef.current = null;
     setMapError("");
 
     const attach = (object: EvidenceMapObject, layer: L.Layer & { bindPopup?: (content: HTMLElement) => unknown }) => {
@@ -217,6 +227,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
       details.append(title, metrics, limit);
       mlLayer.bindPopup(details);
       content.addLayer(mlLayer);
+      mlLayerRef.current = mlLayer;
     }
 
     for (const object of mapObjects) {
@@ -268,7 +279,7 @@ export default function RiskTwinMap({ glacier, objects, selectedObjectId, onSele
         <div ref={elementRef} className="h-[620px] w-full" aria-label="Risk Twin evidence map" />
         <div className="absolute left-3 top-3 z-[500] max-w-[268px] rounded-xl border border-white/15 bg-slate-950/90 p-3 text-white shadow-lg backdrop-blur">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-200">Карта доказательств</p>
-          {compact ? <>{mode === "route" ? <><p className="mt-1 text-sm font-semibold">{decisionContext?.title ?? "Что проверить по маршруту"}</p><p className="mt-1 text-xs leading-4 text-slate-300">{decisionContext?.instruction ?? "Оранжевый — маршрут HydroRIVERS; пунктир — planning‑corridor; фиолетовый — объект компании. Это не зона затопления."}</p>{decisionContext?.metric && <p className="mt-2 rounded-md bg-white/10 px-2 py-1.5 text-xs font-bold text-cyan-100">{decisionContext.metric}</p>}</> : <><p className="mt-1 text-sm font-semibold">Что проверить сейчас</p><p className="mt-1 text-xs leading-4 text-slate-300">Сначала сверить синий контур воды со снимком; бирюзовый контур показывает ближайшую RGI‑границу.</p></>}<button type="button" onClick={focusDecisionContext} className="mt-3 inline-flex min-h-9 items-center rounded-lg bg-cyan-300 px-2.5 text-xs font-bold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">{mode === "route" ? "Показать весь маршрут" : "Показать озеро и ледник"}</button></> : selectedObject?.screening ? <>
+          {compact ? <>{mode === "route" ? <><p className="mt-1 text-sm font-semibold">{decisionContext?.title ?? "Что проверить по маршруту"}</p><p className="mt-1 text-xs leading-4 text-slate-300">{decisionContext?.instruction ?? "Оранжевый — маршрут HydroRIVERS; пунктир — planning‑corridor; фиолетовый — объект компании. Это не зона затопления."}</p>{decisionContext?.metric && <p className="mt-2 rounded-md bg-white/10 px-2 py-1.5 text-xs font-bold text-cyan-100">{decisionContext.metric}</p>}</> : <><p className="mt-1 text-sm font-semibold">Что проверить сейчас</p><p className="mt-1 text-xs leading-4 text-slate-300">Сначала сверить синий контур воды со снимком; бирюзовый контур показывает ближайшую RGI‑границу.</p></>}<div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={focusDecisionContext} className="inline-flex min-h-9 items-center rounded-lg bg-cyan-300 px-2.5 text-xs font-bold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">{mode === "route" ? "Показать весь маршрут" : "Показать озеро и ледник"}</button>{mlEvidence?.map.model_geometry && <button type="button" onClick={focusMlEvidence} className="inline-flex min-h-9 items-center rounded-lg border border-emerald-300 bg-emerald-950 px-2.5 text-xs font-bold text-emerald-100 transition hover:bg-emerald-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Приблизить ML‑границу</button>}</div></> : selectedObject?.screening ? <>
             <p className="mt-1 text-sm font-semibold">Точный кейс: {selectedObject.name}</p>
             <p className="mt-1 text-xs leading-4 text-slate-200">{(selectedObject.screening.areaM2 / 1_000_000).toFixed(3)} км² · {selectedObject.screening.distanceToRgiBoundaryM.toFixed(0)} м до RGI · {selectedObject.screening.areaChangePercent === null ? "нет надёжного match 2020" : `${selectedObject.screening.areaChangePercent > 0 ? "+" : ""}${selectedObject.screening.areaChangePercent.toFixed(1)}% к 2020`}</p>
           </> : <>

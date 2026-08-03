@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CheckCircle2, CircleDashed, ClipboardCheck, Copy, Download, FileSearch, LockKeyhole, MapPin, Satellite, ShieldCheck, Upload, UsersRound } from "lucide-react";
-import { createRiskTwinHandoff, type GlacierRecord, type RiskTwinSpatialContext } from "@/lib/api";
+import { createRiskTwinHandoff, type GlacierRecord, type MlEvidenceCase, type RiskTwinSpatialContext } from "@/lib/api";
 import type { EvidenceMapObject } from "@/lib/riskTwinEvidence";
 import { buildCaseActionPlan, buildSelectedObjectAdvice, type ActionAudience } from "@/lib/caseActionPlan";
 
@@ -20,6 +20,7 @@ interface CaseActionPlanProps {
   candidate: Candidate | null;
   object: EvidenceMapObject | null;
   year: number;
+  mlEvidence?: MlEvidenceCase | null;
 }
 
 function Guardrails({ items }: { items: string[] }) {
@@ -37,7 +38,7 @@ const GATE_STYLE = {
   blocked: { label: "Пока не оценивается", icon: LockKeyhole, className: "border-amber-200 bg-amber-50 text-amber-950" },
 } as const;
 
-export default function CaseActionPlan({ glacier, candidate, object, year }: CaseActionPlanProps) {
+export default function CaseActionPlan({ glacier, candidate, object, year, mlEvidence = null }: CaseActionPlanProps) {
   const [audience, setAudience] = useState<ActionAudience>("satellite");
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -45,6 +46,13 @@ export default function CaseActionPlan({ glacier, candidate, object, year }: Cas
   const [operationsUrl, setOperationsUrl] = useState("");
   const plan = useMemo(() => glacier && candidate ? buildCaseActionPlan(glacier, candidate, year) : null, [candidate, glacier, year]);
   const objectAdvice = useMemo(() => !plan && object ? buildSelectedObjectAdvice(object, year) : null, [object, plan, year]);
+  const mlReviewPriority = mlEvidence?.metrics.review_priority_0_100 ?? null;
+  const mlGateStatus = mlEvidence
+    ? mlEvidence.metrics.rgi_overlap_iou < 0.35 || mlEvidence.metrics.uncertain_fraction_in_review_zone > 0.25
+      ? "expert_review_required"
+      : "screening_ready"
+    : null;
+  const workflowPriority = Math.max(candidate?.observation_priority_0_100 ?? 0, mlReviewPriority ?? 0);
 
   if (!plan && !objectAdvice) {
     return (
@@ -86,6 +94,38 @@ export default function CaseActionPlan({ glacier, candidate, object, year }: Cas
   // guard so TypeScript also preserves that fact inside the export callbacks.
   if (!plan) return null;
 
+  const integratedSummary = mlGateStatus === "expert_review_required"
+    ? `Кейс ${plan.caseId}. Сначала проверить ML-границу ${mlEvidence?.case_id}: совпадение с RGI ${(mlEvidence!.metrics.rgi_overlap_iou * 100).toFixed(1)}% блокирует интерпретацию изменения площади. После этого выполнить озёрный план: ${plan.summary}`
+    : plan.summary;
+  const integratedFocus = mlGateStatus === "expert_review_required"
+    ? {
+        headline: "Проверить ML-границу по исходной сцене",
+        reasons: [
+          `Raw ML ↔ RGI IoU ${(mlEvidence!.metrics.rgi_overlap_iou * 100).toFixed(1)}% ниже screening gate 35%.`,
+          `Raw area delta ${mlEvidence!.metrics.area_delta_percent?.toFixed(1) ?? "—"}% нельзя называть таянием: сравниваются текущий ML-контур и старый инвентарь.`,
+          `Source crop SHA-256: ${mlEvidence!.source.source_crop_sha256}.`,
+        ],
+        nextStep: {
+          acceptance: "Raw и inventory-guided контуры сверены с исходной сценой; спорные сектора отмечены, а решение review/accept сохранено с provenance.",
+        },
+      }
+    : plan.focus;
+  const exportPlan = {
+    ...plan,
+    summary: integratedSummary,
+    focus: integratedFocus,
+    ml_quality_gate: mlEvidence
+      ? {
+          case_id: mlEvidence.case_id,
+          status: mlGateStatus,
+          workflow_priority_0_100: workflowPriority,
+          rgi_overlap_iou: mlEvidence.metrics.rgi_overlap_iou,
+          uncertain_fraction: mlEvidence.metrics.uncertain_fraction_in_review_zone,
+          source_crop_sha256: mlEvidence.source.source_crop_sha256,
+        }
+      : null,
+  };
+
   const priorityComponents = candidate?.priority_components;
   const priorityDrivers: Array<[string, number]> = priorityComponents
     ? ([
@@ -98,7 +138,7 @@ export default function CaseActionPlan({ glacier, candidate, object, year }: Cas
 
   const copy = async () => {
     try {
-      await navigator.clipboard?.writeText(plan.summary);
+      await navigator.clipboard?.writeText(integratedSummary);
     } catch {
       // Some local or embedded browsers deny clipboard permission. The brief
       // remains visible and exportable; never let that permission block the plan.
@@ -107,7 +147,7 @@ export default function CaseActionPlan({ glacier, candidate, object, year }: Cas
     window.setTimeout(() => setCopied(false), 1800);
   };
   const download = () => {
-    const blob = new Blob([JSON.stringify(plan, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(exportPlan, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
@@ -120,6 +160,9 @@ export default function CaseActionPlan({ glacier, candidate, object, year }: Cas
     setSaving(true);
     setHandoffMessage("");
     try {
+      const actionSummary = mlGateStatus === "expert_review_required"
+        ? `Сначала проверить ML-границу ${mlEvidence?.case_id}: низкое совпадение с RGI блокирует интерпретацию изменения площади. Затем: ${plan.summary}`
+        : plan.summary;
       const result = await createRiskTwinHandoff({
         rgi_id: glacier.rgi_id,
         glacier_name: glacier.name_ru || glacier.name,
@@ -134,8 +177,16 @@ export default function CaseActionPlan({ glacier, candidate, object, year }: Cas
         geometric_match_distance_m: candidate.geometric_match_distance_m,
         distance_to_rgi_boundary_m: candidate.distance_to_rgi_boundary_m,
         observation_priority_0_100: candidate.observation_priority_0_100,
+        workflow_priority_0_100: workflowPriority,
+        ml_case_id: mlEvidence?.case_id ?? null,
+        ml_model_name: mlEvidence?.model.name ?? null,
+        ml_boundary_review_priority_0_100: mlReviewPriority,
+        ml_rgi_overlap_iou: mlEvidence?.metrics.rgi_overlap_iou ?? null,
+        ml_uncertain_fraction: mlEvidence?.metrics.uncertain_fraction_in_review_zone ?? null,
+        ml_gate_status: mlGateStatus,
+        ml_source_crop_sha256: mlEvidence?.source.source_crop_sha256 ?? null,
         flags: candidate.flags,
-        action_summary: plan.summary,
+        action_summary: actionSummary,
       });
       setOperationsUrl(result.operations_url);
       setHandoffMessage(result.status === "created" ? "Кейс, наблюдение и задача инспекции сохранены в Operations." : "Этот кейс уже был сохранён; открыт существующий рабочий кейс.");
@@ -154,7 +205,7 @@ export default function CaseActionPlan({ glacier, candidate, object, year }: Cas
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-cyan-200">Case Action Plan</p>
             <h2 className="mt-1 text-xl font-bold">Что сделать с этим объектом сейчас</h2>
-            <p className="mt-2 max-w-3xl text-sm leading-5 text-slate-300">{plan.summary}</p>
+            <p className="mt-2 max-w-3xl text-sm leading-5 text-slate-300">{integratedSummary}</p>
           </div>
           <ClipboardCheck className="h-8 w-8 shrink-0 text-cyan-300" />
         </div>
@@ -165,11 +216,23 @@ export default function CaseActionPlan({ glacier, candidate, object, year }: Cas
         </div>
       </div>
       <div className="p-5">
+        {mlEvidence && (
+          <section aria-label="ML quality gate for Operations" className={`mb-4 rounded-2xl border p-4 ${mlGateStatus === "expert_review_required" ? "border-red-200 bg-red-50" : "border-emerald-200 bg-emerald-50"}`}>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className={`text-xs font-bold uppercase tracking-[0.14em] ${mlGateStatus === "expert_review_required" ? "text-red-800" : "text-emerald-800"}`}>ML quality gate → Operations</p>
+                <h3 className="mt-1 font-bold text-slate-950">{mlGateStatus === "expert_review_required" ? "Сначала проверить границу ледника" : "ML-граница готова для screening"}</h3>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">Case <code>{mlEvidence.case_id}</code>: Raw ML ↔ RGI IoU {(mlEvidence.metrics.rgi_overlap_iou * 100).toFixed(1)}%, uncertain zone {(mlEvidence.metrics.uncertain_fraction_in_review_zone * 100).toFixed(1)}%. {mlGateStatus === "expert_review_required" ? "Изменение площади заблокировано до проверки исходной сцены и контура." : "Результат разрешён только как screening-граница, не как опасность или временной тренд."}</p>
+              </div>
+              <div className="rounded-xl bg-slate-950 px-4 py-3 text-center text-white"><p className="text-[10px] font-bold uppercase tracking-wide text-cyan-200">Общий приоритет</p><p className="mt-1 text-2xl font-black">{workflowPriority.toFixed(0)}/100</p><p className="text-[10px] text-slate-300">max(озеро, ML)</p></div>
+            </div>
+          </section>
+        )}
         <div className="rounded-2xl border border-cyan-300 bg-cyan-50 p-4">
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-cyan-900">Сначала сделайте</p>
-          <h3 className="mt-1 text-lg font-bold text-slate-950">{plan.focus.headline}</h3>
-          <ul className="mt-3 space-y-2 text-sm leading-5 text-slate-700">{plan.focus.reasons.map((reason) => <li key={reason} className="flex gap-2"><span className="font-bold text-cyan-800">•</span><span>{reason}</span></li>)}</ul>
-          <p className="mt-3 rounded-xl bg-white p-3 text-xs text-emerald-950"><strong>Результат первого шага:</strong> {plan.focus.nextStep.acceptance}</p>
+          <h3 className="mt-1 text-lg font-bold text-slate-950">{integratedFocus.headline}</h3>
+          <ul className="mt-3 space-y-2 text-sm leading-5 text-slate-700">{integratedFocus.reasons.map((reason) => <li key={reason} className="flex gap-2"><span className="font-bold text-cyan-800">•</span><span>{reason}</span></li>)}</ul>
+          <p className="mt-3 rounded-xl bg-white p-3 text-xs text-emerald-950"><strong>Результат первого шага:</strong> {integratedFocus.nextStep.acceptance}</p>
           <a href="#evidence-ledger" className="mt-3 inline-flex min-h-10 items-center rounded-xl bg-cyan-700 px-3 text-sm font-bold text-white transition hover:bg-cyan-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-700">Перейти к журналу доказательств</a>
         </div>
         <section aria-labelledby="case-decision-gates" className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">

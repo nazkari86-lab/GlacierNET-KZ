@@ -493,7 +493,7 @@ export default function RiskTwinPage() {
               </aside>
             </section>
 
-            <CaseActionPlan glacier={selected} candidate={selectedCandidate} object={selectedEvidenceObject} year={year} />
+            <CaseActionPlan glacier={selected} candidate={selectedCandidate} object={selectedEvidenceObject} year={year} mlEvidence={mlEvidence} />
 
             <section className="grid gap-4 lg:grid-cols-3">
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-5"><h2 className="flex items-center gap-2 font-semibold text-amber-950"><AlertTriangle className="h-5 w-5" />Data gaps ({gaps.length})</h2><ul className="mt-3 space-y-1 text-sm text-amber-900">{gaps.map((gap) => <li key={gap}>• {LABELS[gap] ?? gap}</li>)}</ul></div>

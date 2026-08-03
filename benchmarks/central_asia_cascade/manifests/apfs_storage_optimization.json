@@ -1,0 +1,3209 @@
+{
+  "schema": "glaciernet-kz.apfs-storage-optimization.v1",
+  "updated_at": "2026-08-03T18:47:48.938578+00:00",
+  "method": "transparent APFS compression; SHA-256 and mmap validation retained",
+  "platform_scope": "local APFS physical storage only; object-storage size is unchanged",
+  "totals": {
+    "files_verified": 178,
+    "logical_bytes": 16476215086,
+    "physical_bytes_after": 10323079168,
+    "physical_bytes_saved_vs_logical": 6153135918
+  },
+  "files": [
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/X_test.npy",
+      "sha256": "b0b45b9f4cdafe307449c39febdccf70157a07ad3c058a00831717d979254d6b",
+      "logical_bytes": 8650880,
+      "physical_bytes_before": 6459392,
+      "physical_bytes_after": 6459392,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          6,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float16",
+        "first": 0.09649658203125,
+        "last": 0.11700439453125
+      }
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/X_train.npy",
+      "sha256": "5ba73fb13e352bfd90c021fdf6949b3e09d35f298b34abb8b4ddb816d2bc297c",
+      "logical_bytes": 47579264,
+      "physical_bytes_before": 34603008,
+      "physical_bytes_after": 34603008,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          33,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float16",
+        "first": 1.0,
+        "last": 0.11798095703125
+      }
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/X_val.npy",
+      "sha256": "c626d38454f6276f92fdfbd4f98bcb349addc51ef81aab91d095e31ed91bd34c",
+      "logical_bytes": 8650880,
+      "physical_bytes_before": 6365184,
+      "physical_bytes_after": 6365184,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          6,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float16",
+        "first": 0.06689453125,
+        "last": 0.201904296875
+      }
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/w_train.npy",
+      "sha256": "1cbb3b2b75e945c117a3b4db6377c35fbe38493d51a9165054e4a27c99a47cf1",
+      "logical_bytes": 4325504,
+      "physical_bytes_before": 118784,
+      "physical_bytes_after": 118784,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          33,
+          256,
+          256
+        ],
+        "dtype": "float16",
+        "first": 0.438232421875,
+        "last": 0.423583984375
+      }
+    },
+    {
+      "path": "data/processed/patches/enhanced_provisional_spatial_holdout/y_train.npy",
+      "sha256": "0ed0d21b0f305996a670788f2625033c82e126e256cce84e6d014764d2b4c7ee",
+      "logical_bytes": 2162816,
+      "physical_bytes_before": 49152,
+      "physical_bytes_after": 49152,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          33,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample/2021/X_test.npy",
+      "sha256": "8ba7ff802399cd1e33d065afc8cc4d675ff3b16f410ab785b6204f6eeb396b01",
+      "logical_bytes": 57671808,
+      "physical_bytes_before": 37715968,
+      "physical_bytes_after": 37715968,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          20,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.1031000018119812,
+        "last": 0.0863678827881813
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample/2021/X_train.npy",
+      "sha256": "c5b6475ecc9d0751cbdcddfd450aa636c70f6035e02e212dd05c53e70f7b45b3",
+      "logical_bytes": 256639104,
+      "physical_bytes_before": 152068096,
+      "physical_bytes_after": 152068096,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          89,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.12999999523162842,
+        "last": -0.22913256287574768
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample/2021/X_val.npy",
+      "sha256": "5d3284cf85eb0b44e420b59958092277e7afe2331b2f2305ac8cc2fe6a837b93",
+      "logical_bytes": 54788224,
+      "physical_bytes_before": 32493568,
+      "physical_bytes_after": 32493568,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          19,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.08110000193119049,
+        "last": -0.2553369700908661
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample/2021/y_test.npy",
+      "sha256": "d1c22c39b16a0036d034fa1899547866d40b47b9492eca7dbb4356fc83fa4e1d",
+      "logical_bytes": 1310848,
+      "physical_bytes_before": 24576,
+      "physical_bytes_after": 24576,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          20,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample/2021/y_train.npy",
+      "sha256": "d8c67d6f95cb1ece52408f5cf30dd308de17d3436c64f4e30687fc8b61e42ddd",
+      "logical_bytes": 5832832,
+      "physical_bytes_before": 77824,
+      "physical_bytes_after": 77824,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          89,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 1
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample/2021/y_val.npy",
+      "sha256": "c58ce8192a91361ba70fba8da0e870fe6b92fd054a91e7ce8f6be16b377654e0",
+      "logical_bytes": 1245312,
+      "physical_bytes_before": 16384,
+      "physical_bytes_after": 16384,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          19,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2016/X_test.npy",
+      "sha256": "b3b3da0e8a175fd99c5dd8e0dbca4b8a6363f90c9f5b3ddef895a720776df468",
+      "logical_bytes": 31719552,
+      "physical_bytes_before": 20357120,
+      "physical_bytes_after": 20357120,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.15379999577999115,
+        "last": 1.0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2016/X_train.npy",
+      "sha256": "4e07f2c0204f9d62fdfadd492bbfe05741843efd4cf95e2149a878a3fa2a2ac6",
+      "logical_bytes": 126877824,
+      "physical_bytes_before": 78835712,
+      "physical_bytes_after": 78835712,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.08139999955892563,
+        "last": 1.0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2016/X_val.npy",
+      "sha256": "f3da21697b543bea896acbdeb6b46781e2514d6655b88309b80002b6af52f2a9",
+      "logical_bytes": 25952384,
+      "physical_bytes_before": 14618624,
+      "physical_bytes_after": 14618624,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.6164000034332275,
+        "last": 0.2486715316772461
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2016/y_train.npy",
+      "sha256": "216283cf307ea201e38587c1603131165da6e80f8f329e9a03edd2ef04942291",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 49152,
+      "physical_bytes_after": 49152,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2017/X_test.npy",
+      "sha256": "e6aae25ba2f179b178dd94773ae2d9a990e4c381c19fbd530a54e99f147a1fe4",
+      "logical_bytes": 31719552,
+      "physical_bytes_before": 8515584,
+      "physical_bytes_after": 8515584,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.10180000215768814,
+        "last": 0.0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2017/X_train.npy",
+      "sha256": "95713ad4d2c78002baaddabb059841d63005f858c657652d2d8662d0039e74c6",
+      "logical_bytes": 126877824,
+      "physical_bytes_before": 58359808,
+      "physical_bytes_after": 58359808,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.19179999828338623,
+        "last": -0.3231552243232727
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2017/X_val.npy",
+      "sha256": "06b55ad78e42d25b19ad704ea668cb6d03bc0240bdd214cf4379c0f2e3bf94eb",
+      "logical_bytes": 25952384,
+      "physical_bytes_before": 11911168,
+      "physical_bytes_after": 11911168,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.16778524219989777
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2017/y_train.npy",
+      "sha256": "94240567d941b1c89cfda08b4b85b9d7212cc23c3df9e80d9a2f627d8fbd8042",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 36864,
+      "physical_bytes_after": 36864,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 1,
+        "last": 1
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2018/X_test.npy",
+      "sha256": "5e8878ccbd501462c84c84fe05acd26b45b51f381b096efe470fa7e062bb5373",
+      "logical_bytes": 31719552,
+      "physical_bytes_before": 11776000,
+      "physical_bytes_after": 11776000,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.1712121218442917
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2018/X_train.npy",
+      "sha256": "b3364ae681b8fb29e756eb990a60fae0e31a004f0988469eb2fe8c45ef8826cb",
+      "logical_bytes": 126877824,
+      "physical_bytes_before": 41291776,
+      "physical_bytes_after": 41291776,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2018/X_val.npy",
+      "sha256": "b84eac2ed17cc7c25c271742d09c8aa916c8eea4d538e8cac0153004f12e7904",
+      "logical_bytes": 25952384,
+      "physical_bytes_before": 11620352,
+      "physical_bytes_after": 11620352,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.4986000061035156,
+        "last": 0.1309121549129486
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2018/y_train.npy",
+      "sha256": "2b005de21a6159891305e0b305917069ae1da8453437bf99c66b6e183284a77f",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 32768,
+      "physical_bytes_after": 32768,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2019/X_test.npy",
+      "sha256": "9a7a703c8508beccc80869271373f38eb8d3a10ffd8e6bab96f64e1dcbc0a535",
+      "logical_bytes": 31719552,
+      "physical_bytes_before": 20926464,
+      "physical_bytes_after": 20926464,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.055799998342990875,
+        "last": 0.5022222399711609
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2019/X_train.npy",
+      "sha256": "02dc343ea59229a1c6f0c3f7020defa2cfb9b5997dea2ce1882a3f849e40db59",
+      "logical_bytes": 126877824,
+      "physical_bytes_before": 76775424,
+      "physical_bytes_after": 76775424,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.548799991607666,
+        "last": 0.9080902338027954
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2019/X_val.npy",
+      "sha256": "8ea22c0533943057886548b09e32b8f7c914bdcb13f00d7c8e459c11a7fdbe56",
+      "logical_bytes": 25952384,
+      "physical_bytes_before": 15290368,
+      "physical_bytes_after": 15290368,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.7728000283241272,
+        "last": 0.45759111642837524
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2019/y_train.npy",
+      "sha256": "2fdca26b8d9e4e50a01da22315aa03d341fc692cf6bda70624a4153e1f7b31e3",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 49152,
+      "physical_bytes_after": 49152,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2020/X_test.npy",
+      "sha256": "4c8ff3a58531aab66ddcd03213c98996f309b724b124c0caf1ad92107ac4bdde",
+      "logical_bytes": 31719552,
+      "physical_bytes_before": 21164032,
+      "physical_bytes_after": 21164032,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.0714000016450882,
+        "last": 0.33888402581214905
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2020/X_train.npy",
+      "sha256": "6d2b1ff9855456deafb90ada149bee0109f2c9e1da74e085455ddab5e9f34ea1",
+      "logical_bytes": 126877824,
+      "physical_bytes_before": 73977856,
+      "physical_bytes_after": 73977856,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.052000001072883606,
+        "last": 0.5446622967720032
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2020/X_val.npy",
+      "sha256": "b8f22af3714a86264c092ee1de97bf49669c8740d3e67a9913a9f70a17b9a978",
+      "logical_bytes": 25952384,
+      "physical_bytes_before": 15138816,
+      "physical_bytes_after": 15138816,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.07119999825954437,
+        "last": 0.0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2020/y_train.npy",
+      "sha256": "4561cd1058ee31efec125191917f52f0a4f82596260685a4c0f48bafce3a3900",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 49152,
+      "physical_bytes_after": 49152,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 1
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2021/X_test.npy",
+      "sha256": "02df25a32641d3078931ee8d02bcb806e5336483705d2482693d9cf791bc6618",
+      "logical_bytes": 31719552,
+      "physical_bytes_before": 16953344,
+      "physical_bytes_after": 16953344,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.06840000301599503,
+        "last": 1.0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2021/X_train.npy",
+      "sha256": "5bdd74aae11166404e65f6c2b5b805c1b3b093a75fc7ecdcf9cfa233e1976bea",
+      "logical_bytes": 126877824,
+      "physical_bytes_before": 76689408,
+      "physical_bytes_after": 76689408,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.7851999998092651,
+        "last": 1.0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2021/X_val.npy",
+      "sha256": "ea5b71ee8c19383910eb84226e359ea3b6e6650edbae5a0790d2d87bb98ee329",
+      "logical_bytes": 25952384,
+      "physical_bytes_before": 16818176,
+      "physical_bytes_after": 16818176,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.05090000107884407,
+        "last": 0.7842046618461609
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2021/y_train.npy",
+      "sha256": "8318bb795cd79b293252c1ea476468b08bc07cdc2b933e7901f0f180a40d1563",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 40960,
+      "physical_bytes_after": 40960,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 1,
+        "last": 1
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2022/X_test.npy",
+      "sha256": "b0ce576f981c8d89cf437e3b241ea302045ae51680f72722bd9ccecb3f9689e3",
+      "logical_bytes": 31719552,
+      "physical_bytes_before": 21008384,
+      "physical_bytes_after": 21008384,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.0794999971985817,
+        "last": 0.12019630521535873
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2022/X_train.npy",
+      "sha256": "f521649d6403c5738111adfc6274b54e811052dd6f7922d92da45b1210a74f47",
+      "logical_bytes": 126877824,
+      "physical_bytes_before": 73957376,
+      "physical_bytes_after": 73957376,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.031199999153614044,
+        "last": 0.9141111373901367
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2022/X_val.npy",
+      "sha256": "d734a6a9d8aa2fdb9e73325945cb31bec96730bb31bb70ff2c4a3926cf79c3f6",
+      "logical_bytes": 25952384,
+      "physical_bytes_before": 15302656,
+      "physical_bytes_after": 15302656,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.1656000018119812,
+        "last": 0.11708860844373703
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2022/y_train.npy",
+      "sha256": "9866bf72ae4c9372cc25a6304c2ed8d19f3bcb00b31d9023e4968d77890153eb",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 40960,
+      "physical_bytes_after": 40960,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2023/X_test.npy",
+      "sha256": "1a45682b1cd56b1d2f70f95539b7fed6320f1d74345db3b071eb316909f25178",
+      "logical_bytes": 31719552,
+      "physical_bytes_before": 18780160,
+      "physical_bytes_after": 18780160,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.08500000089406967,
+        "last": -0.14400535821914673
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2023/X_train.npy",
+      "sha256": "b593b742717a71baa628e46fa49cf5675147847abfc25b752c7e300dfbf9bb3c",
+      "logical_bytes": 126877824,
+      "physical_bytes_before": 74530816,
+      "physical_bytes_after": 74530816,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.06360000371932983,
+        "last": 1.0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2023/X_val.npy",
+      "sha256": "2c601988c16910963e0986dada087cd359b380660d471814746ff9a215fd3645",
+      "logical_bytes": 25952384,
+      "physical_bytes_before": 16564224,
+      "physical_bytes_after": 16564224,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.19539999961853027,
+        "last": 0.17172524333000183
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2023/y_train.npy",
+      "sha256": "d93d37f4e0474091cd0ae2d9bcb01252b14959548f794914e7b24e9b5214a86a",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 45056,
+      "physical_bytes_after": 45056,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2024/X_test.npy",
+      "sha256": "c16a304d9d29446766851f76338df8c111b9136d0e822012316457051fc31b28",
+      "logical_bytes": 31719552,
+      "physical_bytes_before": 17809408,
+      "physical_bytes_after": 17809408,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.46720001101493835,
+        "last": 1.0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2024/X_train.npy",
+      "sha256": "b4365b97ce2084f4438e11f891fe2fb4af623c4dcbe63ca38e734932dc4917ee",
+      "logical_bytes": 126877824,
+      "physical_bytes_before": 79245312,
+      "physical_bytes_after": 79245312,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.06279999762773514,
+        "last": 0.13555645942687988
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2024/X_val.npy",
+      "sha256": "993808ebfd791535ffdd3d69be6d76b21707c3dee1e94e12b91f9f5dc18ad4f7",
+      "logical_bytes": 25952384,
+      "physical_bytes_before": 15450112,
+      "physical_bytes_after": 15450112,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          11
+        ],
+        "dtype": "float32",
+        "first": 0.10809999704360962,
+        "last": 0.35890015959739685
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_multiyear_sample_2016_2024/2024/y_train.npy",
+      "sha256": "383acb7eac32eb2fc0ada0012e43aca7b430aad4f71fe1fb5f0f164e39c578d0",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 40960,
+      "physical_bytes_after": 40960,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2017/X_test.npy",
+      "sha256": "7c5c7c33b8c7db964ddba30ebc6d12447b02bc0457befd5e25a1acee872cd991",
+      "logical_bytes": 40370304,
+      "physical_bytes_before": 16965632,
+      "physical_bytes_after": 16965632,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.10180000215768814,
+        "last": 0.7190866470336914
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2017/X_train.npy",
+      "sha256": "c42adca1691db080659d885df3a1e748bcf12df610489e2143c5b4097c05c7fa",
+      "logical_bytes": 161480832,
+      "physical_bytes_before": 91967488,
+      "physical_bytes_after": 91967488,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.19179999828338623,
+        "last": 0.3405541181564331
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2017/X_val.npy",
+      "sha256": "c5dbaf3d9f2ca1dff6b262d8fdc12e24039eabb204e0615b9c87d855b5050049",
+      "logical_bytes": 33030272,
+      "physical_bytes_before": 18763776,
+      "physical_bytes_after": 18763776,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.16565467417240143
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2017/y_train.npy",
+      "sha256": "94240567d941b1c89cfda08b4b85b9d7212cc23c3df9e80d9a2f627d8fbd8042",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 36864,
+      "physical_bytes_after": 36864,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 1,
+        "last": 1
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2018/X_test.npy",
+      "sha256": "5116715aad3efb157449d70c59fa319720d46cdcddbc2440ba0790560f6a49ec",
+      "logical_bytes": 40370304,
+      "physical_bytes_before": 20078592,
+      "physical_bytes_after": 20078592,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.17743563652038574
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2018/X_train.npy",
+      "sha256": "84fe84df9e5cf951051b084bf9598667460183e1c188ad638fa036fad6a7b841",
+      "logical_bytes": 161480832,
+      "physical_bytes_before": 74797056,
+      "physical_bytes_after": 74797056,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.9598442316055298
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2018/X_val.npy",
+      "sha256": "129ca8780e387ee9dbe0c8da79f0ed5b4a2e0c6c2da0406aeb34d608efc4e21d",
+      "logical_bytes": 33030272,
+      "physical_bytes_before": 18407424,
+      "physical_bytes_after": 18407424,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.4986000061035156,
+        "last": 0.37101253867149353
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2018/y_train.npy",
+      "sha256": "2b005de21a6159891305e0b305917069ae1da8453437bf99c66b6e183284a77f",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 32768,
+      "physical_bytes_after": 32768,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2019/X_test.npy",
+      "sha256": "bdf070273660ca0977e730a39658219fb45be48abf7a6c450331f2a47496f23b",
+      "logical_bytes": 40370304,
+      "physical_bytes_before": 29278208,
+      "physical_bytes_after": 29278208,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.055799998342990875,
+        "last": 0.4898417294025421
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2019/X_train.npy",
+      "sha256": "9bf89ccf77ac8f5b6d48bd024c1ad9b938f1691766843f0fec8c4f0f699fd199",
+      "logical_bytes": 161480832,
+      "physical_bytes_before": 110096384,
+      "physical_bytes_after": 110096384,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.548799991607666,
+        "last": 0.9738719463348389
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2019/X_val.npy",
+      "sha256": "13b8790fe98cfa06bc66e3f21415c427dd4444fe58dad5263cb8a90c4be66413",
+      "logical_bytes": 33030272,
+      "physical_bytes_before": 22126592,
+      "physical_bytes_after": 22126592,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.7728000283241272,
+        "last": 0.050463102757930756
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2019/y_train.npy",
+      "sha256": "2fdca26b8d9e4e50a01da22315aa03d341fc692cf6bda70624a4153e1f7b31e3",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 49152,
+      "physical_bytes_after": 49152,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2020/X_test.npy",
+      "sha256": "138a6b9be573e1cb3d443fd37a2d7b2193642c7b60f72e00fb845f1170ac4686",
+      "logical_bytes": 40370304,
+      "physical_bytes_before": 29556736,
+      "physical_bytes_after": 29556736,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.0714000016450882,
+        "last": 0.73908531665802
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2020/X_train.npy",
+      "sha256": "64ba5229481229939f73ba30f50fb857f807e26e9c7a5a9ab5459b0a3f47ff38",
+      "logical_bytes": 161480832,
+      "physical_bytes_before": 107483136,
+      "physical_bytes_after": 107483136,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.052000001072883606,
+        "last": 0.9466403722763062
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2020/X_val.npy",
+      "sha256": "d202fd691d2fb572694c51037d0cd07de77704920ed3bbf50e5e3eefc7920221",
+      "logical_bytes": 33030272,
+      "physical_bytes_before": 22003712,
+      "physical_bytes_after": 22003712,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.07119999825954437,
+        "last": 0.7338333129882812
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2020/y_train.npy",
+      "sha256": "4561cd1058ee31efec125191917f52f0a4f82596260685a4c0f48bafce3a3900",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 49152,
+      "physical_bytes_after": 49152,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 1
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2021/X_test.npy",
+      "sha256": "08dc03a331a9bcf88d6778cc048d65246e43f5bef40df6646e67ef9e61a47595",
+      "logical_bytes": 40370304,
+      "physical_bytes_before": 25358336,
+      "physical_bytes_after": 25358336,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.06840000301599503,
+        "last": 0.9430763125419617
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2021/X_train.npy",
+      "sha256": "0316ada60e13aa81ad4b37f6e121582034d4a6b545d6d4532289b476391e05de",
+      "logical_bytes": 161480832,
+      "physical_bytes_before": 110350336,
+      "physical_bytes_after": 110350336,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.7851999998092651,
+        "last": 0.966494083404541
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2021/X_val.npy",
+      "sha256": "38a64e61542e474c7b3e797a59362570c2f3f22679d3f8820e5a583953dfe627",
+      "logical_bytes": 33030272,
+      "physical_bytes_before": 23678976,
+      "physical_bytes_after": 23678976,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.05090000107884407,
+        "last": 0.6174744367599487
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2021/y_train.npy",
+      "sha256": "8318bb795cd79b293252c1ea476468b08bc07cdc2b933e7901f0f180a40d1563",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 40960,
+      "physical_bytes_after": 40960,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 1,
+        "last": 1
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2022/X_test.npy",
+      "sha256": "403f7f383affcf99471cf352a4c2003b8079db16da2326d56db2f6dbdf2c92f4",
+      "logical_bytes": 40370304,
+      "physical_bytes_before": 29437952,
+      "physical_bytes_after": 29437952,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.0794999971985817,
+        "last": 0.4999305009841919
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2022/X_train.npy",
+      "sha256": "5bf7c234fd6fcdbd1189d8aae41ae86155f62395e38dd88e0026c7721f7b9d66",
+      "logical_bytes": 161480832,
+      "physical_bytes_before": 107503616,
+      "physical_bytes_after": 107503616,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.031199999153614044,
+        "last": 0.3188285827636719
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2022/X_val.npy",
+      "sha256": "b645de60a72cb352e5e123b4d63cd7acb670526e5f859c6b2e33a02fa5bead77",
+      "logical_bytes": 33030272,
+      "physical_bytes_before": 22183936,
+      "physical_bytes_after": 22183936,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.1656000018119812,
+        "last": 0.2863313555717468
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2022/y_train.npy",
+      "sha256": "9866bf72ae4c9372cc25a6304c2ed8d19f3bcb00b31d9023e4968d77890153eb",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 40960,
+      "physical_bytes_after": 40960,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2023/X_test.npy",
+      "sha256": "0f0dfac0063b6fbd17f7072cba2449be5b2cf5d5355500417a6136b438c13c71",
+      "logical_bytes": 40370304,
+      "physical_bytes_before": 27164672,
+      "physical_bytes_after": 27164672,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.08500000089406967,
+        "last": 0.3464711606502533
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2023/X_train.npy",
+      "sha256": "cd0b96732ac1ddf9c4523e4f20e50b3169671b81b8c42f012e2a4bc9c724302c",
+      "logical_bytes": 161480832,
+      "physical_bytes_before": 108044288,
+      "physical_bytes_after": 108044288,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.06360000371932983,
+        "last": 0.7252281904220581
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2023/X_val.npy",
+      "sha256": "f69c27626c29c35b9401747531440e36de479ef5c30f8e68814e3b9196f89ed0",
+      "logical_bytes": 33030272,
+      "physical_bytes_before": 23392256,
+      "physical_bytes_after": 23392256,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.19539999961853027,
+        "last": 0.8720853924751282
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2023/y_train.npy",
+      "sha256": "d93d37f4e0474091cd0ae2d9bcb01252b14959548f794914e7b24e9b5214a86a",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 45056,
+      "physical_bytes_after": 45056,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2024/X_test.npy",
+      "sha256": "16dc8fbc93c4b11e5b0679cea5442e7cc1bf2a15117439ba2e002ba158cddfe7",
+      "logical_bytes": 40370304,
+      "physical_bytes_before": 26152960,
+      "physical_bytes_after": 26152960,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.46720001101493835,
+        "last": 0.24241960048675537
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2024/X_train.npy",
+      "sha256": "2ac15384ac512f881ed6165f057a1a8ab5219d7c9f3570324d9ba7a53e6af778",
+      "logical_bytes": 161480832,
+      "physical_bytes_before": 112586752,
+      "physical_bytes_after": 112586752,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.06279999762773514,
+        "last": 0.3375055193901062
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2024/X_val.npy",
+      "sha256": "ca31856bfedade207cd569f0f65019d46371df7830d43a869de8d6a8de953b41",
+      "logical_bytes": 33030272,
+      "physical_bytes_before": 22269952,
+      "physical_bytes_after": 22269952,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.10809999704360962,
+        "last": 0.031525082886219025
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_control_ablation_2017_2024/2024/y_train.npy",
+      "sha256": "383acb7eac32eb2fc0ada0012e43aca7b430aad4f71fe1fb5f0f164e39c578d0",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 40960,
+      "physical_bytes_after": 40960,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2017/X_test.npy",
+      "sha256": "15f03601acbf8c74f8756f34b25efc3fb4938b06508bff69db81682390a65aec",
+      "logical_bytes": 46137472,
+      "physical_bytes_before": 21397504,
+      "physical_bytes_after": 21397504,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.10180000215768814,
+        "last": 0.5835000276565552
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2017/X_train.npy",
+      "sha256": "48aa0e0d8e745adcc28fcd67187c3e6c860be36d2bb839524dfdca7d78529a1e",
+      "logical_bytes": 184549504,
+      "physical_bytes_before": 110243840,
+      "physical_bytes_after": 110243840,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.19179999828338623,
+        "last": 0.4124999940395355
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2017/X_val.npy",
+      "sha256": "1d1be7aa7915ea198087a8e624e5d85600ae8c506278e93f34009b5d517c84b0",
+      "logical_bytes": 37748864,
+      "physical_bytes_before": 22446080,
+      "physical_bytes_after": 22446080,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.38600000739097595
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2017/y_train.npy",
+      "sha256": "94240567d941b1c89cfda08b4b85b9d7212cc23c3df9e80d9a2f627d8fbd8042",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 36864,
+      "physical_bytes_after": 36864,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 1,
+        "last": 1
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2018/X_test.npy",
+      "sha256": "4832e5154b3dea1d375f66eec52ff1fa25af15ff70dca4ef7ac3e9e7543ec4f7",
+      "logical_bytes": 46137472,
+      "physical_bytes_before": 24621056,
+      "physical_bytes_after": 24621056,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.6442500352859497
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2018/X_train.npy",
+      "sha256": "106eeb30e492514173a4df1341913679c9ad459b1400614aa6a6844780e9621f",
+      "logical_bytes": 184549504,
+      "physical_bytes_before": 92811264,
+      "physical_bytes_after": 92811264,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.5440000295639038
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2018/X_val.npy",
+      "sha256": "8fdb8976bbffaf79a372ab2f280d2642cc1a7d20ea5f3f0cd1d5c33d046dad6d",
+      "logical_bytes": 37748864,
+      "physical_bytes_before": 22114304,
+      "physical_bytes_after": 22114304,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.4986000061035156,
+        "last": 0.5397499799728394
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2018/y_train.npy",
+      "sha256": "2b005de21a6159891305e0b305917069ae1da8453437bf99c66b6e183284a77f",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 32768,
+      "physical_bytes_after": 32768,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2019/X_test.npy",
+      "sha256": "593ce3eaa40719dacc229e2575ccc501256155baee5ea586dd77b7ef339bf09a",
+      "logical_bytes": 46137472,
+      "physical_bytes_before": 33935360,
+      "physical_bytes_after": 33935360,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.055799998342990875,
+        "last": 0.4482499957084656
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2019/X_train.npy",
+      "sha256": "ebe1f167dfb9777cecb7fa3297b3e8d150e885799b93cf4296991266149fe4b3",
+      "logical_bytes": 184549504,
+      "physical_bytes_before": 128806912,
+      "physical_bytes_after": 128806912,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.548799991607666,
+        "last": 0.5872499942779541
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2019/X_val.npy",
+      "sha256": "e4f773066754972e1f337d3f0d6fd9836f121cca59852ba9d4e51894fd6186de",
+      "logical_bytes": 37748864,
+      "physical_bytes_before": 25903104,
+      "physical_bytes_after": 25903104,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.7728000283241272,
+        "last": 0.5167499780654907
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2019/y_train.npy",
+      "sha256": "2fdca26b8d9e4e50a01da22315aa03d341fc692cf6bda70624a4153e1f7b31e3",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 49152,
+      "physical_bytes_after": 49152,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2020/X_test.npy",
+      "sha256": "e24fd5850de969acfaec5a5c61d6f610d782910739a6256f74a2046ce8a17bba",
+      "logical_bytes": 46137472,
+      "physical_bytes_before": 34205696,
+      "physical_bytes_after": 34205696,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.0714000016450882,
+        "last": 0.3162500262260437
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2020/X_train.npy",
+      "sha256": "d9207497f03c07f059cb3d8e3f94761dd26e61ee38fc62bde502bc37ba330ad9",
+      "logical_bytes": 184549504,
+      "physical_bytes_before": 125976576,
+      "physical_bytes_after": 125976576,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.052000001072883606,
+        "last": 0.3320000171661377
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2020/X_val.npy",
+      "sha256": "519103d921e843a55fce3dc622ff85f498cd499782a40aa8b2de33cc0c7803c0",
+      "logical_bytes": 37748864,
+      "physical_bytes_before": 25812992,
+      "physical_bytes_after": 25812992,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.07119999825954437,
+        "last": 0.6037500500679016
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2020/y_train.npy",
+      "sha256": "4561cd1058ee31efec125191917f52f0a4f82596260685a4c0f48bafce3a3900",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 49152,
+      "physical_bytes_after": 49152,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 1
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2021/X_test.npy",
+      "sha256": "1a7bae6a0ccf665fd5beaef6b694bc5a4e6538d7c1b69094626f88aee120adb3",
+      "logical_bytes": 46137472,
+      "physical_bytes_before": 30011392,
+      "physical_bytes_after": 30011392,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.06840000301599503,
+        "last": 0.5452499985694885
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2021/X_train.npy",
+      "sha256": "8e8ede399616c2168e43fa5e6260f31da4647be0454981a78432521780587459",
+      "logical_bytes": 184549504,
+      "physical_bytes_before": 128851968,
+      "physical_bytes_after": 128851968,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.7851999998092651,
+        "last": 0.4775000214576721
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2021/X_val.npy",
+      "sha256": "aeecd0c3cfd6bd1241a46dec78091d7913324588155f38b26a9d1e224bf46c98",
+      "logical_bytes": 37748864,
+      "physical_bytes_before": 27488256,
+      "physical_bytes_after": 27488256,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.05090000107884407,
+        "last": 0.4934999942779541
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2021/y_train.npy",
+      "sha256": "8318bb795cd79b293252c1ea476468b08bc07cdc2b933e7901f0f180a40d1563",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 40960,
+      "physical_bytes_after": 40960,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 1,
+        "last": 1
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2022/X_test.npy",
+      "sha256": "19d8558e18f15b857671b6ab436035b4d56eed1c294733de17a88fce7d7eb319",
+      "logical_bytes": 46137472,
+      "physical_bytes_before": 34066432,
+      "physical_bytes_after": 34066432,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.0794999971985817,
+        "last": 0.7775000333786011
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2022/X_train.npy",
+      "sha256": "88f73a31bcb93bf941735b4bb3c9e2ea90ab05c94a130cae8c940f9ce9d087dc",
+      "logical_bytes": 184549504,
+      "physical_bytes_before": 126099456,
+      "physical_bytes_after": 126099456,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.031199999153614044,
+        "last": 0.5170000195503235
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2022/X_val.npy",
+      "sha256": "675589d11c7b6817081662a92964721e2f45a6ebe2db18a2e52fe893a1c9498d",
+      "logical_bytes": 37748864,
+      "physical_bytes_before": 26013696,
+      "physical_bytes_after": 26013696,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.1656000018119812,
+        "last": 0.38050001859664917
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2022/y_train.npy",
+      "sha256": "9866bf72ae4c9372cc25a6304c2ed8d19f3bcb00b31d9023e4968d77890153eb",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 40960,
+      "physical_bytes_after": 40960,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2023/X_test.npy",
+      "sha256": "7e385934b0f7e2c38bd56f6f8c496800c342dffc5252816180b4f941a1ef0c74",
+      "logical_bytes": 46137472,
+      "physical_bytes_before": 31850496,
+      "physical_bytes_after": 31850496,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.08500000089406967,
+        "last": 0.6185000538825989
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2023/X_train.npy",
+      "sha256": "1bf54fd36981d79650c750d548cf02724d37a41722712e205febbc81b7e0e683",
+      "logical_bytes": 184549504,
+      "physical_bytes_before": 126730240,
+      "physical_bytes_after": 126730240,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.06360000371932983,
+        "last": 0.5732499957084656
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2023/X_val.npy",
+      "sha256": "9e27e01e13784f1b6d5c7eded2321db352a3aba8dedfed6d336f8e446ea19f79",
+      "logical_bytes": 37748864,
+      "physical_bytes_before": 27209728,
+      "physical_bytes_after": 27209728,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.19539999961853027,
+        "last": 0.5662499666213989
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2023/y_train.npy",
+      "sha256": "d93d37f4e0474091cd0ae2d9bcb01252b14959548f794914e7b24e9b5214a86a",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 45056,
+      "physical_bytes_after": 45056,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2024/X_test.npy",
+      "sha256": "0ea7c777eafa51e577e2fedd09b699e0c9873191ae22020456ff67aa6ffc72fe",
+      "logical_bytes": 46137472,
+      "physical_bytes_before": 30773248,
+      "physical_bytes_after": 30773248,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          11,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.46720001101493835,
+        "last": 0.3987500071525574
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2024/X_train.npy",
+      "sha256": "a551e718a5a3fa081f7b7529d73c7f7e49d7b69f528895b1ca8aefe19419a509",
+      "logical_bytes": 184549504,
+      "physical_bytes_before": 131153920,
+      "physical_bytes_after": 131153920,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.06279999762773514,
+        "last": 0.5410000085830688
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2024/X_val.npy",
+      "sha256": "d9df28732318c8966b705ec6c8fe0fc506cf6cc44d546a4a50fb670f1538a100",
+      "logical_bytes": 37748864,
+      "physical_bytes_before": 26005504,
+      "physical_bytes_after": 26005504,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          9,
+          256,
+          256,
+          16
+        ],
+        "dtype": "float32",
+        "first": 0.10809999704360962,
+        "last": 0.5462499856948853
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_s1_ablation_2017_2024/2024/y_train.npy",
+      "sha256": "383acb7eac32eb2fc0ada0012e43aca7b430aad4f71fe1fb5f0f164e39c578d0",
+      "logical_bytes": 2883712,
+      "physical_bytes_before": 40960,
+      "physical_bytes_after": 40960,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          44,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2016/X_test.npy",
+      "sha256": "a26cb3503c7a6ea92eb25c717e360f141438165994e7c28052c01daf9c7450b5",
+      "logical_bytes": 143130752,
+      "physical_bytes_before": 96141312,
+      "physical_bytes_after": 96141312,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.11800000071525574,
+        "last": 0.39637434482574463
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2016/X_train.npy",
+      "sha256": "fc61b236803672efb93767dc2f3052aab04601a255d8c228ecf0e8665d84f3a0",
+      "logical_bytes": 656932992,
+      "physical_bytes_before": 443633664,
+      "physical_bytes_after": 443633664,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.08609999716281891,
+        "last": 0.49626633524894714
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2016/X_val.npy",
+      "sha256": "d84c5def4781d03d0680a3fba9aee339a5116193ab056fbafbc52785539de7e5",
+      "logical_bytes": 139460736,
+      "physical_bytes_before": 94744576,
+      "physical_bytes_after": 94744576,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.475600004196167,
+        "last": 0.5378717184066772
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2016/y_test.npy",
+      "sha256": "99750d10f2312b6f71323ba5c64abf0db2791c30e869a6a47371dbf535d5494a",
+      "logical_bytes": 2556032,
+      "physical_bytes_before": 32768,
+      "physical_bytes_after": 32768,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2016/y_train.npy",
+      "sha256": "b48250539f4951e92405a9fd97e9189296f12665bf9925714402b71201729b80",
+      "logical_bytes": 11731072,
+      "physical_bytes_before": 163840,
+      "physical_bytes_after": 163840,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2016/y_val.npy",
+      "sha256": "3273423fecdf988052e63083f5d874ac3dc4afa02e8964292d665cbe5669a929",
+      "logical_bytes": 2490496,
+      "physical_bytes_before": 45056,
+      "physical_bytes_after": 45056,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 1,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2017/X_test.npy",
+      "sha256": "525c4e49454697b06992de1dc4934e1cfd4a6cc8edc27a263f4809a7945e306d",
+      "logical_bytes": 143130752,
+      "physical_bytes_before": 68976640,
+      "physical_bytes_after": 68976640,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.3073704242706299
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2017/X_train.npy",
+      "sha256": "8dfa53fdeae64131eb049bdde13597c28c66e8def9d15a9bbb2b17b3e8416886",
+      "logical_bytes": 656932992,
+      "physical_bytes_before": 357232640,
+      "physical_bytes_after": 357232640,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.012753549963235855
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2017/X_val.npy",
+      "sha256": "afc9866c054cfd28f0ced59775ea2356bd16d7239672b0d76c6ccb0fc42f2ed5",
+      "logical_bytes": 139460736,
+      "physical_bytes_before": 76533760,
+      "physical_bytes_after": 76533760,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.25060001015663147,
+        "last": 0.1076815277338028
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2017/y_test.npy",
+      "sha256": "e29037587d3a5d1249108928b8245aac75e99aa06757b872b14d4c937f4f3198",
+      "logical_bytes": 2556032,
+      "physical_bytes_before": 28672,
+      "physical_bytes_after": 28672,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2017/y_train.npy",
+      "sha256": "c310f925cd7c6439cf75ee01eb57dd938b83ac1a32dd669c3a3303981211678f",
+      "logical_bytes": 11731072,
+      "physical_bytes_before": 159744,
+      "physical_bytes_after": 159744,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2017/y_val.npy",
+      "sha256": "29a05f7434b0fa3cd1ef82f94417857d054d5597440fe09e6de5b8134b6cc967",
+      "logical_bytes": 2490496,
+      "physical_bytes_before": 32768,
+      "physical_bytes_after": 32768,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 1,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2018/X_test.npy",
+      "sha256": "8007ebd1e8f22c8f33bb13ae947f2a0bb2976141969d4b96efb30d142844f449",
+      "logical_bytes": 143130752,
+      "physical_bytes_before": 70832128,
+      "physical_bytes_after": 70832128,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.9929767847061157
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2018/X_train.npy",
+      "sha256": "f4599e025a504367d87dee97b910638df126808d576c62d2723073cc880468bd",
+      "logical_bytes": 656932992,
+      "physical_bytes_before": 366514176,
+      "physical_bytes_after": 366514176,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.517799973487854,
+        "last": 0.14830458164215088
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2018/X_val.npy",
+      "sha256": "4ef7750fd25ce560c9be7795b6b178a8432a9004f027edf66a0333a428702621",
+      "logical_bytes": 139460736,
+      "physical_bytes_before": 70266880,
+      "physical_bytes_after": 70266880,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.3033992350101471
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2018/y_test.npy",
+      "sha256": "de5258fea4bf012f776074b7d6cc137cf1fa1eff13ff6422a63a3a4b42671e27",
+      "logical_bytes": 2556032,
+      "physical_bytes_before": 28672,
+      "physical_bytes_after": 28672,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2018/y_train.npy",
+      "sha256": "34cf5050d8cff4cfdd86015abed5e14110469ad2957a0b509aeb014ea4c916fd",
+      "logical_bytes": 11731072,
+      "physical_bytes_before": 159744,
+      "physical_bytes_after": 159744,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2018/y_val.npy",
+      "sha256": "53b7a39dc6ac8981c66ef78f1e70ffd179f049e7b592e1332ce7abba6f79f637",
+      "logical_bytes": 2490496,
+      "physical_bytes_before": 32768,
+      "physical_bytes_after": 32768,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2019/X_test.npy",
+      "sha256": "67e363d1fc0e4709e9f37cdfc95b353d3062b4f5a210e744d9a83ac6fd6f8219",
+      "logical_bytes": 143130752,
+      "physical_bytes_before": 102502400,
+      "physical_bytes_after": 102502400,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.6967999935150146,
+        "last": 0.16766975820064545
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2019/X_train.npy",
+      "sha256": "973655c3e55f3fef0b79276251deec5572d51f79f48b3bb260416788778ca98e",
+      "logical_bytes": 656932992,
+      "physical_bytes_before": 437735424,
+      "physical_bytes_after": 437735424,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.06970000267028809,
+        "last": 0.1591869741678238
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2019/X_val.npy",
+      "sha256": "893e9ee2fe399a4cf3808772ac69208259e9a2fd63abdc88388b57e3fdbb7d44",
+      "logical_bytes": 139460736,
+      "physical_bytes_before": 91750400,
+      "physical_bytes_after": 91750400,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.5235999822616577,
+        "last": 0.48434531688690186
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2019/y_test.npy",
+      "sha256": "bbe46d4d44d97e264c946c3965332bcdb0c225ee51bb29b241d8df67516432bb",
+      "logical_bytes": 2556032,
+      "physical_bytes_before": 32768,
+      "physical_bytes_after": 32768,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2019/y_train.npy",
+      "sha256": "c11c34c25446af6de1f6faed7c09065efed3e9632fc4afbb3d7af7c636d370aa",
+      "logical_bytes": 11731072,
+      "physical_bytes_before": 155648,
+      "physical_bytes_after": 155648,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 1
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2019/y_val.npy",
+      "sha256": "0f0a7bae2a6bf76c483170d9563d2b65f6c32054931532e45b67acd0cdd9dbf0",
+      "logical_bytes": 2490496,
+      "physical_bytes_before": 45056,
+      "physical_bytes_after": 45056,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 1,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2020/X_test.npy",
+      "sha256": "faa557e5335a20376ecdd8a69915e9019a0259eb8c57937f82a63ac08d0595ed",
+      "logical_bytes": 143130752,
+      "physical_bytes_before": 102535168,
+      "physical_bytes_after": 102535168,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.11029999703168869,
+        "last": 0.7775031328201294
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2020/X_train.npy",
+      "sha256": "6d2254d3b3cdeec38929c8db0f849ac8a9ce7199416d665478c71ace485d1c63",
+      "logical_bytes": 656932992,
+      "physical_bytes_before": 447512576,
+      "physical_bytes_after": 447512576,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.12380000203847885,
+        "last": 0.34742024540901184
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2020/X_val.npy",
+      "sha256": "aa83ef1c67ecedf19a9244110fdcf9a4ff2d1689afce7b5fd051816c44abcf16",
+      "logical_bytes": 139460736,
+      "physical_bytes_before": 93761536,
+      "physical_bytes_after": 93761536,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.054999999701976776,
+        "last": 0.5074893236160278
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2020/y_test.npy",
+      "sha256": "8cdf2cf3a1379a2f999be32bfd1f96580cf69bcaa62a14d96137913ba9c35fc3",
+      "logical_bytes": 2556032,
+      "physical_bytes_before": 28672,
+      "physical_bytes_after": 28672,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2020/y_train.npy",
+      "sha256": "3c77341263110dcc57ead598ba2f818e761b044745f452d7d483c0832d5a0913",
+      "logical_bytes": 11731072,
+      "physical_bytes_before": 151552,
+      "physical_bytes_after": 151552,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 1,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2020/y_val.npy",
+      "sha256": "ed5959a639d223d01c720d4851638be0c6239387a2c7abd1cac4860263874a4e",
+      "logical_bytes": 2490496,
+      "physical_bytes_before": 28672,
+      "physical_bytes_after": 28672,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2021/X_test.npy",
+      "sha256": "013370a81d9d16aafa38644617473d426997a075b5ebd18a7a4ee50d73ba9163",
+      "logical_bytes": 143130752,
+      "physical_bytes_before": 92377088,
+      "physical_bytes_after": 92377088,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.09470000118017197,
+        "last": 0.7600328326225281
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2021/X_train.npy",
+      "sha256": "ffd8f020c008c0112c1e3efacf28027e343db83f7f1a00dc02c96fba3872e8aa",
+      "logical_bytes": 656932992,
+      "physical_bytes_before": 440147968,
+      "physical_bytes_after": 440147968,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.12559999525547028,
+        "last": 0.92298424243927
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2021/X_val.npy",
+      "sha256": "dcf9f0471aa4cf5637dbd7d45529241cc0db52434c63263be04e0a8d41749dfc",
+      "logical_bytes": 139460736,
+      "physical_bytes_before": 92741632,
+      "physical_bytes_after": 92741632,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.7502740025520325
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2021/y_test.npy",
+      "sha256": "ddf0c3e8519661cd8bd44c57928e76a8bfde7df1bdbcc733f8bf3791bf5b3e93",
+      "logical_bytes": 2556032,
+      "physical_bytes_before": 24576,
+      "physical_bytes_after": 24576,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2021/y_train.npy",
+      "sha256": "1485d53a722c597bcf6a0c1c860e78ec74d87be7f1ccb0ddecf1ce109190f4e3",
+      "logical_bytes": 11731072,
+      "physical_bytes_before": 143360,
+      "physical_bytes_after": 143360,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2021/y_val.npy",
+      "sha256": "f6eb2ca8a903fe844ed9b43de52588f1426fcb3e9c9f1651f3061615648e9c41",
+      "logical_bytes": 2490496,
+      "physical_bytes_before": 24576,
+      "physical_bytes_after": 24576,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2022/X_test.npy",
+      "sha256": "3b09affc70afae42de838c43403cd8519e10740f9859129f720217d7d9c7179a",
+      "logical_bytes": 143130752,
+      "physical_bytes_before": 95584256,
+      "physical_bytes_after": 95584256,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.8676000237464905,
+        "last": 0.4073106646537781
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2022/X_train.npy",
+      "sha256": "6f286d48a9a4f3516111be3985b0d14b6785ab28fadad4001096c2c81ecab687",
+      "logical_bytes": 656932992,
+      "physical_bytes_before": 428920832,
+      "physical_bytes_after": 428920832,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.15011969208717346
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2022/X_val.npy",
+      "sha256": "59935c03bca8d2bb332d97fcb5bcc5c77d48a0b742a8e1df63d8ee2ab43abd8b",
+      "logical_bytes": 139460736,
+      "physical_bytes_before": 94916608,
+      "physical_bytes_after": 94916608,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.0,
+        "last": 0.8421432375907898
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2022/y_test.npy",
+      "sha256": "590771077e0146b872a25be51ae3cec49554ddeb2f03a8b289243541b86a0a55",
+      "logical_bytes": 2556032,
+      "physical_bytes_before": 36864,
+      "physical_bytes_after": 36864,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 1,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2022/y_train.npy",
+      "sha256": "5f5e2d840906e456ae603961b9362e116fc7d7854bc4ce17e08123caf9e15c53",
+      "logical_bytes": 11731072,
+      "physical_bytes_before": 163840,
+      "physical_bytes_after": 163840,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2022/y_val.npy",
+      "sha256": "55ec94b14a3695a3bc6acca46b13f16ef29cc1e33b0162ffcd3831ca62f39b7d",
+      "logical_bytes": 2490496,
+      "physical_bytes_before": 28672,
+      "physical_bytes_after": 28672,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2023/X_test.npy",
+      "sha256": "9375755563cf91355c89d4d0f354ed6acb9ee63e62fd717a94fdd169f5b98def",
+      "logical_bytes": 143130752,
+      "physical_bytes_before": 94736384,
+      "physical_bytes_after": 94736384,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.0997999981045723,
+        "last": 0.00587488804012537
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2023/X_train.npy",
+      "sha256": "ae228488cc02d1d38dc63e08750e4ee589bdc952ae06df03f5eb4867c4acdc6d",
+      "logical_bytes": 656932992,
+      "physical_bytes_before": 446136320,
+      "physical_bytes_after": 446136320,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.11599999666213989,
+        "last": 0.07924915105104446
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2023/X_val.npy",
+      "sha256": "076bae397f3ab2aa4a5d70b9c9e4238d3f56d3bf272a065dbd59563613df75ca",
+      "logical_bytes": 139460736,
+      "physical_bytes_before": 93863936,
+      "physical_bytes_after": 93863936,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.035999998450279236,
+        "last": 0.28571006655693054
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2023/y_test.npy",
+      "sha256": "ee71da5e1f3d101b8935d7d9a36d2b8dcd939e4dc4c93f3fcad7b5eba2090bc8",
+      "logical_bytes": 2556032,
+      "physical_bytes_before": 40960,
+      "physical_bytes_after": 40960,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2023/y_train.npy",
+      "sha256": "efea30463d063633582ee314872c6d2c112d70cc09ccacd7cacbfdc93bbb3b32",
+      "logical_bytes": 11731072,
+      "physical_bytes_before": 176128,
+      "physical_bytes_after": 176128,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2023/y_val.npy",
+      "sha256": "f5531e8c4ebc4d287e19b77aa08b490be789466bdd0fb195407b82a98f01cde3",
+      "logical_bytes": 2490496,
+      "physical_bytes_before": 40960,
+      "physical_bytes_after": 40960,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 1
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2024/X_test.npy",
+      "sha256": "3ab7d999b383ce50e31bf57832a19ee25dede3a3554b19ac0cad70ba56ffdb58",
+      "logical_bytes": 143130752,
+      "physical_bytes_before": 93130752,
+      "physical_bytes_after": 93130752,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.03830000013113022,
+        "last": 0.8171963095664978
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2024/X_train.npy",
+      "sha256": "5bc33f472371040c3e6afc37e72965432fc770d2646607a6dba56047850056e7",
+      "logical_bytes": 656932992,
+      "physical_bytes_before": 447246336,
+      "physical_bytes_after": 447246336,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.20360000431537628,
+        "last": 0.21693183481693268
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2024/X_val.npy",
+      "sha256": "6a18d65f7540b0ee363b2f7d50db88ad7d2540890667be26d836fb1a7537fd2e",
+      "logical_bytes": 139460736,
+      "physical_bytes_before": 95989760,
+      "physical_bytes_after": 95989760,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256,
+          14
+        ],
+        "dtype": "float32",
+        "first": 0.9976000189781189,
+        "last": 0.9030743837356567
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2024/y_test.npy",
+      "sha256": "a8411c13cb30dc305ec14bfd02e432fa4d64ee776ef5a3edef978aae751229c6",
+      "logical_bytes": 2556032,
+      "physical_bytes_before": 32768,
+      "physical_bytes_after": 32768,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          39,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2024/y_train.npy",
+      "sha256": "aa64a4b2e91049a6aac0de78ccc5ca4338cc65129aa43b1ef027e02b09af2842",
+      "logical_bytes": 11731072,
+      "physical_bytes_before": 159744,
+      "physical_bytes_after": 159744,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          179,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "path": "data/processed/patches/sentinel2_terrain_sample_2016_2024/2024/y_val.npy",
+      "sha256": "113b077ebc7921afeb7b0dd3f8f58caad266c61c082c3b8a852e9ffa8a515c64",
+      "logical_bytes": 2490496,
+      "physical_bytes_before": 40960,
+      "physical_bytes_after": 40960,
+      "physical_bytes_saved_this_run": 0,
+      "npy": {
+        "shape": [
+          38,
+          256,
+          256
+        ],
+        "dtype": "uint8",
+        "first": 1,
+        "last": 1
+      }
+    },
+    {
+      "path": "models/attention_unet_best.h5",
+      "sha256": "df713f21ad2d4072c6c383084216a143b33d7e0524b2e99f835be8eaf9216003",
+      "logical_bytes": 96324128,
+      "physical_bytes_before": 88002560,
+      "physical_bytes_after": 88002560,
+      "physical_bytes_saved_this_run": 0,
+      "npy": null
+    },
+    {
+      "path": "models/random_forest.pkl",
+      "sha256": "5883caab90555b7e9065d94122beed08a7a5d8365ddd764e29deb15579331d37",
+      "logical_bytes": 526137593,
+      "physical_bytes_before": 149921792,
+      "physical_bytes_after": 149921792,
+      "physical_bytes_saved_this_run": 0,
+      "npy": null
+    },
+    {
+      "path": "models/unet_best.h5",
+      "sha256": "a115035d95d98dcfa1033a230a0ab3301e1d5faac4d13254e7d74515e032bd97",
+      "logical_bytes": 94654088,
+      "physical_bytes_before": 86810624,
+      "physical_bytes_after": 86810624,
+      "physical_bytes_saved_this_run": 0,
+      "npy": null
+    },
+    {
+      "path": "models/unet_best_sentinel2_multiyear_sample_2016_2024/variables/variables.data-00000-of-00001",
+      "sha256": "028046db642583fa1113b9f045171fb163f6006b4b844336247db146dba97915",
+      "logical_bytes": 94365189,
+      "physical_bytes_before": 28680192,
+      "physical_bytes_after": 28680192,
+      "physical_bytes_saved_this_run": 0,
+      "npy": null
+    },
+    {
+      "path": "models/unet_best_sentinel2_terrain_control_year_holdout_2017_2024/variables/variables.data-00000-of-00001",
+      "sha256": "452953a94d657b131367ebeaa09d7e1c8add05743b5640d230514ededafe0683",
+      "logical_bytes": 94375557,
+      "physical_bytes_before": 86413312,
+      "physical_bytes_after": 86413312,
+      "physical_bytes_saved_this_run": 0,
+      "npy": null
+    },
+    {
+      "path": "models/unet_best_sentinel2_terrain_s1_year_holdout_2017_2024/variables/variables.data-00000-of-00001",
+      "sha256": "eb0ae34661355fea77788911b8a3d399d98d0d081412f5e2029d5419d015a343",
+      "logical_bytes": 94382469,
+      "physical_bytes_before": 86659072,
+      "physical_bytes_after": 86659072,
+      "physical_bytes_saved_this_run": 0,
+      "npy": null
+    },
+    {
+      "path": "models/unet_best_sentinel2_terrain_year_holdout_2016_2024/variables/variables.data-00000-of-00001",
+      "sha256": "5e5c1408d2c6ee596d9d09b5b58f5081e1ead703654fde23efa120006867a666",
+      "logical_bytes": 94375557,
+      "physical_bytes_before": 87007232,
+      "physical_bytes_after": 87007232,
+      "physical_bytes_saved_this_run": 0,
+      "npy": null
+    },
+    {
+      "path": "models/unet_enhanced_provisional_spatial_holdout/variables/variables.data-00000-of-00001",
+      "sha256": "47dac3e6a6ba94593de55c26c095b012ed545496ec4aec2fde9817f26236677e",
+      "logical_bytes": 94365189,
+      "physical_bytes_before": 86667264,
+      "physical_bytes_after": 86667264,
+      "physical_bytes_saved_this_run": 0,
+      "npy": null
+    },
+    {
+      "path": "models/unet_final_sentinel2_multiyear_sample_2016_2024/variables/variables.data-00000-of-00001",
+      "sha256": "3af8d01a38841e87debd6fee3e609a549ad8388ad6bf32fcc2605f06e284e387",
+      "logical_bytes": 94365189,
+      "physical_bytes_before": 28680192,
+      "physical_bytes_after": 28680192,
+      "physical_bytes_saved_this_run": 0,
+      "npy": null
+    },
+    {
+      "path": "models/unet_final_sentinel2_terrain_control_year_holdout_2017_2024/variables/variables.data-00000-of-00001",
+      "sha256": "28a59549dee766da21e36c2968c8732170a993ec4ff0767d51e36ddb36087756",
+      "logical_bytes": 94375557,
+      "physical_bytes_before": 86413312,
+      "physical_bytes_after": 86413312,
+      "physical_bytes_saved_this_run": 0,
+      "npy": null
+    },
+    {
+      "path": "models/unet_final_sentinel2_terrain_s1_year_holdout_2017_2024/variables/variables.data-00000-of-00001",
+      "sha256": "9d3f54ed97542e2d656b4424a71ed62331cd91f105a753d01e85f3492358e64f",
+      "logical_bytes": 94382469,
+      "physical_bytes_before": 86577152,
+      "physical_bytes_after": 86577152,
+      "physical_bytes_saved_this_run": 0,
+      "npy": null
+    },
+    {
+      "path": "models/unet_final_sentinel2_terrain_year_holdout_2016_2024/variables/variables.data-00000-of-00001",
+      "sha256": "ab5e91aa70a231d1449d101e4e24e0367f69add23963b42dee31291c33e8c5b1",
+      "logical_bytes": 94375557,
+      "physical_bytes_before": 87007232,
+      "physical_bytes_after": 87007232,
+      "physical_bytes_saved_this_run": 0,
+      "npy": null
+    },
+    {
+      "path": "models/unet_plus_plus_best.h5",
+      "sha256": "7e343ce1be73dfc1eea00442fd82951d720b670376dd3457f779c3e4a909b1d0",
+      "logical_bytes": 94581728,
+      "physical_bytes_before": 86839296,
+      "physical_bytes_after": 86839296,
+      "physical_bytes_saved_this_run": 0,
+      "npy": null
+    }
+  ]
+}

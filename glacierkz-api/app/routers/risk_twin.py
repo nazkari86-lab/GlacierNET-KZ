@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
-from typing import Any
+import asyncio
+from typing import Annotated, Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from app.auth.rbac import User, get_current_user, user_has_scope
+from app.services.ml_workspace_service import analyze_glacier, find_ml_case
 from app.services.risk_twin_context_service import regional_lake_screening, risk_twin_context
+from app.services.risk_twin_integration_service import build_integrated_case
 from src.risk_twin.workflow import evaluate_basin_payload
 
 router = APIRouter(prefix="/api/risk-twin", tags=["risk-twin"])
@@ -75,6 +79,17 @@ class RiskTwinRequest(BaseModel):
     priority_inputs: PriorityInput | None = None
 
 
+class IntegratedCaseRequest(BaseModel):
+    year: int = Field(default=2024, ge=2017, le=2024)
+    lake_inventory_year: int = 2023
+    lake_id: str | None = None
+    buffer_km: float = Field(default=10.0, gt=0, le=30)
+    run_ml_if_missing: bool = False
+    model_name: str = "temporal_s2_terrain_s1"
+    use_tta: bool = True
+    context_m: int = Field(default=400, ge=0, le=2000)
+
+
 @router.get("/readiness")
 def risk_twin_readiness() -> dict[str, Any]:
     return {
@@ -138,6 +153,47 @@ def regional_scan(
     """Automatic all-local-inventory observation screening, never a hazard map."""
     payload = regional_lake_screening(inventory_year=inventory_year, buffer_km=buffer_km)
     return {**payload, "candidates": payload["candidates"][:limit], "returned": min(limit, len(payload["candidates"]))}
+
+
+@router.post("/integrated-case/{rgi_id}")
+async def integrated_case(
+    rgi_id: str,
+    request: IntegratedCaseRequest,
+    user: Annotated[User, Depends(get_current_user)],
+) -> dict[str, Any]:
+    """Return one ML -> lake -> route -> operator evidence chain.
+
+    Inference is opt-in because it can be expensive.  Missing model/data never
+    prevents the GIS context from loading and is reported as an explicit gate.
+    """
+    ml_case = find_ml_case(rgi_id, year=request.year, model_name=request.model_name)
+    ml_reason: str | None = None
+    if ml_case is None and request.run_ml_if_missing:
+        if not user_has_scope(user, "predict"):
+            raise HTTPException(status_code=403, detail="Scope 'predict' required to run ML inference")
+        try:
+            ml_case = await asyncio.to_thread(
+                analyze_glacier,
+                rgi_id,
+                year=request.year,
+                model_name=request.model_name,
+                use_tta=request.use_tta,
+                context_m=request.context_m,
+                refresh=False,
+            )
+            ml_case["evidence_origin"] = "runtime_local"
+        except HTTPException as error:
+            ml_reason = str(error.detail)
+    return await asyncio.to_thread(
+        build_integrated_case,
+        rgi_id,
+        year=request.year,
+        lake_inventory_year=request.lake_inventory_year,
+        buffer_km=request.buffer_km,
+        lake_id=request.lake_id,
+        ml_case=ml_case,
+        ml_status_reason=ml_reason,
+    )
 
 
 @router.post("/evaluate")

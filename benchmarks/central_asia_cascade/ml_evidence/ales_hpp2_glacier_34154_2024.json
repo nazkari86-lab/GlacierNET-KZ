@@ -1,0 +1,112 @@
+{
+  "schema": "glaciernet-kz.ml-case-snapshot.v1",
+  "case_id": "260c89a36fbc7d1cd58b",
+  "created_at": "2026-08-01T02:39:36.690805+00:00",
+  "evidence_origin": "packaged_verified_snapshot",
+  "glacier": {
+    "rgi_id": "RGI2000-v7.0-G-13-34154",
+    "name": "Unnamed glacier 34154",
+    "name_ru": "Unnamed glacier 34154",
+    "named": false,
+    "wgms_reference": false,
+    "glims_id": "G076957E43023N",
+    "subregion": "13-03",
+    "centroid": { "longitude": 76.95748354491727, "latitude": 43.023002000000005 },
+    "rgi_area_km2": 0.045736,
+    "elevation": { "min_m": 3708.3, "mean_m": 3786.5, "max_m": 3863.2 },
+    "slope_deg": 27.29,
+    "aspect_deg": 2.92,
+    "maximum_length_m": 316,
+    "dem_source": "COPDEM30",
+    "inventory_date": "2002-07-10T00:00:00"
+  },
+  "year": 2024,
+  "model": {
+    "name": "temporal_s2_terrain_s1",
+    "display_name": "Multimodal U-Net · S2 + terrain + SAR",
+    "description": "Measured local model using Sentinel-2, terrain and Sentinel-1 VV/VH.",
+    "supports_tta": true,
+    "supports_crf": false,
+    "supports_uncertainty": true,
+    "channel_count": 16,
+    "feature_schema": ["B2", "B3", "B4", "B8", "B8A", "B11", "B12", "NDSI", "NDWI", "BSI", "EVI", "elevation_m_normalized", "slope_degrees_normalized", "aspect_degrees_normalized", "VV_dB_normalized", "VH_dB_normalized"],
+    "decision_threshold": 0.5,
+    "evidence_tier": "silver_temporal_holdout",
+    "recommended": true,
+    "year_range": [2017, 2024],
+    "artifact_sha256": "c874443318bc7079b2580ef18e02782e6324d398459bfd55e20f63bc26b83997",
+    "benchmark_protocol": "untouched temporal test-year holdout",
+    "test_years": [2024],
+    "label_quality_tier": "silver"
+  },
+  "inference": {
+    "variant": "flip_tta_4",
+    "use_tta": true,
+    "decision_threshold": 0.5,
+    "duration_seconds": 6.493,
+    "window_shape": [256, 256],
+    "context_m": 400,
+    "feature_schema": ["B2", "B3", "B4", "B8", "B8A", "B11", "B12", "NDSI", "NDWI", "BSI", "EVI", "elevation_m_normalized", "slope_degrees_normalized", "aspect_degrees_normalized", "VV_dB_normalized", "VH_dB_normalized"]
+  },
+  "source": {
+    "sentinel2_file": "data/raw/sentinel2/sentinel2_2024.tif",
+    "sentinel2_size_bytes": 886551970,
+    "source_crop_sha256": "cce7860b351d46c4bdf540dc2bb2deca28a905eb2f7af0f3d61fb897a54aae56",
+    "terrain_file": "data/ancillary/terrain/terrain_features.tif",
+    "sentinel1_file": "data/ancillary/sentinel1/sentinel1_2024.tif"
+  },
+  "metrics": {
+    "predicted_area_km2": 0.0009,
+    "rgi_rasterized_area_km2": 0.0466,
+    "area_delta_percent": -98.07,
+    "rgi_overlap_iou": 0.0193,
+    "mean_probability_in_selected_component": 0.5455,
+    "uncertain_fraction_in_review_zone": 0.0665,
+    "mean_boundary_entropy_nats": 0.2374,
+    "review_priority_0_100": 71,
+    "inventory_guided_area_km2": 0.0357,
+    "inventory_guided_area_delta_percent": -23.39,
+    "inventory_guided_rgi_overlap_iou": 0.4776,
+    "inventory_guided_spectral_fraction": 0.5708
+  },
+  "map": {
+    "bounds": [[43.0105229, 76.9403089], [43.035531, 76.9743931]],
+    "rgi_geometry": null,
+    "model_geometry": {
+      "type": "Polygon",
+      "coordinates": [[[76.9572902, 43.0225817], [76.9572555, 43.0223141], [76.9576201, 43.0222886], [76.9576549, 43.0225562], [76.9572902, 43.0225817]]]
+    },
+    "inventory_guided_geometry": null
+  },
+  "inventory_guided_decoder": {
+    "schema": "glaciernet-kz.inventory-guided-decoder.v1",
+    "config": { "ndsi_threshold": 0.5, "support_buffer_m": 100.0, "retain_inventory_connected_components": true },
+    "claim_tier": "inventory_guided_screening",
+    "circular_validation_warning": "The inventory is a decoding prior and cannot also serve as independent accuracy ground truth."
+  },
+  "artifacts": {},
+  "review": {
+    "status": "expert_review_required",
+    "next_action": "Inspect high-entropy boundary sectors and the largest RGI disagreement before using this boundary in a trend or hazard assessment.",
+    "risk_twin_url": "/risk-twin?rgi=RGI2000-v7.0-G-13-34154&year=2024&scope=annual_screening&ml_case=260c89a36fbc7d1cd58b"
+  },
+  "claims_allowed": [
+    "model-screened glacier boundary for the selected local year",
+    "agreement and disagreement with the fixed RGI inventory geometry",
+    "model probability and predictive-entropy review zones"
+  ],
+  "claims_not_allowed": [
+    "independent expert-validated accuracy for this glacier",
+    "ice thickness, volume or discharge inferred from a 2D boundary",
+    "operational hazard probability or public warning"
+  ],
+  "warnings": [
+    "Uncertainty is predictive entropy, not calibrated event probability.",
+    "Silver RGI-derived labels do not constitute independent expert validation."
+  ],
+  "snapshot_provenance": {
+    "runtime_manifest_sha256": "f1d844bbadc4714c80c337945f02623df5d2bc5554aaa6842fd869d3dc1d984a",
+    "packaged_from_runtime_case": "260c89a36fbc7d1cd58b",
+    "note": "Compact real inference snapshot; heavy rasters remain local and are not claimed to run in CI."
+  }
+}

@@ -3,9 +3,17 @@
 import pytest
 from fastapi.testclient import TestClient
 
+from app.auth.rbac import Role, User, set_current_user
 from app.main import app
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def reset_current_user():
+    set_current_user(None)
+    yield
+    set_current_user(None)
 
 
 def test_risk_twin_readiness_is_fail_closed():
@@ -15,6 +23,48 @@ def test_risk_twin_readiness_is_fail_closed():
     assert body["status"] == "research_baseline"
     assert "calibrated event probabilities" in body["blocked"]
     assert "not an official warning" in body["safety_statement"]
+
+
+def test_anonymous_user_cannot_trigger_expensive_integrated_ml_inference(monkeypatch):
+    import app.routers.risk_twin as risk_twin_router
+
+    monkeypatch.setattr(risk_twin_router, "find_ml_case", lambda *args, **kwargs: None)
+    response = client.post(
+        "/api/risk-twin/integrated-case/RGI-missing",
+        json={"year": 2024, "run_ml_if_missing": True},
+    )
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Scope 'predict' required to run ML inference"
+
+
+def test_analyst_can_trigger_integrated_ml_inference(monkeypatch):
+    import app.routers.risk_twin as risk_twin_router
+
+    set_current_user(
+        User(
+            user_id="analyst-1",
+            email="analyst@example.test",
+            role=Role.ANALYST,
+            scopes=["read", "predict"],
+        )
+    )
+    monkeypatch.setattr(risk_twin_router, "find_ml_case", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        risk_twin_router,
+        "analyze_glacier",
+        lambda *args, **kwargs: {"case_id": "c" * 20},
+    )
+    monkeypatch.setattr(
+        risk_twin_router,
+        "build_integrated_case",
+        lambda *args, **kwargs: {"status": "integrated", "ml_case": kwargs["ml_case"]},
+    )
+    response = client.post(
+        "/api/risk-twin/integrated-case/RGI-test",
+        json={"year": 2024, "run_ml_if_missing": True},
+    )
+    assert response.status_code == 200
+    assert response.json()["ml_case"]["evidence_origin"] == "runtime_local"
 
 
 @pytest.mark.local_data

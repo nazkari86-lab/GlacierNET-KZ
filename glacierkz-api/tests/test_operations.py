@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -209,6 +210,14 @@ def test_risk_twin_handoff_is_idempotent_and_creates_auditable_follow_up() -> No
         "geometric_match_distance_m": 42,
         "distance_to_rgi_boundary_m": 510,
         "observation_priority_0_100": 81,
+        "workflow_priority_0_100": 91,
+        "ml_case_id": "ml-real-case-2024",
+        "ml_model_name": "temporal_s2_terrain_s1",
+        "ml_boundary_review_priority_0_100": 91,
+        "ml_rgi_overlap_iou": 0.19,
+        "ml_uncertain_fraction": 0.07,
+        "ml_gate_status": "expert_review_required",
+        "ml_source_crop_sha256": "a" * 64,
         "flags": ["within_1km_of_rgi_boundary"],
         "action_summary": "Verify source imagery and collect a field profile before any operational conclusion.",
     }
@@ -217,7 +226,18 @@ def test_risk_twin_handoff_is_idempotent_and_creates_auditable_follow_up() -> No
     body = created.json()
     assert body["status"] == "created"
     assert body["asset"]["evidence_tier"] == "operational_unverified"
+    assert body["asset"]["model_version"] == "temporal_s2_terrain_s1"
+    assert body["observation"]["observation_type"] == "integrated_ml_lake_screening"
+    observation_values = json.loads(body["observation"]["values_json"])
+    assert observation_values["ml_case_id"] == "ml-real-case-2024"
+    assert observation_values["ml_source_crop_sha256"] == "a" * 64
+    assert observation_values["workflow_priority_0_100"] == 91
+    assert body["change_candidate"]["priority_score"] == pytest.approx(0.91)
+    assert body["change_candidate"]["change_type"] == "ml_boundary_and_lake_follow_up"
+    assert body["change_candidate"]["next_action"] == "review_ml_glacier_boundary_then_lake_inventory"
+    assert body["change_candidate"]["model_disagreement"] == pytest.approx(0.81)
     assert body["inspection_task"]["status"] == "queued"
+    assert "not a temporal change estimate" in body["evidence_case"]["limitations"]
     assert "official warning" in body["safety_statement"]
 
     repeated = client.post("/api/operations/risk-twin-handoffs", json=payload)

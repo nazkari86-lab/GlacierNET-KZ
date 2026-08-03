@@ -387,7 +387,7 @@ export interface MlEvidenceCase {
   };
   map: {
     bounds: [[number, number], [number, number]];
-    rgi_geometry: { type: string; coordinates: unknown };
+    rgi_geometry: { type: string; coordinates: unknown } | null;
     model_geometry?: { type: string; coordinates: unknown } | null;
     inventory_guided_geometry?: { type: string; coordinates: unknown } | null;
   };
@@ -403,6 +403,12 @@ export interface MlEvidenceCase {
   claims_not_allowed: string[];
   warnings: string[];
   cache: { hit: boolean; case_id: string };
+  evidence_origin?: "runtime_local" | "packaged_verified_snapshot";
+  snapshot_provenance?: {
+    runtime_manifest_sha256: string;
+    packaged_from_runtime_case: string;
+    note: string;
+  };
 }
 
 export async function fetchGlaciers(
@@ -1352,6 +1358,66 @@ export async function fetchRiskTwinContext(
   return normalizeRiskTwinContext(await res.json());
 }
 
+export interface IntegratedRiskTwinCase {
+  schema: "glaciernet-kz.integrated-risk-twin-case.v1";
+  query: { rgi_id: string; year: number; lake_inventory_year: number; lake_id: string | null };
+  context: RiskTwinSpatialContext;
+  selected_candidate: RiskTwinSpatialContext["screening_candidates"][number] | null;
+  ml_evidence: MlEvidenceCase | null;
+  ml_status_reason: string | null;
+  decision: {
+    workflow_priority_0_100: number;
+    priority_formula: string;
+    lake_observation_priority_0_100: number;
+    ml_boundary_review_priority_0_100: number | null;
+    driver: "missing_ml_evidence" | "ml_boundary_review" | "lake_boundary_review" | "route_linkage_review";
+    title: string;
+    next_action: string;
+    ml_changed_next_action: boolean;
+    meaning: string;
+    gate: {
+      status: "not_available" | "screening_ready" | "expert_review_required";
+      usable_for_boundary_screening: boolean;
+      usable_for_temporal_change: boolean;
+      rgi_overlap_iou?: number | null;
+      uncertain_fraction_in_review_zone?: number | null;
+      reasons: string[];
+      claim_boundary?: string;
+    };
+  };
+  evidence_route: Array<{ step: string; status: string }>;
+  claims_allowed: string[];
+  claims_not_allowed: string[];
+}
+
+export async function fetchIntegratedRiskTwinCase(
+  rgiId: string,
+  options: {
+    year?: number;
+    lakeInventoryYear?: number;
+    lakeId?: string | null;
+    bufferKm?: number;
+    runMlIfMissing?: boolean;
+  } = {},
+): Promise<IntegratedRiskTwinCase> {
+  const response = checkResponse(await fetch(apiUrl(`/api/risk-twin/integrated-case/${encodeURIComponent(rgiId)}`), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      year: options.year ?? 2024,
+      lake_inventory_year: options.lakeInventoryYear ?? 2023,
+      lake_id: options.lakeId ?? null,
+      buffer_km: options.bufferKm ?? 10,
+      run_ml_if_missing: options.runMlIfMissing ?? false,
+      model_name: "temporal_s2_terrain_s1",
+      use_tta: true,
+      context_m: 400,
+    }),
+  }));
+  const body = await response.json() as IntegratedRiskTwinCase;
+  return { ...body, context: normalizeRiskTwinContext(body.context) };
+}
+
 export async function fetchRegionalObservationScan(limit = 100, bufferKm = 10, inventoryYear = 2023): Promise<RegionalObservationScan> {
   const params = new URLSearchParams({ limit: String(limit), buffer_km: String(bufferKm), inventory_year: String(inventoryYear) });
   const res = checkResponse(await fetch(apiUrl(`/api/risk-twin/regional-scan?${params}`)));
@@ -1859,6 +1925,14 @@ export interface RiskTwinHandoffInput {
   geometric_match_distance_m?: number | null;
   distance_to_rgi_boundary_m: number;
   observation_priority_0_100: number;
+  workflow_priority_0_100?: number | null;
+  ml_case_id?: string | null;
+  ml_model_name?: string | null;
+  ml_boundary_review_priority_0_100?: number | null;
+  ml_rgi_overlap_iou?: number | null;
+  ml_uncertain_fraction?: number | null;
+  ml_gate_status?: "expert_review_required" | "screening_ready" | null;
+  ml_source_crop_sha256?: string | null;
   flags: string[];
   action_summary: string;
 }

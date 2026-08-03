@@ -172,6 +172,14 @@ class RiskTwinHandoffCreate(BaseModel):
     geometric_match_distance_m: float | None = Field(default=None, ge=0)
     distance_to_rgi_boundary_m: float = Field(ge=0)
     observation_priority_0_100: float = Field(ge=0, le=100)
+    workflow_priority_0_100: float | None = Field(default=None, ge=0, le=100)
+    ml_case_id: str | None = Field(default=None, max_length=240)
+    ml_model_name: str | None = Field(default=None, max_length=240)
+    ml_boundary_review_priority_0_100: float | None = Field(default=None, ge=0, le=100)
+    ml_rgi_overlap_iou: float | None = Field(default=None, ge=0, le=1)
+    ml_uncertain_fraction: float | None = Field(default=None, ge=0, le=1)
+    ml_gate_status: Literal["expert_review_required", "screening_ready"] | None = None
+    ml_source_crop_sha256: str | None = Field(default=None, min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
     flags: list[str] = Field(default_factory=list, max_length=30)
     action_summary: str = Field(min_length=10, max_length=10_000)
 
@@ -369,6 +377,14 @@ def create_risk_twin_handoff(request: RiskTwinHandoffCreate, user: Writer) -> di
     queue item, while every newly created record remains in the audit chain.
     """
     case_key = _risk_twin_case_key(request)
+    has_ml_evidence = request.ml_case_id is not None
+    ml_review_required = request.ml_gate_status == "expert_review_required"
+    workflow_priority = request.workflow_priority_0_100
+    if workflow_priority is None:
+        workflow_priority = max(
+            request.observation_priority_0_100,
+            request.ml_boundary_review_priority_0_100 or 0,
+        )
     asset_name = f"Risk Twin lake {request.lake_id or 'without-id'} · {request.inventory_year}"
     now = utc_now()
     with database() as connection:
@@ -426,8 +442,11 @@ def create_risk_twin_handoff(request: RiskTwinHandoffCreate, user: Writer) -> di
                 "longitude": request.longitude,
                 "status": "requires_review",
                 "evidence_tier": "operational_unverified",
-                "model_version": None,
-                "data_version": f"tien-shan-lake-inventory-{request.inventory_year}",
+                "model_version": request.ml_model_name,
+                "data_version": (
+                    f"tien-shan-lake-inventory-{request.inventory_year}"
+                    + (f" + ml-case-{request.ml_case_id}" if has_ml_evidence else "")
+                ),
                 "allowed_use": "screening follow-up and evidence management with human review",
                 "forbidden_use": "event probability, official warning, or autonomous emergency action",
                 "created_at": now,
@@ -441,7 +460,9 @@ def create_risk_twin_handoff(request: RiskTwinHandoffCreate, user: Writer) -> di
             {
                 "id": new_id("obs"),
                 "asset_id": asset["id"],
-                "observation_type": "local_lake_inventory_screening",
+                "observation_type": (
+                    "integrated_ml_lake_screening" if has_ml_evidence else "local_lake_inventory_screening"
+                ),
                 "observed_at": f"{request.inventory_year}-12-31T00:00:00Z",
                 "source": "Tien Shan glacial-lake inventory local extract",
                 "values_json": _json(
@@ -456,6 +477,15 @@ def create_risk_twin_handoff(request: RiskTwinHandoffCreate, user: Writer) -> di
                         "area_change_percent": request.area_change_percent,
                         "geometric_match_distance_m": request.geometric_match_distance_m,
                         "distance_to_rgi_boundary_m": request.distance_to_rgi_boundary_m,
+                        "observation_priority_0_100": request.observation_priority_0_100,
+                        "workflow_priority_0_100": workflow_priority,
+                        "ml_case_id": request.ml_case_id,
+                        "ml_model_name": request.ml_model_name,
+                        "ml_boundary_review_priority_0_100": request.ml_boundary_review_priority_0_100,
+                        "ml_rgi_overlap_iou": request.ml_rgi_overlap_iou,
+                        "ml_uncertain_fraction": request.ml_uncertain_fraction,
+                        "ml_gate_status": request.ml_gate_status,
+                        "ml_source_crop_sha256": request.ml_source_crop_sha256,
                         "flags": request.flags,
                     }
                 ),
@@ -468,8 +498,13 @@ def create_risk_twin_handoff(request: RiskTwinHandoffCreate, user: Writer) -> di
             actor=user.user_id,
         )
         rationale = (
-            f"{case_key}. Observation priority {request.observation_priority_0_100:.0f}/100; "
-            f"inventory geometry requires source-scene and field/provenance review."
+            f"{case_key}. Workflow evidence priority {workflow_priority:.0f}/100; "
+            + (
+                f"ML case {request.ml_case_id} requires glacier-boundary review before area interpretation; "
+                if ml_review_required
+                else ""
+            )
+            + "inventory geometry requires source-scene and field/provenance review."
         )
         candidate = insert_record(
             connection,
@@ -478,15 +513,23 @@ def create_risk_twin_handoff(request: RiskTwinHandoffCreate, user: Writer) -> di
                 "id": new_id("candidate"),
                 "asset_id": asset["id"],
                 "observation_id": observation["id"],
-                "change_type": "local_lake_inventory_follow_up",
+                "change_type": (
+                    "ml_boundary_and_lake_follow_up" if ml_review_required else "local_lake_inventory_follow_up"
+                ),
                 "magnitude": abs(request.area_change_percent or 0.0),
                 "uncertainty": 0.65,
-                "data_quality_gap": 0.8,
-                "model_disagreement": 0.5,
+                "data_quality_gap": 0.95 if ml_review_required else 0.8,
+                "model_disagreement": (
+                    round(1 - request.ml_rgi_overlap_iou, 4) if request.ml_rgi_overlap_iou is not None else 0.5
+                ),
                 "expected_information_gain": 0.85,
                 "domain_shift_status": "requires_local_validation",
-                "priority_score": round(request.observation_priority_0_100 / 100, 3),
-                "next_action": "verify_source_imagery_and_measure_water_dam_outlet",
+                "priority_score": round(workflow_priority / 100, 3),
+                "next_action": (
+                    "review_ml_glacier_boundary_then_lake_inventory"
+                    if ml_review_required
+                    else "verify_source_imagery_and_measure_water_dam_outlet"
+                ),
                 "rationale": rationale,
                 "status": "requires_review",
                 "evidence_tier": "operational_unverified",
@@ -524,7 +567,8 @@ def create_risk_twin_handoff(request: RiskTwinHandoffCreate, user: Writer) -> di
                 "status": "under_review",
                 "summary": f"{case_key}. {request.action_summary}",
                 "limitations": (
-                    "Inventory geometry and a geometric cross-year match are screening inputs only. "
+                    "Inventory geometry, the ML boundary, and a geometric cross-year match are screening inputs only. "
+                    "The ML result is not a temporal change estimate and cannot be interpreted as melting while its quality gate is blocked. "
                     "No lake-glacier linkage, bathymetry, dam condition, flow path, inundation, exposed population, "
                     "event probability, or official warning is established by this case."
                 ),

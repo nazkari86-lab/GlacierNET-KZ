@@ -9,7 +9,7 @@ test.describe("Command Center", () => {
     await expect(page.getByRole("link", { name: "Skip to main content" })).toBeAttached();
     await expect(page.getByRole("region", { name: "Анимация ледника и ключевые факты" })).toBeVisible();
     await expect(page.getByText(/Просмотрено 317 озёр/i)).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByRole("heading", { name: /Следующее действие: проверить контур воды/i })).toBeVisible();
+    await expect(page.locator("#answer-title")).toHaveText(/проверить контур воды|Запустить ML-анализ|проверить ML-границу/i);
     await expect(page.getByRole("heading", { name: /Покажите, что проверить рядом с объектом компании/i })).toBeVisible();
 
     await page.getByLabel("Название объекта").fill("Тестовый водозабор");
@@ -39,6 +39,11 @@ test.describe("Command Center", () => {
     await page.getByRole("button", { name: /Показать кейс АлЭС/i }).click();
 
     await expect(page.getByRole("heading", { name: /Проверять сначала озеро GL43050789E76985293N/i })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("heading", { name: /ML действительно изменил следующую задачу/i })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("region", { name: /ML действительно изменил следующую задачу/i }).getByText("71/100", { exact: true })).toBeVisible();
+    await expect(page.getByText(/raw ML показал −98,07%/i)).toBeVisible();
+    await expect(page.getByText(/нельзя называть таянием/i)).toBeVisible();
+    await expect(page.getByText(/source crop SHA‑256/i)).toBeVisible();
     const connectedRoute = page.getByText("ТОЧКА В PLANNING‑CORRIDOR", { exact: true });
     const routeUnavailable = page.getByText(/для выбранного RGI локальный маршрут недоступен/i);
     await expect(connectedRoute.or(routeUnavailable)).toBeVisible({ timeout: 20_000 });
@@ -46,14 +51,22 @@ test.describe("Command Center", () => {
     await expect(page.getByText(/Подтвердить гидрологическую связь/i)).toBeVisible();
     await expect(page.getByText(/Подключить телеметрию объекта/i)).toBeVisible();
     await expect(page.getByText(/Не обоснованы остановка ГЭС/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: /Полный паспорт/i })).toHaveAttribute("href", /ml_case=260c89a36fbc7d1cd58b/);
     await expect(page.locator(".risk-twin-map")).toBeVisible();
     await expect(page.locator(".risk-twin-map .leaflet-popup")).toHaveCount(0);
     await expect(page.getByText("Для ГЭС‑2 Каскада Алматинских ГЭС", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Приблизить ML‑границу" })).toBeVisible();
+    await page.getByRole("button", { name: "Приблизить ML‑границу" }).click();
     if (await connectedRoute.isVisible()) {
       await expect(page.getByText("До оси HydroRIVERS: 16 м", { exact: true })).toBeVisible();
     } else {
       await expect(routeUnavailable).toBeVisible();
     }
     await expect(page.locator("main [role=alert]")).toHaveCount(0);
+    await page.getByRole("link", { name: /Полный паспорт/i }).click();
+    await expect(page).toHaveURL(/\/risk-twin\?.*ml_case=260c89a36fbc7d1cd58b/);
+    await expect(page.getByText(/Linked model evidence · 260c89a36fbc7d1cd58b/i)).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("region", { name: "ML quality gate for Operations" })).toContainText("71/100");
+    await expect(page.getByRole("region", { name: "ML quality gate for Operations" })).toContainText("Изменение площади заблокировано");
   });
 });

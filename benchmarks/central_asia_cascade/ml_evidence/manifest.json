@@ -1,0 +1,10 @@
+{
+  "schema": "glaciernet-kz.ml-evidence-manifest.v1",
+  "cases": [
+    {
+      "file": "ales_hpp2_glacier_34154_2024.json",
+      "case_id": "260c89a36fbc7d1cd58b",
+      "sha256": "a58cef1c2b62f1554f133eeeef39d6228dfe22c50491cc1069875ffebae2f45b"
+    }
+  ]
+}
