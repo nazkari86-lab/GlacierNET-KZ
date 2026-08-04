@@ -22,8 +22,8 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
-    "tensorflow==2.15.1",
-    "numpy>=1.26.4,<2.0.0",
+    "tensorflow==2.21.0",
+    "numpy>=1.26.4,<3.0.0",
     "scipy>=1.11.0",
     "scikit-learn>=1.5.0",
     "protobuf>=4.25.9,<5.0.0",
