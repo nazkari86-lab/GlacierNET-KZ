@@ -4,7 +4,7 @@ uvicorn[standard]==0.27.0
 redis==5.0.1
 python-multipart==0.0.31
 Pillow==12.3.0
-numpy==1.26.4
+numpy==2.2.6
 pandas==2.2.3
 scipy==1.15.3
 scikit-learn==1.7.2
